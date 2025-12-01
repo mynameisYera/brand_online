@@ -67,7 +67,7 @@ class _SplashScreenWithoutButtonsState extends State<SplashScreenWithoutButtons>
     );
 
     // Define animation for the right cloud (from right middle)
-    _animationCloudRight = Tween<double>(begin: -300.0, end: 0.0).animate(
+    _animationCloudRight = Tween<double>(begin: -100.0, end: 0.0).animate(
       CurvedAnimation(parent: _controllerCloudRight, curve: Curves.linear),
     );
 
@@ -143,12 +143,12 @@ class _SplashScreenWithoutButtonsState extends State<SplashScreenWithoutButtons>
                 left: 0,
                 right: 0,
                 top: _animationLogo.value,
-                bottom: 100,
+                bottom: 300,
                 child: child!,
               );
             },
             child: Image.asset(
-              'assets/images/logo.png',
+              'assets/images/splash_logo.png',
             ),
           ),
 
@@ -164,8 +164,8 @@ class _SplashScreenWithoutButtonsState extends State<SplashScreenWithoutButtons>
               );
             },
             child: Image.asset(
-              'assets/images/splash_logo.png',
-              width: 200,
+              'assets/images/splash_text.png',
+              width: 300,
             ),
           ),
         ],

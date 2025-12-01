@@ -181,7 +181,7 @@ class _MainEntryPageState extends State<MainEntryPage>
               );
             },
             child: Image.asset(
-              'assets/images/logo.png',
+              'assets/images/splash_logo.png',
             ),
           ),
 
@@ -203,7 +203,7 @@ class _MainEntryPageState extends State<MainEntryPage>
               );
             },
             child: Image.asset(
-              'assets/images/splash_logo.png',
+              'assets/images/splash_text.png',
               width: 300,
             ),
           ),
