@@ -76,9 +76,9 @@ class _ApplicationState extends State<Application> {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Restart Online',
+      title: 'Brand Online',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        primarySwatch: Colors.blue, 
         fontFamily: 'Gerbera',
       ),
       routes: {

@@ -1,11 +1,11 @@
 {
-    "name": "Restart Online",
-    "short_name": "Restart",
+    "name": "Brand Online",
+    "short_name": "Brand",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "Study smart online with Restart Online",
+    "description": "Study smart online with Brand Online",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

@@ -16,7 +16,7 @@ class SubscriptionService {
   // Product IDs для разных платформ
   final String monthlyProductId = Platform.isIOS 
       ? 'com.akim.restart.month' 
-      : 'com.kanatbek.smart_study_v2';
+      : 'com.brand.online';
 
   bool _isInitialized = false;
   bool _hasActiveSubscription = false;

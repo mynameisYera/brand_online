@@ -176,7 +176,7 @@ class _MainEntryPageState extends State<MainEntryPage>
                 left: 0,
                 right: 0,
                 top: _animationLogo.value,
-                bottom: 100,
+                bottom: 350,
                 child: child!,
               );
             },

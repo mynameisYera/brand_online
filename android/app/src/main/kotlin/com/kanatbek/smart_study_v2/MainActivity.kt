@@ -1,4 +1,4 @@
-package com.kanatbek.smart_study_v2
+package com.brand.online
 
 import android.view.WindowManager
 import io.flutter.embedding.android.FlutterActivity

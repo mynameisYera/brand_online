@@ -61,7 +61,7 @@ class SubscriptionBloc extends Bloc<SubscriptionEvent, SubscriptionState> {
         emit(
           state.copyWith(
             isLoading: false,
-            error: 'У вас уже есть активная подписка Restart Online!',
+            error: 'У вас уже есть активная подписка Brand Online!',
           ),
         );
         return;
@@ -193,7 +193,7 @@ class SubscriptionBloc extends Bloc<SubscriptionEvent, SubscriptionState> {
                  isPurchasing: false,
                  currentPrice: currentPrice,
                  originalPrice: originalPrice,
-                 error: 'Подписка успешно активирована! Добро пожаловать в Restart Online!',
+                 error: 'Подписка успешно активирована! Добро пожаловать в Brand Online!',
                ),
              );
           } else {
@@ -279,7 +279,7 @@ class SubscriptionBloc extends Bloc<SubscriptionEvent, SubscriptionState> {
   //                 isLoading: false,
   //                 currentPrice: currentPrice,
   //                 originalPrice: originalPrice,
-  //                 error: 'Покупки успешно восстановлены! Добро пожаловать обратно в Restart Online!',
+  //                 error: 'Покупки успешно восстановлены! Добро пожаловать обратно в Brand Online!',
   //               ),
   //             );
   //           } else {
