@@ -1,0 +1,145 @@
+name: brand_online
+description: "Study smart online with Brand Online"
+publish_to: 'none' 
+version: 1.0.0
+
+environment:
+  sdk: ^3.6.0
+
+dependencies:
+  firebase_core: ^3.15.1
+  flutter:
+    sdk: flutter
+  firebase_messaging: any
+  flutter_local_notifications: ^19.5.0
+  font_awesome_flutter: ^10.6.0
+  google_fonts: ^6.1.0
+  url_launcher: ^6.2.6
+  flutter_math_fork: 0.7.4
+  flutter_html: 3.0.0
+
+  flutter_widget_from_html_core: ^0.10.0
+  shared_preferences: ^2.5.3
+  just_audio: ^0.9.39
+  just_audio_web: ^0.4.9
+  # in_app_purchase: ^3.2.3
+  # purchases_flutter: ^9.9.1
+  flutter_bloc: ^8.1.6
+  freezed_annotation: ^2.4.4
+  webview_flutter: ^4.13.0
+  no_screenshot: ^0.3.1
+  youtube_player_flutter: ^9.1.3
+  flutter_secure_storage: ^9.2.4
+  in_app_purchase: ^3.2.3
+  purchases_flutter: ^9.9.8
+
+
+dependency_overrides:
+  loading_animation_widget:
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: ^6.0.0
+  dio: ^5.8.0+1
+  cupertino_icons: ^1.0.8
+  json_annotation: ^4.9.0
+  freezed: ^2.5.7
+  build_runner: ^2.4.13
+  flutter_masked_text2: ^0.9.1
+  phone_number_text_input_formatter: ^0.0.2
+  audioplayers: ^6.5.0
+  intl: ^0.20.2
+  flutter_launcher_icons: ^0.14.4
+  webview_flutter_web: ^0.2.2+4
+  
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/mainLogo.png"
+flutter:
+
+  uses-material-design: true
+
+  assets:
+    - assets/images/logo.png
+    - assets/images/clouds2.png
+    - assets/images/clouds.png
+    - assets/images/logo2.png
+    - assets/images/logo3.png
+    - assets/images/robot.png
+    - assets/images/fire.png
+    - assets/images/book.png
+    - assets/images/star.png
+    - assets/images/home.png
+    - assets/images/repeat.png
+    - assets/images/news.png
+    - assets/images/trophy1.png
+    - assets/images/profile.png
+    - assets/images/play_btn.png
+    - assets/images/math_icon.png
+    - assets/images/robot_image.png
+    - assets/images/play_icon.png
+    - assets/sounds/error.mp3
+    - assets/sounds/success.mp3
+    - assets/sounds/wrong-answer.mp3
+    - assets/sounds/wrong-answer2.mp3
+    - assets/sounds/wrong-answer2.mp4
+    - assets/sounds/success1.mp3
+    - assets/images/star-sparkle.png
+    - assets/images/crown.png
+    - assets/images/barys.png
+    # - assets/images/barys2.png
+    # - assets/images/brs1.png
+    # - assets/images/brs2.png
+    # - assets/images/brs3.png
+    # - assets/images/brs4.png
+    # - assets/images/brs5.png
+    # - assets/images/brs6.png
+    - assets/images/baryss.png
+    - assets/images/restartLogo.png
+    - assets/images/formula.png
+    - assets/images/function.png
+    - assets/images/maths.png
+    - assets/images/play-button.png
+    - assets/images/logoTitle.png
+    - assets/images/logoTitle2.png
+    - assets/images/I.png
+    - assets/images/II.png
+    - assets/images/III.png
+    - assets/images/fire1.png
+    - assets/images/users.png
+    - assets/images/subscribe.png
+    - assets/images/mainLogo.png
+    - assets/images/splash_logo.PNG
+    - assets/images/splash_text.png
+    - assets/images/application_logo.png
+    - assets/images/coin.png
+    - assets/images/dollar.png
+    - assets/images/barysDollar.png
+    # - assets/images/barys11.png
+    - assets/images/dollar.png
+    # - assets/images/barys12.png
+    # - assets/images/barys13.png
+    - assets/images/A1.png
+    - assets/images/A2.png
+    - assets/images/A3.png
+    - assets/images/A4.png
+    - assets/images/A5.png
+    - assets/images/admbrs12.png
+    - assets/images/admbrs13.png
+    - assets/images/moneyadm.png
+    - assets/images/admbarys.png
+    - assets/images/girl_half.png
+
+
+
+
+
+
+  fonts:
+    - family: Roboto
+      fonts:
+        - asset: assets/fonts/Roboto-Bold.ttf
+        - asset: assets/fonts/Roboto-Regular.ttf
