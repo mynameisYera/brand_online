@@ -70,7 +70,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '1083691689598',
     projectId: 'restart-2f2b3',
     storageBucket: 'restart-2f2b3.firebasestorage.app',
-    iosBundleId: 'com.brand.online',
+    iosBundleId: 'com.akim.restart',
   );
 
 }

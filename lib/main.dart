@@ -76,7 +76,7 @@ class _ApplicationState extends State<Application> {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Brand Online KZ',
+      title: 'Brand Online',
       theme: ThemeData(
         primarySwatch: Colors.blue, 
         fontFamily: 'Gerbera',

@@ -16,7 +16,7 @@
 // class _NoSubPageIosState extends State<NoSubPageIos> {
 //   final InAppPurchase _iap = InAppPurchase.instance;
 //   List<ProductDetails> _products = [];
-//   final String productId = 'com.brand.online.month';
+//   final String productId = 'com.akim.restart.month';
 
 //   @override
 //   void initState() {
