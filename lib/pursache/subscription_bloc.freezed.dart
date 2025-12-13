@@ -197,7 +197,7 @@ class _$SubscriptionStateImpl implements _SubscriptionState {
       this.currentPrice = '',
       this.originalPrice = '',
       this.subscriptionPeriod = '1 месяц обучения',
-      this.subscriptionName = 'Restart Course',
+      this.subscriptionName = 'Brand Online KZ',
       this.error,
       this.onSuccess});
 

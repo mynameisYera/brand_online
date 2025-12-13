@@ -16,7 +16,7 @@ class SubscriptionState with _$SubscriptionState {
     @Default('') String currentPrice,
     @Default('') String originalPrice,
     @Default('1 месяц обучения') String subscriptionPeriod,
-    @Default('Restart Course') String subscriptionName,
+    @Default('Brand Online KZ') String subscriptionName,
     String? error,
     VoidCallback? onSuccess,
   }) = _SubscriptionState;
