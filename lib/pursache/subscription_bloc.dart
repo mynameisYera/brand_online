@@ -95,8 +95,8 @@ class SubscriptionBloc extends Bloc<SubscriptionEvent, SubscriptionState> {
           emit(
             state.copyWith(
               isLoading: false,
-              currentPrice: '42,000₸ в месяц',
-              originalPrice: '42,000₸ в месяц',
+              currentPrice: '00,000₸ в месяц',
+              originalPrice: '00,000₸ в месяц',
             ),
           );
         }
@@ -105,8 +105,8 @@ class SubscriptionBloc extends Bloc<SubscriptionEvent, SubscriptionState> {
         emit(
           state.copyWith(
             isLoading: false,
-            currentPrice: '42,000₸ в месяц',
-            originalPrice: '42,000₸ в месяц',
+            currentPrice: '00,000₸ в месяц',
+            originalPrice: '00,000₸ в месяц',
           ),
         );
       }

@@ -94,12 +94,12 @@ PODS:
     - Flutter
     - FlutterMacOS
   - PromisesObjC (2.4.0)
-  - purchases_flutter (9.9.8):
+  - purchases_flutter (9.10.1):
     - Flutter
-    - PurchasesHybridCommon (= 17.19.1)
-  - PurchasesHybridCommon (17.19.1):
-    - RevenueCat (= 5.48.0)
-  - RevenueCat (5.48.0)
+    - PurchasesHybridCommon (= 17.24.0)
+  - PurchasesHybridCommon (17.24.0):
+    - RevenueCat (= 5.50.1)
+  - RevenueCat (5.50.1)
   - ScreenProtectorKit (1.3.1)
   - shared_preferences_foundation (0.0.1):
     - Flutter
@@ -201,9 +201,9 @@ SPEC CHECKSUMS:
   OrderedSet: e539b66b644ff081c73a262d24ad552a69be3a94
   path_provider_foundation: 080d55be775b7414fd5a5ef3ac137b97b097e564
   PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
-  purchases_flutter: 4cdac45e916440b434ac188e4b973a1ea4969816
-  PurchasesHybridCommon: a4837eebc889b973668af685d6c23b89a038461d
-  RevenueCat: 1e61140a343a77dc286f171b3ffab99ca09a4b57
+  purchases_flutter: 9aed1e2e783aaf62222c582f2e5624c72ad8d05d
+  PurchasesHybridCommon: 3b79d2602b94ed9ee3e8c4b31be4cd2a640c9dc9
+  RevenueCat: c676920ae9b3c9cd08c49d26e7cd4c04a0263069
   ScreenProtectorKit: 83a6281b02c7a5902ee6eac4f5045f674e902ae4
   shared_preferences_foundation: 9e1978ff2562383bd5676f64ec4e9aa8fa06a6f7
   url_launcher_ios: 694010445543906933d732453a59da0a173ae33d

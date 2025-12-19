@@ -3,12 +3,12 @@ import 'dart:io';
 
 class PurchasesConfig {
   static const _androidApiKey = 'PUT_YOUR_ANDROID_API_KEY_HERE';
-  static const _iosApiKey = 'appl_ISQIgMpSTBpmpPXwDJNkzKUKQSN';
+  static const _iosApiKey = 'appl_tMzEjMtzuHWzkkLKHDGyAxoAwex';
   
   // iOS configuration - these must match your App Store Connect and RevenueCat dashboard
-  static const String subscriptionId = 'restart_month'; // Product ID from App Store Connect
-  static const String entitlementId = 'restart-online'; // Entitlement ID from RevenueCat dashboard
-  static const String offeringId = 'restart-offering'; // Offering ID from RevenueCat dashboard
+  static const String subscriptionId = 'brand_online'; // Product ID from App Store Connect
+  static const String entitlementId = 'brand-online'; // Entitlement ID from RevenueCat dashboard
+  static const String offeringId = 'brand_online'; // Offering ID from RevenueCat dashboard
   
   static bool _isInitialized = false;
 
