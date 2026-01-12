@@ -25,7 +25,6 @@ class _HowCashbackCalculatedScreenState
     super.initState();
     final id = _extractVideoId(widget.url);
     if (id == null) {
-      // Можешь заменить на свой UI
       WidgetsBinding.instance.addPostFrameCallback((_) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Видео не найдено')),

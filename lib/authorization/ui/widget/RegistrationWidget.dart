@@ -6,20 +6,20 @@ import '../../service/auth_service.dart';
 class RegistrationWidget {
   String? validateName(String? value) {
     if (value == null || value.isEmpty) {
-      return 'Бұл өріс бос болуы мүмкін емес';
+      return 'Бос болмауы керек';
     }
     if (value.length < 2 || value.length > 50) {
-      return 'Өрістер 2 және 50 таңбадан тұруы керек.';
+      return 'Аты және тегі 2 және 50 таңбадан тұруы керек.';
     }
     return null;
   }
 
   String? validatePhoneNumber(String? value) {
     if (value == null || value.isEmpty) {
-      return 'Бұл өріс бос болуы мүмкін емес';
+      return 'Бос болмауы керек';
     }
-    if (value.length < 17) {
-      return 'Жолда телефон нөмірі болуы керек.';
+    if (value.length < 11) {
+      return 'Телефон нөмірі 11 таңбадан тұруы керек.';
     }
     return null;
   }

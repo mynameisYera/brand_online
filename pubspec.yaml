@@ -32,6 +32,7 @@ dependencies:
   flutter_secure_storage: ^9.2.4
   in_app_purchase: ^3.2.3
   purchases_flutter: ^9.9.8
+  flutter_svg: ^2.0.10+1
 
 
 dependency_overrides:
@@ -118,10 +119,7 @@ flutter:
     - assets/images/coin.png
     - assets/images/dollar.png
     - assets/images/barysDollar.png
-    # - assets/images/barys11.png
     - assets/images/dollar.png
-    # - assets/images/barys12.png
-    # - assets/images/barys13.png
     - assets/images/A1.png
     - assets/images/A2.png
     - assets/images/A3.png
@@ -132,6 +130,8 @@ flutter:
     - assets/images/moneyadm.png
     - assets/images/admbarys.png
     - assets/images/girl_half.png
+    - assets/images/oyu.svg
+    - assets/icons/synyp.svg
 
 
 
@@ -143,3 +143,10 @@ flutter:
       fonts:
         - asset: assets/fonts/Roboto-Bold.ttf
         - asset: assets/fonts/Roboto-Regular.ttf
+    - family: Manrope
+      fonts:
+        - asset: assets/fonts/Manrope.ttf
+        - asset: assets/fonts/Manrope-Bold.ttf
+        - asset: assets/fonts/Manrope-Medium.ttf
+        - asset: assets/fonts/Manrope-Regular.ttf
+        - asset: assets/fonts/Manrope-SemiBold.ttf

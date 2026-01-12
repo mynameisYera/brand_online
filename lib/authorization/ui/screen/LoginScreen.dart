@@ -1,6 +1,10 @@
+import 'package:brand_online/authorization/ui/screen/RegistrationScreen.dart';
+import 'package:brand_online/core/app_colors.dart';
+import 'package:brand_online/core/formatters/phone_number_formatter.dart';
+import 'package:brand_online/core/text_styles.dart';
+import 'package:brand_online/core/widgets/app_button_widget.dart';
+import 'package:brand_online/core/widgets/app_text_field.dart';
 import 'package:flutter/material.dart';
-import '../../../general/GeneralUtil.dart';
-import '../../../general/MainEntryPage.dart';
 import '../../../general/ResetPasswordScreen.dart';
 import '../../../roadMap/ui/screen/RoadMap.dart';
 import '../../service/auth_service.dart';
@@ -19,7 +23,8 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _password = TextEditingController();
   bool _obscureText = true;
   bool _isLoading = false;
-  String _pageValidator = '';
+  String _usernameError = '';
+  String _passwordError = '';
   final _storage = FlutterSecureStorage(
     aOptions: const AndroidOptions(
       encryptedSharedPreferences: true,
@@ -30,7 +35,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   void setState(VoidCallback fn) {
-    _pageValidator = '';
+    _usernameError = '';
+    _passwordError = '';
     super.setState(fn);
   }
 
@@ -41,154 +47,117 @@ class _LoginScreenState extends State<LoginScreen> {
       child: Scaffold(
         backgroundColor: Colors.white,
         resizeToAvoidBottomInset: true,
-        body: SafeArea(
-          child: SingleChildScrollView(
-            padding: EdgeInsets.only(
-              left: 16,
-              right: 16,
-              top: 20,
-              bottom: MediaQuery.of(context).viewInsets.bottom + 30,
-            ),
+        body: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 20),
+          child: SafeArea(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                widgets.spaceBreaker(MediaQuery.of(context).size.height * 0.1),
-                widgets.logoTitle(context),
-                widgets.spaceBreaker(MediaQuery.of(context).size.height * 0.05),
-
-                // Username
+                const SizedBox(height: 20),
+                Image.asset('assets/images/logoTitle2.png', width: 250, color: AppColors.primaryBlue),
+                const SizedBox(height: 30),
                 SizedBox(
-                  width: MediaQuery.of(context).size.width * 0.8,
-                  child: widgets.usernameField(_username, context, ''),
+                  child: AppTextField(
+                    labelText: 'Телефон нөмірі',
+                    hintText: 'Телефон нөмірін енгізіңіз',
+                    prefixIcon: Icons.phone_outlined,
+                    keyboardType: TextInputType.phone,
+                    maxLength: 17,
+                    inputFormatters: [
+                      KazakhPhoneNumberFormatter()
+                    ],
+                    controller: _username,
+                    errorText: _usernameError.isNotEmpty ? _usernameError : null,
+                    onChanged: (value) {
+                      if (_usernameError.isNotEmpty) {
+                        setState(() {
+                          _usernameError = '';
+                        });
+                      }
+                    },
+                  ),
                 ),
                 const SizedBox(height: 20),
 
-                // Password
                 SizedBox(
-                  width: MediaQuery.of(context).size.width * 0.8,
-                  child: Column(
-                    children: [
-                      TextField(
-                        controller: _password,
-                        obscureText: _obscureText,
-                        decoration: InputDecoration(
-                          hintText: ' * * * * * * * * ',
-                          prefixText: ' ',
-                          suffixIcon: IconButton(
-                            icon: Icon(
-                              _obscureText ? Icons.visibility : Icons.visibility_off,
-                              color: Colors.blue,
-                            ),
-                            onPressed: () {
-                              setState(() {
-                                _obscureText = !_obscureText;
-                              });
-                            },
-                          ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(20),
-                            borderSide: BorderSide(color: GeneralUtil.mainColor),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(20),
-                            borderSide: BorderSide(color: GeneralUtil.mainColor, width: 2),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(20),
-                            borderSide: BorderSide(color: GeneralUtil.mainColor, width: 2),
-                          ),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 30),
-                        ),
+                  // width: MediaQuery.of(context).size.width * 0.8,
+                  child: AppTextField(
+                    labelText: 'Құпия сөз',
+                    hintText: 'Құпия сөзді енгізіңіз',
+                    prefixIcon: Icons.lock_outlined,
+                    obscureText: _obscureText,
+                    keyboardType: TextInputType.visiblePassword,
+                    controller: _password,
+                    errorText: _passwordError.isNotEmpty ? _passwordError : null,
+                    onChanged: (value) {
+                      if (_passwordError.isNotEmpty) {
+                        setState(() {
+                          _passwordError = '';
+                        });
+                      }
+                    },
+                    onSubmitted: (value) {
+                      _handleLogin();
+                    },
+                  ),
+                ),
+
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    TextButton(
+                      child: Text(
+                        'Құпия сөзді ұмыттыңыз ба?',
+                        style: TextStyles.regular(AppColors.secondaryBlueText),
                       ),
-                      const SizedBox(height: 10),
-                      Text(_pageValidator, style: const TextStyle(color: Colors.red)),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(height: 10),
-
-                // Forgot password
-                TextButton(
-                  onPressed: () {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (context) => ResetPasswordScreen()),
-                    );
-                  },
-                  child: const Text(
-                    'Құпия сөзді ұмыттыңыз ба?',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey,
-                      fontFamily: 'Roboto',
+                      onPressed: () {
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(builder: (context) => ResetPasswordScreen()),
+                        );
+                      },
                     ),
-                  ),
+                  ],
                 ),
-
-                const SizedBox(height: 40),
+                Expanded(child: SizedBox()),
 
                 // ЖАЛҒАСТЫРУ
-                TextButton(
+                AppButton(
+                  text: 'ЖАЛҒАСТЫРУ',
+                  variant: AppButtonVariant.solid,
+                  color: AppButtonColor.blue,
                   onPressed: _isLoading ? null : _handleLogin,
-                  style: GeneralUtil.getBlueButtonStyle(context),
-                  child: SizedBox(
-                    height: MediaQuery.of(context).size.width * 0.04 + 4,
-                    child: Center(
-                      child: _isLoading
-                          ? const SizedBox(
-                              height: 24,
-                              width: 24,
-                              child: CircularProgressIndicator(
-                                color: Colors.blue,
-                                strokeWidth: 2.5,
-                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                              ),
-                            )
-                          : Text(
-                              "ЖАЛҒАСТЫРУ",
-                              style: TextStyle(
-                                fontSize: MediaQuery.of(context).size.width * 0.04,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                    ),
-                  ),
+                  isLoading: _isLoading,
                 ),
-
+                
+                const SizedBox(height: 10),
+                
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Аккаунт жоқ па? ',
+                      style: TextStyles.medium(AppColors.grey),
+                    ),
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(builder: (context) => RegistrationPage()),
+                        );
+                      },
+                      child: Text(
+                        'Тіркелу',
+                        style: TextStyles.medium(AppColors.primaryBlue),
+                      ),
+                    )
+                  ],
+                ),
                 const SizedBox(height: 20),
-
-                // АРТҚА
-                TextButton(
-                  onPressed: () {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (context) => MainEntryPage()),
-                    );
-                  },
-                  style: TextButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 20),
-                    backgroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                  ),
-                  child: Text(
-                    "АРТҚА",
-                    style: TextStyle(
-                      fontSize: MediaQuery.of(context).size.width * 0.04,
-                      fontWeight: FontWeight.bold,
-                      color: GeneralUtil.mainColor,
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 40),
               ],
             ),
-          ),
         ),
+        )
       ),
     );
   }
@@ -200,9 +169,24 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
-    if (_username.text.isEmpty || _password.text.isEmpty) {
+    if (_username.text.isEmpty && _password.text.isEmpty) {
       setState(() {
-        _pageValidator = 'Пайдаланушы аты мен құпия сөзді енгізіңіз';
+        _usernameError = 'Телефон нөмірін енгізіңіз';
+        _passwordError = 'Құпия сөзді енгізіңіз';
+      });
+      return;
+    }
+    
+    if (_username.text.isEmpty) {
+      setState(() {
+        _usernameError = 'Телефон нөмірін енгізіңіз';
+      });
+      return;
+    }
+    
+    if (_password.text.isEmpty) {
+      setState(() {
+        _passwordError = 'Құпия сөзді енгізіңіз';
       });
       return;
     }
@@ -229,13 +213,13 @@ class _LoginScreenState extends State<LoginScreen> {
 
       if (!mounted) return;
       setState(() {
-        _pageValidator = 'Жүйеге кіру мүмкін емес';
+        _passwordError = 'Жүйеге кіру мүмкін емес';
         _isLoading = false;
       });
     } catch (_) {
       if (!mounted) return;
       setState(() {
-        _pageValidator = 'Қате орын алды. Кейінірек қайталап көріңіз.';
+        _passwordError = 'Қате орын алды. Кейінірек қайталап көріңіз.';
         _isLoading = false;
       });
     }

@@ -1,6 +1,7 @@
 // import 'dart:io';
 import 'dart:io';
 
+import 'package:brand_online/authorization/ui/screen/LoginScreen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -82,7 +83,7 @@ class _ApplicationState extends State<Application> {
         fontFamily: 'Gerbera',
       ),
       routes: {
-        '/auth': (context) => const MainEntryPage(),
+        '/auth': (context) => const LoginScreen(),
       },
       home:
       isTokenValid == null
@@ -90,8 +91,8 @@ class _ApplicationState extends State<Application> {
             color: Colors.white,
           )))
           : isTokenValid == true
-          ? const SplashScreenWithoutButtons()
-          : const MainEntryPage(),
+          ? const MainEntryPage()
+          : const LoginScreen(),
     );
   }
 }
