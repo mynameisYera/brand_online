@@ -149,6 +149,7 @@ flutter:
     - assets/icons/tasks.svg
     - assets/icons/tasks_active.svg
     - assets/icons/notification.svg
+    - assets/icons/burger.svg
 
 
 

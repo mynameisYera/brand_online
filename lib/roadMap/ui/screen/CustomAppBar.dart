@@ -306,11 +306,6 @@ class _CustomAppBarState extends State<CustomAppBar> {
                       child: Material(
                         color: Colors.white,
                         elevation: 8,
-                        shape: const RoundedRectangleBorder(
-                          borderRadius: BorderRadius.vertical(
-                            bottom: Radius.circular(20),
-                          ),
-                        ),
                         child: Padding(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 16,
@@ -321,16 +316,10 @@ class _CustomAppBarState extends State<CustomAppBar> {
                             children: [
                               Row(
                                 children: [
-                                  const Text(
-                                    'Апталық кэшбек',
-                                    style: TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
+                                  Text('Апталық кэшбек', style: TextStyles.bold(AppColors.black)),
                                   const Spacer(),
                                   IconButton(
-                                    icon: const Icon(Icons.close),
+                                    icon: Icon(Icons.close, color: AppColors.grey),
                                     onPressed: () =>
                                         Navigator.of(context).pop(),
                                   ),
@@ -343,43 +332,31 @@ class _CustomAppBarState extends State<CustomAppBar> {
                                 children: response.gradeBalances.map((balance) {
                                   return _buildCashbackRow(
                                     balance.subjectName,
-                                    '${balance.temporaryBalance}',
+                                    '${balance.temporaryBalance}₸',
                                   );
                                 }).toList(),
                               ),
-
-                              const Divider(height: 32),
 
                               Row(
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
                                 children: [
+                                  Text('', style: TextStyles.semibold(AppColors.black)),
                                   Text(
-                                    '',
-                                    style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w600),
-                                  ),
-                                  Text(
-                                    '${response.temporaryBalance}',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600,
-                                      color: Colors.red,
-                                    ),
+                                    '${response.temporaryBalance}₸',
+                                    style: TextStyles.semibold(AppColors.errorRed).copyWith(fontWeight: FontWeight.w400),
                                   ),
                                 ],
                               ),
 
                               const SizedBox(height: 16),
 
-                              // Ссылка
                               Align(
                                 alignment: Alignment.centerRight,
                                 child: GestureDetector(
                                   onTap: () {
                                     Navigator.of(context)
-                                        .pop(); // закрыть TopSheet
+                                        .pop();
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
@@ -388,12 +365,12 @@ class _CustomAppBarState extends State<CustomAppBar> {
                                       ),
                                     );
                                   },
-                                  child: const Text(
+                                  child: Text(
                                     'қалай есептеледі?',
-                                    style: TextStyle(
-                                      decoration: TextDecoration.underline,
-                                      fontSize: 14,
-                                    ),
+                                    style: TextStyles.medium(
+                                      AppColors.primaryBlue,
+                                      fontSize: 13,
+                                    ).copyWith(decoration: TextDecoration.underline),
                                   ),
                                 ),
                               ),
@@ -418,8 +395,8 @@ class _CustomAppBarState extends State<CustomAppBar> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(subject, style: const TextStyle(fontSize: 16)),
-          Text(amount, style: const TextStyle(fontSize: 16)),
+          Text(subject, style: TextStyles.semibold(AppColors.black)),
+          Text(amount, style: TextStyles.semibold(AppColors.black)),
         ],
       ),
     );

@@ -1,7 +1,10 @@
 import 'dart:io';
 
+import 'package:brand_online/core/app_colors.dart';
+import 'package:brand_online/core/text_styles.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:dio/dio.dart';
 import 'package:brand_online/core/notification/firebase_utils.dart';
@@ -1096,9 +1099,9 @@ class _RoadMainPageState extends State<RoadMainPage>
               const SizedBox(height: 10),
               Container(
                 padding: const EdgeInsets.symmetric(
-                    horizontal: 12, vertical: 12),
+                    horizontal: 16, vertical: 12),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF4BA7FF),
+                  color: AppColors.primaryBlue,
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: InkWell(
@@ -1108,15 +1111,18 @@ class _RoadMainPageState extends State<RoadMainPage>
                     children: [
                       Row(
                         children: [
-                          const Icon(Icons.menu, color: Colors.white),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: AppColors.white,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: SvgPicture.asset("assets/icons/burger.svg", width: 18, height: 18),
+                          ),
                           const SizedBox(width: 8),
                           Text(
                             profileResponse.selectedGrade?.subjectName ?? '-',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
+                            style: TextStyles.bold(AppColors.white),
                           ),
                         ],
                       ),
@@ -1160,55 +1166,39 @@ class _RoadMainPageState extends State<RoadMainPage>
                 child: Center(
                   child: AnimatedContainer(
                     key: ValueKey<int>(selectedIndex),
-                    // Add a key to trigger rebuild on selectedIndex change
                     duration: Duration(milliseconds: 500),
                     width: screenWidth,
-                    padding:
-                    EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     decoration: BoxDecoration(
-                      color: currentBoxColor,
+                      color: AppColors.white,
                       borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: currentBoxColor.withOpacity(0.7),
-                          offset: Offset(0, 10),
-                          blurRadius: 1,
-                        ),
-                      ],
+                      border: Border.all(color: AppColors.primaryBlue, width: 2),
                     ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    child: Row(
                       children: [
-                        Padding(
-                          padding: const EdgeInsets.all(5.0),
-                          child: Text(
-                            mainTitleDescription,
-                            textAlign: TextAlign.left,
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontFamily: 'Roboto',
-                              color: Colors.white,
-                              decoration: TextDecoration.none,
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                                mainTitleDescription,
+                                textAlign: TextAlign.left,
+                                style: TextStyles.medium(AppColors.grey),
+                              ),
+                            SizedBox(height: 4),
+                            Text(
+                              textAlign: TextAlign.left,
+                              chapterTitle.length > 30 ? chapterTitle.substring(0, 30) + '..' : chapterTitle,
+                              style: TextStyles.medium(AppColors.black),
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
                             ),
-                          ),
+                          ],
                         ),
-                        Padding(
-                          padding: const EdgeInsets.all(5.0),
-                          child: Text(
-                            textAlign: TextAlign.left,
-                            chapterTitle,
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              fontFamily: 'Roboto',
-                              color: Colors.white,
-                              decoration: TextDecoration.none,
-                            ),
-                          ),
-                        ),
+                        Spacer(),
+                        Icon(Icons.keyboard_arrow_down_outlined, color: AppColors.grey),
                       ],
-                    ),
+                    )
                   ),
                 ),
               ),
