@@ -6,7 +6,8 @@ class ButtonWidget extends StatefulWidget {
   final Color textColor;
   final VoidCallback onPressed;
   final Color? borderColor;
-  const ButtonWidget({super.key, required this.widget, required this.color, required this.textColor, required this.onPressed, this.borderColor});
+  final bool isLoading;
+  const ButtonWidget({super.key, required this.widget, required this.color, required this.textColor, required this.onPressed, this.borderColor, this.isLoading = false});
 
   @override
   State<ButtonWidget> createState() => _ButtonWidgetState();
@@ -25,7 +26,7 @@ class _ButtonWidgetState extends State<ButtonWidget> {
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: widget.borderColor ?? Colors.transparent),
         ),
-        child: Center(child: widget.widget),
+        child: Center(child: widget.isLoading ? SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: widget.textColor,)) : widget.widget),
       ),
     );
   }

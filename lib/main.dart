@@ -2,6 +2,7 @@
 import 'dart:io';
 
 import 'package:brand_online/authorization/ui/screen/LoginScreen.dart';
+import 'package:brand_online/roadMap/ui/screen/RoadMap.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -9,7 +10,6 @@ import 'package:brand_online/core/notification/firebase_utils.dart';
 import 'package:brand_online/core/subscription_service.dart';
 import 'package:brand_online/firebase_options.dart';
 import 'package:brand_online/pursache/purchase_config.dart';
-import 'general/MainEntryPage.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -90,7 +90,7 @@ class _ApplicationState extends State<Application> {
             color: Colors.white,
           )))
           : isTokenValid == true
-          ? const MainEntryPage()
+          ? const RoadMap(selectedIndx: 0, state: 0)
           : const LoginScreen(),
     );
   }

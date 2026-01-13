@@ -1,4 +1,8 @@
+import 'package:brand_online/core/app_colors.dart';
+import 'package:brand_online/core/text_styles.dart';
+import 'package:brand_online/core/widgets/button_widget.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import '../../general/GeneralUtil.dart';
 import '../service/profile_service.dart';
 import 'BalanceWithdrawSuccessPage.dart';
@@ -25,8 +29,6 @@ class _BalanceWithdrawalPageState extends State<BalanceWithdrawalPage> {
 
   Future<void> _submitWithdrawal(int amount) async {
     print("Submitted loading.....");
-    // FocusScope.of(context).unfocus();
-    // if (!_formKey.currentState!.validate()) return;
     setState(() => _isSubmitting = true);
 
     if(int.parse(_amountController.text) >= 3000){
@@ -69,10 +71,10 @@ class _BalanceWithdrawalPageState extends State<BalanceWithdrawalPage> {
       child: Scaffold(
         backgroundColor: Colors.white,
         appBar: AppBar(
-          // title: const Text('Бонус шығару', style: TextStyle(fontSize: 15),),
           backgroundColor: Colors.white,
           foregroundColor: Colors.black,
           elevation: 0,
+          leading: SizedBox(),
           actions: [
             IconButton(
               icon: const Icon(Icons.close),
@@ -86,16 +88,10 @@ class _BalanceWithdrawalPageState extends State<BalanceWithdrawalPage> {
               const SizedBox(height: 16),
 
               Text(
-                '${widget.currentBalance} бонус',
-                style: const TextStyle(
-                  fontSize: 36,
-                  fontWeight: FontWeight.bold,
-                  color: GeneralUtil.blueColor,
-                ),
+                '${widget.currentBalance}₸',
+                style: TextStyles.bold(AppColors.primaryBlue, fontSize: 28),
               ),
-              const SizedBox(height: 32),
-
-              // Поле ввода
+              const SizedBox(height: 26),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24.0),
                 child: Form(
@@ -104,35 +100,35 @@ class _BalanceWithdrawalPageState extends State<BalanceWithdrawalPage> {
                     controller: _amountController,
                     keyboardType: TextInputType.number,
                     decoration: InputDecoration(
-                      hintText: 'шығаратын бонус',
+                      hintText: 'Сома',
                       hintStyle: TextStyle(color: Colors.grey.shade600),
                       floatingLabelBehavior: FloatingLabelBehavior.never,
-                      suffixText: 'бонус',
-                      suffixStyle: TextStyle(color: Colors.grey.shade600),
+                      suffixText: '₸',
+                      suffixStyle: TextStyles.regular(AppColors.black, fontSize: 20),
                       contentPadding: const EdgeInsets.symmetric(
                         horizontal: 16,
                         vertical: 14,
                       ),
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(22),
                         borderSide: BorderSide(color: Colors.grey.shade400),
                       ),
                       enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(22),
                         borderSide: BorderSide(color: Colors.grey.shade300),
                       ),
                       focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(22),
                         borderSide: BorderSide(color: GeneralUtil.blueColor, width: 2),
                       ),
                     ),
                     validator: (v) {
-                      if (v == null || v.isEmpty) return 'С енгізіңіз';
+                      if (v == null || v.isEmpty) return 'Сомма енгізіңіз';
                       final val = int.tryParse(v);
-                      if (val == null) return 'Жарамсыз С';
-                      if (val <= 0) return 'С оң болуы керек';
-                      if (val < 3000) return 'С 3000 асу керек';
-                      if (val > widget.currentBalance) return 'Сдан артық берілмейді';
+                      if (val == null) return 'Жарамсыз сомма';
+                      if (val <= 0) return 'Сомма оң болуы керек';
+                      if (val < 3000) return 'Сомма 3000 асу керек';
+                      if (val > widget.currentBalance) return 'Балансыңыздағы сома жеткіліксіз';
                       return null;
                     },
                   ),
@@ -142,45 +138,24 @@ class _BalanceWithdrawalPageState extends State<BalanceWithdrawalPage> {
               Expanded(child: Container()),
 
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16),
-                child: SizedBox(
-                  width: double.infinity,
-                  height: 60,
-                  child: ElevatedButton.icon(
-                    onPressed: _isSubmitting
-                      ? null
-                      : () {
-                          if (widget.currentBalance < 3000) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                backgroundColor: Colors.red,
-                                content: Text('Минималды — 3000'),
-                              ),
-                            );
-                            return;
-                          }
-
-
-                          _submitWithdrawal(widget.currentBalance);
-                        },
-
-                    label: _isSubmitting
-                        ? const CircularProgressIndicator(color: Colors.blue)
-                        : const Text(
-                      'өтініш жіберу',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
-                    ),
-                    iconAlignment: IconAlignment.end,
-                    icon: _isSubmitting
-                        ? const SizedBox.shrink()
-                        : const Icon(Icons.arrow_circle_right_outlined, color: Colors.white, size: 40,),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: GeneralUtil.blueColor,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                  ),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: ButtonWidget(
+                  isLoading: _isSubmitting,
+                  widget: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SvgPicture.asset("assets/icons/plane.svg", color: AppColors.white,),
+                      SizedBox(width: 8),
+                      Text('Өтініш жіберу', style: TextStyles.bold(AppColors.white, fontSize: 16)),
+                    ],
+                  ), 
+                  color: AppColors.primaryBlue, 
+                  textColor: AppColors.white, 
+                  onPressed: () {
+                    if (_formKey.currentState!.validate()) {
+                      _submitWithdrawal(int.parse(_amountController.text));
+                    }
+                  }
                 ),
               ),
             ],

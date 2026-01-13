@@ -4,8 +4,8 @@ import '../../../authorization/entity/ProfileResponse.dart';
 import '../../../authorization/service/auth_service.dart';
 import '../../../news/ui/NewsListPage.dart';
 import '../../../profile/ui/ProfilePage.dart';
-import '../../../general/GeneralUtil.dart';
 import '../../../leaderboard/ui/LeaderboardPage.dart';
+import '../../../core/widgets/custom_bottom_navbar.dart';
 import '../../entity/ProfileController.dart';
 import 'RepeatPage.dart';
 import 'RoadMainPage.dart';
@@ -111,143 +111,9 @@ class _RoadMapState extends State<RoadMap> {
                   : _selectedIndex == 3
                       ? LeaderboardPage()
                       : ProfilePage(),
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        backgroundColor: Colors.white,
-        showSelectedLabels: false,
-        showUnselectedLabels: false,
+      bottomNavigationBar: CustomBottomNavBar(
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
-        items: [
-          BottomNavigationBarItem(
-              icon: Column(
-                children: [
-                  Image.asset(
-                    "assets/images/home.png",
-                    width: 37,
-                    height: 37,
-                    color: GeneralUtil.mainColor,
-                  ),
-                  SizedBox(
-                    height: 5,
-                  ),
-                  if (_selectedIndex == 0)
-                    Container(
-                      height: 3,
-                      width: 20,
-                      color: Colors.blue,
-                    )
-                ],
-              ),
-              label: ''),
-          BottomNavigationBarItem(
-            icon: Column(
-              children: [
-                Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    Image.asset(
-                      "assets/images/repeat.png",
-                      color: GeneralUtil.pinkColor,
-                      width: 37,
-                      height: 37,
-                    ),
-                    Positioned(
-                      right: -2,
-                      top: -2,
-                      child: ValueListenableBuilder<int>(
-                        valueListenable:
-                            ProfileController.repeatLessonsCountNotifier,
-                        builder: (_, count, __) {
-                          if (count <= 0) return const SizedBox.shrink();
-                          return Container(
-                            padding: const EdgeInsets.all(2),
-                            decoration: const BoxDecoration(
-                              color: Colors.red,
-                              shape: BoxShape.circle,
-                            ),
-                            constraints: const BoxConstraints(
-                              minWidth: 16,
-                              minHeight: 16,
-                            ),
-                            child: Center(
-                              child: Text(
-                                '$count',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 5),
-                if (_selectedIndex == 1)
-                  Container(height: 3, width: 20, color: Colors.blue),
-              ],
-            ),
-            label: '',
-          ),
-          BottomNavigationBarItem(
-              icon: Column(
-                children: [
-                  Image.asset("assets/images/news.png", width: 37, height: 37),
-                  SizedBox(
-                    height: 5,
-                  ),
-                  if (_selectedIndex == 2)
-                    Container(
-                      height: 3,
-                      width: 20,
-                      color: Colors.blue,
-                    )
-                ],
-              ),
-              label: ''),
-          BottomNavigationBarItem(
-              icon: Column(
-                children: [
-                  Image.asset("assets/images/trophy1.png",
-                      width: 37, height: 37),
-                  SizedBox(
-                    height: 5,
-                  ),
-                  if (_selectedIndex == 3)
-                    Container(
-                      height: 3,
-                      width: 20,
-                      color: Colors.blue,
-                    )
-                ],
-              ),
-              label: ''),
-          BottomNavigationBarItem(
-              icon: Column(
-                children: [
-                  Image.asset(
-                    "assets/images/profile.png",
-                    width: 37,
-                    height: 37,
-                    color: GeneralUtil.pinkColor,
-                  ),
-                  SizedBox(
-                    height: 5,
-                  ),
-                  if (_selectedIndex == 4)
-                    Container(
-                      height: 3,
-                      width: 20,
-                      color: Colors.blue,
-                    )
-                ],
-              ),
-              label: ''),
-        ],
       ),
     );
   }

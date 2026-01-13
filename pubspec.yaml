@@ -137,6 +137,17 @@ flutter:
     - assets/icons/multiplayer.svg
     - assets/icons/gift.svg
     - assets/icons/primer.svg
+    - assets/icons/plane.svg
+    - assets/icons/main.svg
+    - assets/icons/main_active.svg
+    - assets/icons/archive.svg
+    - assets/icons/archive_active.svg
+    - assets/icons/news.svg
+    - assets/icons/news_active.svg
+    - assets/icons/profile.svg
+    - assets/icons/profile_active.svg
+    - assets/icons/tasks.svg
+    - assets/icons/tasks_active.svg
 
 
 

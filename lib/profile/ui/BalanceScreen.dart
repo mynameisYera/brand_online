@@ -1,4 +1,8 @@
+import 'package:brand_online/core/app_colors.dart';
+import 'package:brand_online/core/text_styles.dart';
+import 'package:brand_online/core/widgets/button_widget.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import 'package:brand_online/profile/ui/BalanceWithdrawalPage.dart';
 import '../entity/WalletTransaction.dart';
@@ -153,70 +157,75 @@ class _BalanceScreenState extends State<BalanceScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        // title: const Text("Бонус", style: TextStyle(color: Colors.black)),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         elevation: 0,
+        leading: SizedBox(),
+        actions: [
+          IconButton(onPressed: () => Navigator.of(context).pop(), icon: const Icon(Icons.close)),
+        ],
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator(color: Colors.blue,))
-          : Column(
+          : Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            child: Column(
               children: [
+                Row(
+                  children: [
+                    Text('Баланс', style: TextStyles.bold(AppColors.black, fontSize: 28)),
+                  ],
+                ),
                 const SizedBox(height: 12),
-                Text(
-                  '${widget.currentBalance} бонус',
-                  style: const TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.blue),
-                ),
-                const SizedBox(height: 16),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 30),
-                  child: SizedBox(
-                    width: double.infinity,
-                    height: 45,
-                    child: ElevatedButton(
-                      onPressed: () async {
-                        final result = await Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => BalanceWithdrawalPage(currentBalance: widget.currentBalance),
-                          ),
-                        );
-
-                        if (result == true && mounted) {
-                          setState(() {
-                            fetchProfileAndHistory();
-                          });
-                        }
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12)),
-                      ),
-                      child: const Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text("Өтінім жіберу",
-                              style: TextStyle(color: Colors.white)),
-                          SizedBox(width: 8),
-                          Icon(Icons.arrow_forward,
-                              color: Colors.white, size: 18),
-                        ],
-                      ),
-                    ),
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryBlue,
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                ),
-                const SizedBox(height: 24),
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16),
-                  child: Row(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text("Бонус тарихы",
-                          style: TextStyle(fontWeight: FontWeight.bold)),
+                      Text(
+                        '${widget.currentBalance}₸',
+                        style: TextStyles.bold(AppColors.white, fontSize: 32),
+                      ),
+                      Text('Қолжетімді сома', style: TextStyles.medium(AppColors.white, fontSize: 13)),
+                      const SizedBox(height: 16),
+                      ButtonWidget(
+                        widget: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            SvgPicture.asset("assets/icons/plane.svg"),
+                            SizedBox(width: 8),
+                            Text('Өтінім жіберу', style: TextStyles.bold(AppColors.primaryBlue, fontSize: 16)),
+                          ],
+                        ), 
+                        color: AppColors.white, 
+                        textColor: AppColors.primaryBlue, 
+                        onPressed: () async {
+                              final result = await Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (_) => BalanceWithdrawalPage(currentBalance: widget.currentBalance),
+                                ),
+                              );
+
+                              if (result == true && mounted) {
+                                setState(() {
+                                  fetchProfileAndHistory();
+                                });
+                              }
+                            },
+                      ),
                     ],
                   ),
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    Text("Баланс тарихы",
+                      style: TextStyles.bold(AppColors.black, fontSize: 22)),
+                  ],
                 ),
                 const SizedBox(height: 8),
                 Expanded(
@@ -229,6 +238,7 @@ class _BalanceScreenState extends State<BalanceScreen> {
                 ),
               ],
             ),
+          ),
     );
   }
 }

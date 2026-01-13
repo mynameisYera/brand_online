@@ -439,9 +439,9 @@ void showDeleteConfirmationSheet(BuildContext context) {
               'Сіз профильіңізді өшіретініңізге сенімдісіз бе?',
               style: TextStyles.bold(AppColors.black, fontSize: 16),
             ),
-            const SizedBox(height: 5),
+            const SizedBox(height: 10),
             Text(
-              'Сіз профильіңізді өшіреміз бе?',
+              'Сіздің барлық жетістіктеріңіз жоғалады.',
               style: TextStyles.regular(AppColors.black, fontSize: 14),
             ),
             const SizedBox(height: 24),
@@ -460,7 +460,9 @@ void showDeleteConfirmationSheet(BuildContext context) {
               },
               borderColor: AppColors.errorRed
             ),
-            const SizedBox(height: 22),
+            const SizedBox(height: 12),
+            TextButton(onPressed: () => Navigator.pop(context), child: Text('Артқа қайту', style: TextStyles.regular(AppColors.primaryBlue, fontSize: 14))),
+            const SizedBox(height: 15),
           ],
         ),
       );
