@@ -8,7 +8,6 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:brand_online/core/notification/firebase_utils.dart';
 import 'package:brand_online/core/subscription_service.dart';
 import 'package:brand_online/firebase_options.dart';
-import 'package:brand_online/general/SplashScreenWithoutButtons.dart';
 import 'package:brand_online/pursache/purchase_config.dart';
 import 'general/MainEntryPage.dart';
 

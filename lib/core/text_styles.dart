@@ -2,15 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:brand_online/core/app_colors.dart';
 
 class TextStyles {
-  static TextStyle regular(Color? color) => TextStyle(
+  static TextStyle regular(Color? color, {double? fontSize}) => TextStyle(
     fontFamily: 'Manrope',
-    fontSize: 13,
+    fontSize: fontSize ?? 13,
     fontWeight: FontWeight.w400,
     color: color ?? AppColors.black,
   );
-  static TextStyle medium(Color? color) => TextStyle(
+  static TextStyle medium(Color? color, {double? fontSize}) => TextStyle(
     fontFamily: 'Manrope',
-    fontSize: 16,
+    fontSize: fontSize ?? 16,
     fontWeight: FontWeight.w500,
     color: color ?? AppColors.black,
   );

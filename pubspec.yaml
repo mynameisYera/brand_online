@@ -132,6 +132,11 @@ flutter:
     - assets/images/girl_half.png
     - assets/images/oyu.svg
     - assets/icons/synyp.svg
+    - assets/icons/fire.svg
+    - assets/icons/point.svg
+    - assets/icons/multiplayer.svg
+    - assets/icons/gift.svg
+    - assets/icons/primer.svg
 
 
 

@@ -1,7 +1,11 @@
 import 'dart:io';
 
+import 'package:brand_online/core/app_colors.dart';
+import 'package:brand_online/core/text_styles.dart';
+import 'package:brand_online/core/widgets/button_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:brand_online/profile/service/profile_service.dart';
@@ -79,197 +83,282 @@ class _ProfilePageState extends State<ProfilePage> {
     return Scaffold(
       backgroundColor: Colors.white,
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(height: 40,),
-            Center(child: Text('Профиль', style: TextStyle(fontWeight: FontWeight.w500))),
-            SizedBox(height: 20,),
-            Center(
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 10.0),
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: AppColors.primaryBlue,
+              ),
+              child: Center(
               child: Column(
                 children: [
+                  SizedBox(height: 100),
                   Text(
                     '${profile!.firstName} ${profile!.lastName}',
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+                    style: TextStyles.bold(Colors.white),
                   ),
-                  const SizedBox(height: 4),
-                  Text(profile!.username),
+                  const SizedBox(height: 10),
+                  Text(profile!.username, style: TextStyles.regular(Colors.white)),
                 ],
               ),
             ),
-            const SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                _infoBox2("assets/images/fire1.png", '${profile!.strike}\nСтрайк', GeneralUtil.darkBlueColor),
-                _infoBox('${profile!.points}\nҰпай', GeneralUtil.darkBlueColor),
-                _infoBox('x${profile!.multiplier}\nКөбейткіш', GeneralUtil.darkBlueColor),
-              ],
             ),
             const SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _iconText("assets/images/users.png", GeneralUtil.yellowColor, 'Топ\n${profile!.group?.name}'),
-                _iconText("assets/images/subscribe.png", GeneralUtil.orangeColor, 'Подписка\n${profile!.daysLeft} күн'),
-              ],
-            ),
-            const SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    Container(
+                      height: 130,
+                      padding: const EdgeInsets.symmetric(vertical: 18.0, horizontal: 21.0),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: AppColors.grey, width: 1),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Column(
+                        children: [
+                          SvgPicture.asset('assets/icons/fire.svg'),
+                          const SizedBox(height: 5),
+                          Text('${profile!.strike}', style: TextStyles.bold(AppColors.black)),
+                          Text('Страйк', style: TextStyles.regular(AppColors.black, fontSize: 10)),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      height: 130,
+                      padding: const EdgeInsets.symmetric(vertical: 18.0, horizontal: 21.0),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: AppColors.grey, width: 1),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Column(
+                        children: [
+                          SvgPicture.asset('assets/icons/point.svg'),
+                          const SizedBox(height: 5),
+                          Text('${profile!.points}', style: TextStyles.bold(AppColors.black)),
+                          Text('Ұпай', style: TextStyles.regular(AppColors.black, fontSize: 10)),
+                        ],
+                      ),
+                    ),
 
-            Platform.isAndroid ? SizedBox() : profile!.daysLeft == 0 ? Column(
-              children: [
-                 GestureDetector(
+                Container(
+                  height: 130,
+                  padding: const EdgeInsets.symmetric(vertical: 18.0, horizontal: 21.0),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: AppColors.grey, width: 1),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Column(
+                    children: [
+                      SvgPicture.asset('assets/icons/multiplayer.svg'),
+                      const SizedBox(height: 5),
+                      Text('${profile!.points}', style: TextStyles.bold(AppColors.black)),
+                      Text('Көбейткіш', style: TextStyles.regular(AppColors.black, fontSize: 10)),
+                    ],
+                  ),
+                )
+              ],
+            ),
+            // const SizedBox(height: 20),
+            // Row(
+            //   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            //   children: [
+            //     _iconText("assets/images/users.png", GeneralUtil.yellowColor, 'Топ\n${profile!.group?.name}'),
+            //   ],
+            // ),
+            const SizedBox(height: 20),
+            
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Color(0xffFFCC00),
+                    Color(0xffFF8D28),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: Colors.orange[100],
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Center(child: SvgPicture.asset('assets/icons/primer.svg')),
+                  ),
+                  const SizedBox(width: 10),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Premium жазылым', style: TextStyles.medium(Colors.white)),
+                      const SizedBox(height: 5),
+                      Text('${profile!.daysLeft} күн қалды', style: TextStyles.regular(Colors.white)),
+                    ],
+                  ),
+                  Spacer(),
+                  Icon(Icons.arrow_forward_ios, color: Colors.white, size: 16),
+                ],
+              ),
+            ),
+
+            SizedBox(height: 16),
+
+                Platform.isAndroid ? SizedBox() : profile!.daysLeft == 0 ? Column(
+                  children: [
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.of(context).push(MaterialPageRoute(builder: (_) =>  SubscriptionPage()));
+                      },
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                        decoration: BoxDecoration(
+                          color: Colors.lightGreen,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                'Подписка сатып алу',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    ),
+                    const SizedBox(height: 10),
+                  ],
+                ) : SizedBox(),
+
+                GestureDetector(
                   onTap: () {
-                    Navigator.of(context).push(MaterialPageRoute(builder: (_) =>  SubscriptionPage()));
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => BalanceScreen(currentBalance: profile!.permanent_balance),
+                      ),
+                    );
                   },
                   child: Container(
                     width: double.infinity,
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                     decoration: BoxDecoration(
-                      color: Colors.lightGreen,
                       borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: AppColors.primaryBlue, width: 1),
                     ),
                     child: Row(
                       children: [
-                        Expanded(
-                          child: Text(
-                            'Подписка сатып алу',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
+                        Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: Colors.blue[100],
+                            borderRadius: BorderRadius.circular(12),
                           ),
+                          child: Center(child: SvgPicture.asset('assets/icons/gift.svg')),
                         ),
+                        const SizedBox(width: 15),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Бонус', style: TextStyles.medium(AppColors.black)),
+                            Text('${profile!.permanent_balance} ұпай', style: TextStyles.regular(AppColors.grey)),
+                          ],
+                        ),
+                        Spacer(),
+                        Row(
+                            children: [
+                              Text(
+                                'Өтінім беру',
+                                style: TextStyles.medium(AppColors.primaryBlue, fontSize: 14),
+                              ),
+                              SizedBox(width: 8),
+                              Icon(Icons.arrow_forward_ios, color: AppColors.primaryBlue, size: 16),
+                            ],
+                          ),
                       ],
                     ),
                   )
                 ),
-                const SizedBox(height: 10),
-              ],
-            ) : SizedBox(),
+                const SizedBox(height: 20),
 
-            GestureDetector(
-              onTap: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => BalanceScreen(currentBalance: profile!.permanent_balance),
+                if (profile != null && profile!.curator != null) ...[
+                  Text('Ментор', style: TextStyle(fontWeight: FontWeight.w500)),
+                  const SizedBox(height: 10),
+                  _curatorBox(
+                    "${profile!.curator?.lastName} ${profile!.curator?.firstName}",
+                    GeneralUtil.pinkColor,
+                    "https://wa.me/${(formattedPhone)}",
                   ),
-                );
-              },
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                decoration: BoxDecoration(
-                  color: Colors.blue.shade300,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Row(
+                  const SizedBox(height: 20),
+                ],
+                Text('Менің курстарым', style: TextStyles.medium(AppColors.black)),
+                const SizedBox(height: 10),
+                Column(
                   children: [
-                    Expanded(
-                      child: Text(
-                        'Бонус ${profile!.permanent_balance}',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    Row(
-                        children: const [
-                          Text(
-                            'өтінім беру',
-                            style: TextStyle(color: Colors.white, fontSize: 14),
-                          ),
-                          SizedBox(width: 8),
-                          Icon(Icons.arrow_forward_ios, color: Colors.white, size: 16),
-                        ],
-                      ),
+                    ...profile!.grades.map((grade) {
+                      return _courseTag('${grade.gradeName} ${grade.subject}', AppColors.primaryBlue);
+                    }),
                   ],
                 ),
-              )
-            ),
-            const SizedBox(height: 20),
-
-            if (profile != null && profile!.curator != null) ...[
-              Text('Ментор', style: TextStyle(fontWeight: FontWeight.w500)),
-              const SizedBox(height: 10),
-              _curatorBox(
-                "${profile!.curator?.lastName} ${profile!.curator?.firstName}",
-                GeneralUtil.pinkColor,
-                "https://wa.me/${(formattedPhone)}",
-              ),
-              const SizedBox(height: 20),
-            ],
-            Text('Менің курстарым', style: TextStyle(fontWeight: FontWeight.w500)),
-            const SizedBox(height: 10),
-            Center(
-              child: Wrap(
-                spacing: 30,
-                runSpacing: 20,
-                children: profile!.grades.map((grade) {
-                  final color = _getColorForGrade(grade.gradeId);
-                  return _courseTag('${grade.gradeName}\n${grade.subject}', color);
-                }).toList(),
-              ),
-            ),
-            const SizedBox(height: 40),
-            Text('Бізбен байланыс', style: TextStyle(fontWeight: FontWeight.w500)),
-            const SizedBox(height: 10),
-            _contactLink(FontAwesomeIcons.instagram, profile!.contactLinks.instagram.name, profile!.contactLinks.instagram.link),
-            _contactLink(Icons.telegram, profile!.contactLinks.telegram.name, profile!.contactLinks.telegram.link),
-            _contactLink(FontAwesomeIcons.whatsapp, profile!.contactLinks.whatsapp.name, profile!.contactLinks.whatsapp.link),
-            const SizedBox(height: 20),
-            Padding(
-              padding: const EdgeInsets.only(bottom: 20.0, left: 16, right: 16, top: 12),
-              child: SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: OutlinedButton.icon(
-                  icon: const Icon(Icons.logout, color: Colors.orange),
-                  label: const Text(
-                    'Жүйеден шығу',
-                    style: TextStyle(
-                      color: Colors.orange,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: Colors.orange, width: 2),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(17),
-                    ),
-                  ),
-                  onPressed:() => showLogoutConfirmationSheet(context),
+                
+                const SizedBox(height: 10),
+                Text('Бізбен байланыс', style: TextStyles.medium(AppColors.black)),
+                const SizedBox(height: 10),
+                _contactLink(FontAwesomeIcons.instagram, profile!.contactLinks.instagram.name, profile!.contactLinks.instagram.link, Color(0xffEC9CCC)),
+                _contactLink(Icons.telegram, profile!.contactLinks.telegram.name, profile!.contactLinks.telegram.link, Color(0xff90CAF9)),
+                _contactLink(FontAwesomeIcons.whatsapp, profile!.contactLinks.whatsapp.name, profile!.contactLinks.whatsapp.link, Color(0xffA6E4AD)),
+                const SizedBox(height: 20),
+                ButtonWidget(
+                  widget: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.logout, color: AppColors.errorRed),
+                      SizedBox(width: 8),
+                      Text('Жүйеден шығу', style: TextStyles.medium(AppColors.errorRed, fontSize: 16)),
+                    ],
+                  ), 
+                  color: Colors.white, 
+                  textColor: AppColors.errorRed, 
+                  onPressed: () => showLogoutConfirmationSheet(context), 
+                  borderColor: AppColors.errorRed
                 ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(bottom: 20.0, left: 16, right: 16),
-              child: SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: OutlinedButton.icon(
-                  icon: const Icon(Icons.delete, color: Colors.red),
-                  label: const Text(
-                    'Профильді өшіру',
-                    style: TextStyle(
-                      color: Colors.red,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: Colors.red, width: 2),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(17),
-                    ),
-                  ),
-                  onPressed:() => showDeleteConfirmationSheet(context),
+                const SizedBox(height: 10),
+                ButtonWidget(
+                  widget: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.delete, color: AppColors.white),
+                      SizedBox(width: 8),
+                      Text('Профильді өшіру', style: TextStyles.medium(AppColors.white, fontSize: 16)),
+                    ],
+                  ), 
+                  color: AppColors.errorRed, 
+                  textColor: AppColors.white, 
+                  onPressed: () => showDeleteConfirmationSheet(context), 
+                  borderColor: AppColors.white
                 ),
-              ),
+              ],
             ),
+            )
           ],
         ),
       ),
@@ -286,57 +375,45 @@ void showLogoutConfirmationSheet(BuildContext context) {
     backgroundColor: Colors.white,
     builder: (context) {
       return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text(
+            Text(
               'Сіз сенімдісіз бе?',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
-              ),
+              style: TextStyles.bold(AppColors.black, fontSize: 16),
             ),
+            const SizedBox(height: 5),
+            Text(
+              'Сіз аккаунттан шығуды растайсыз ба?',
+              style: TextStyles.regular(AppColors.black, fontSize: 14),
+            ),
+
             const SizedBox(height: 24),
-            SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: ElevatedButton(
-                onPressed: () async {
-                  Navigator.pop(context);
-                  await logoutUser();
-                  Navigator.pushNamedAndRemoveUntil(context, "/auth", (route) => false);
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                child: const Text(
-                  'ШЫҒУ',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
-                ),
-              ),
+            ButtonWidget(
+              widget: Text('ШЫҒУ', style: TextStyles.bold(AppColors.white, fontSize: 16)),
+              color: AppColors.errorRed,
+              textColor: AppColors.white,
+              onPressed: () async {
+                Navigator.pop(context);
+                await logoutUser();
+                Navigator.pushNamedAndRemoveUntil(context, "/auth", (route) => false);
+              },
+              borderColor: AppColors.errorRed
             ),
             const SizedBox(height: 12),
             GestureDetector(
               onTap: () => Navigator.pop(context),
               child: const Text(
-                'АРТҚА',
+                'Артқа қайту',
                 style: TextStyle(
-                  color: Colors.blue,
+                  color: AppColors.primaryBlue,
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
                 ),
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 22),
           ],
         ),
       );
@@ -358,64 +435,32 @@ void showDeleteConfirmationSheet(BuildContext context) {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text(
+            Text(
               'Сіз профильіңізді өшіретініңізге сенімдісіз бе?',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
-              ),
+              style: TextStyles.bold(AppColors.black, fontSize: 16),
+            ),
+            const SizedBox(height: 5),
+            Text(
+              'Сіз профильіңізді өшіреміз бе?',
+              style: TextStyles.regular(AppColors.black, fontSize: 14),
             ),
             const SizedBox(height: 24),
-            SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: ElevatedButton(
-                onPressed: () async {
-                  
-                  setState(() {
-                    deletingProfile  = true;
-                  });
-                  Navigator.pop(context);
-                  logoutUser();
-                  ProfileService().deleteProfile();
-                  Navigator.pushNamedAndRemoveUntil(context, "/auth", (route) => false);
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                child: (deletingProfile) ? SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(
-                    color: Colors.blue,
-                    strokeWidth: 2,
-                  ),) : const Text(
-                  'ӨШІРУ',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
-                ),
-              ),
+            ButtonWidget(
+              widget: Text('ӨШІРУ', style: TextStyles.bold(AppColors.white, fontSize: 16)),
+              color: AppColors.errorRed,
+              textColor: AppColors.white,
+              onPressed: () async {
+                setState(() {
+                  deletingProfile  = true;
+                });
+                Navigator.pop(context);
+                await logoutUser();
+                ProfileService().deleteProfile();
+                Navigator.pushNamedAndRemoveUntil(context, "/auth", (route) => false);
+              },
+              borderColor: AppColors.errorRed
             ),
-            const SizedBox(height: 12),
-            GestureDetector(
-              onTap: () => Navigator.pop(context),
-              child: const Text(
-                'АРТҚА',
-                style: TextStyle(
-                  color: Colors.blue,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 22),
           ],
         ),
       );
@@ -427,82 +472,6 @@ void showDeleteConfirmationSheet(BuildContext context) {
     await _storage.deleteAll();
   }
 
-
-  Widget _infoBox(String label, Color color) {
-    final parts = label.split('\n');
-    return Container(
-      padding: const EdgeInsets.only(top: 20, left: 10, right: 10, bottom: 20),
-      width: 100,
-      decoration: BoxDecoration(
-        color: GeneralUtil.yellowOrangeColor.withOpacity(1),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                parts[0],
-                style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 18),
-              ),
-            ],
-          ),
-          const SizedBox(height: 4),
-          Text(
-            parts[1],
-            style: TextStyle(color: GeneralUtil.blackColor, fontSize: 12),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _infoBox2(String icon, String label, Color color) {
-    final parts = label.split('\n');
-    return Container(
-      padding: const EdgeInsets.only(top: 20, left: 10, right: 10, bottom: 20),
-      width: 100,
-      decoration: BoxDecoration(
-        color: GeneralUtil.yellowOrangeColor.withOpacity(1),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Image.asset(icon, width: 24),
-              const SizedBox(width: 4),
-              Text(
-                parts[0],
-                style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 18),
-              ),
-            ],
-          ),
-          const SizedBox(height: 4),
-          Text(
-            parts[1],
-            style: TextStyle(color: GeneralUtil.blackColor, fontSize: 12),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _iconText(String icon, Color color, String label) {
-    final parts = label.split('\n');
-    return Column(
-      children: [
-        Image.asset(icon, color: color, width: 50, height: 50,),
-        const SizedBox(height: 4),
-        Text(parts[0],
-            style: TextStyle(fontWeight: FontWeight.bold, color: GeneralUtil.mainColor,fontSize: 25)),
-        Text((parts[1] == "null") ? '-' : parts[1],
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w400)),
-      ],
-    );
-  }
 
   Widget _curatorBox(String name, Color color, String url) {
     return GestureDetector(
@@ -527,48 +496,43 @@ void showDeleteConfirmationSheet(BuildContext context) {
 
   Widget _courseTag(String label, Color color) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(20),
+        color: color.withOpacity(1),
+        borderRadius: BorderRadius.circular(12),
       ),
-      child: Text(
-        label,
-        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-        textAlign: TextAlign.center,
-      ),
+      child: Center(child: Text(label, style: TextStyles.medium(Colors.white)),)
     );
   }
 
-  Widget _contactLink(IconData icon, String name, String url) {
+  Widget _contactLink(IconData icon, String name, String url, Color color) {
     return GestureDetector(
       onTap: () => launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication),
       child: Container(
         margin: const EdgeInsets.only(bottom: 10),
         padding: const EdgeInsets.all(15),
         decoration: BoxDecoration(
-          color: Colors.blue,
+          border: Border.all(color: const Color.fromARGB(255, 204, 204, 204), width: 1),
           borderRadius: BorderRadius.circular(17),
         ),
         child: Row(
           children: [
-            Icon(icon, color: Colors.white),
+            Container(
+              width: 30,
+              height: 30,
+              decoration: BoxDecoration(
+                color: color,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(icon, color: Colors.white),
+            ),
             const SizedBox(width: 8),
-            Expanded(child: Text(name, style: const TextStyle(color: Colors.white, fontSize: 16))),
+            Expanded(child: Text(name, style: const TextStyle(color: AppColors.black, fontSize: 16))),
           ],
         ),
       ),
     );
-  }
-
-  Color _getColorForGrade(int id) {
-    final List<Color> colors = [
-      GeneralUtil.pinkColor,
-      GeneralUtil.greenColor,
-      GeneralUtil.orangeColor,
-      GeneralUtil.redColor,
-      GeneralUtil.mainColor,
-    ];
-    return colors[id % colors.length];
   }
 }

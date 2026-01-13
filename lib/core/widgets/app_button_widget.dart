@@ -66,30 +66,6 @@ class AppButton extends StatelessWidget {
     return Colors.white;
   }
 
-  Color get _oyuColor {
-    if (variant == AppButtonVariant.outlined) {
-      // Light pastel color matching the border
-      switch (color) {
-        case AppButtonColor.blue:
-          return Colors.white;
-        case AppButtonColor.green:
-          return Colors.white;
-        case AppButtonColor.red:
-          return Colors.white;
-      }
-    } else {
-      // Darker shade for solid buttons - creates texture effect
-      switch (color) {
-        case AppButtonColor.blue:
-          return const Color(0xFF0066CC); // Darker blue
-        case AppButtonColor.green:
-          return const Color(0xFF2AA048); // Darker green
-        case AppButtonColor.red:
-          return const Color(0xFFCC0004); // Darker red
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final buttonHeight = height ?? 56;

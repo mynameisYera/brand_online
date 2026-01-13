@@ -1,16 +1,16 @@
 import 'dart:async';
-
+import 'package:brand_online/core/app_colors.dart';
+import 'package:brand_online/core/formatters/phone_number_formatter.dart';
+import 'package:brand_online/core/text_styles.dart';
+import 'package:brand_online/core/widgets/app_button_widget.dart';
+import 'package:brand_online/core/widgets/app_text_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-
-import 'package:phone_number_text_input_formatter/phone_number_text_input_formatter.dart';
 import 'package:brand_online/main.dart';
-
 import '../authorization/service/auth_service.dart';
 import '../authorization/ui/widget/LoginScreenWidget.dart';
 import '../authorization/ui/widget/RegistrationWidget.dart';
-import 'GeneralUtil.dart';
 import 'SplashScreenWithoutButtons.dart';
 
 class ResetPasswordScreen extends StatefulWidget {
@@ -57,20 +57,6 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
     _username.dispose();
     _timer?.cancel();
     super.dispose();
-  }
-
-  double _scale = 1.0;
-
-  void startAnimation() {
-    setState(() {
-      _scale = 1.1;
-    });
-
-    Future.delayed(Duration(milliseconds: 150), () {
-      setState(() {
-        _scale = 1.0;
-      });
-    });
   }
 
   List<TextEditingController> controllers = [
@@ -154,7 +140,6 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   }
 
   void _nextPage() {
-    startAnimation();
     if (_currentPage == 0) {
       setState(() {
         startTimer();
@@ -213,15 +198,45 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
       if (code != null && code.length < 6) {
         setState(() {
           _page2Validator = 'Арнаны толтырыныз';
-          return;
         });
-      } else {
-        _pageController.animateToPage(
-          _currentPage + 1,
-          duration: Duration(milliseconds: 300),
-          curve: Curves.easeInOut,
-        );
+        return;
       }
+      
+      // Проверка кода через API
+      String phone =
+          _phoneNumberController.text.replaceAll(RegExp(r'[ ()-]'), '');
+      phone = phone.replaceFirst("+7", "8");
+      isLoading = true;
+      
+      String? response = '';
+      AuthService()
+          .verifyPhoneCode(phone, code!)
+          .then((res) => {
+                if (res != null && res.message == "Verification successful.")
+                  {
+                    response = '',
+                    _pageController.animateToPage(
+                      _currentPage + 1,
+                      duration: Duration(milliseconds: 300),
+                      curve: Curves.easeInOut,
+                    ),
+                    isLoading = false,
+                  }
+                else
+                  {
+                    response = res!.message,
+                    isLoading = false,
+                  }
+              })
+          .then(
+        (value) {
+          setState(() {
+            isLoading = false;
+            _page2Validator = response!.replaceAll('[', '').replaceAll(']', '');
+          });
+        },
+      );
+      return;
     }
     if (_currentPage == 2) {
 
@@ -319,65 +334,36 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
         backgroundColor: Colors.white,
         floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
         floatingActionButton: Container(
-          width: MediaQuery.of(context).size.width * 0.8,
+          padding: EdgeInsets.symmetric(horizontal: 20.0),
           alignment: Alignment.center,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
               Padding(
-                padding: const EdgeInsets.all(30.0),
+                padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 30.0),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: List.generate(3, (index) {
                     return Container(
-                      margin: EdgeInsets.symmetric(horizontal: 4),
+                      margin: EdgeInsets.symmetric(horizontal: 5),
                       width: 40,
                       height: 3,
                       decoration: BoxDecoration(
                         shape: BoxShape.rectangle,
                         color: _currentPage >= index
-                            ? GeneralUtil.greenColor
-                            : Colors.grey,
+                            ? AppColors.primaryBlue
+                            : AppColors.grey,
                       ),
                     );
                   }),
                 ),
               ),
-              TweenAnimationBuilder(
-                tween: Tween<double>(begin: 1.0, end: _scale),
-                duration: Duration(milliseconds: 150),
-                builder: (context, double scale, child) {
-                  return Transform.scale(
-                    scale: scale,
-                    child: TextButton(
+              AppButton(
                       onPressed: _nextPage,
-                      style: GeneralUtil.getGreenButtonStyle(context),
-                      child: isLoading
-                          ? SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                color: Colors.blue,
-                                strokeWidth: 2,
-                              ),
-                            )
-                          : Text(
-                              _currentPage == 2 ? "АЯҚТАУ" : "ЖАЛҒАСТЫРУ",
-                              style: TextStyle(
-                                fontSize:
-                                    MediaQuery.of(context).size.width * 0.04,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
+                      text: _currentPage == 2 ? "АЯҚТАУ" : "ЖАЛҒАСТЫРУ",
+                      isLoading: isLoading,
                     ),
-                  );
-                },
-              ),
-              SizedBox(height: 20),
-              SizedBox(
-                height: 20,
-              ),
+              SizedBox(height: 10),
               TextButton(
                 onPressed: () {
                   _currentPage > 0
@@ -392,18 +378,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                           ),
                         );
                 },
-                style: GeneralUtil.getWhiteButtonStyle(context),
-                child: Text(
-                  "АРТҚА",
-                  style: TextStyle(
-                    fontSize: MediaQuery.of(context).size.width * 0.04,
-                    fontWeight: FontWeight.bold,
-                    color: GeneralUtil.greenColor,
-                  ),
-                ),
-              ),
-              SizedBox(
-                height: 20,
+                child: Text("Қайту", style: TextStyles.bold(AppColors.primaryBlue, fontSize: 16), textAlign: TextAlign.center),
               ),
             ],
           ),
@@ -411,15 +386,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
         body: Column(
           children: [
             SizedBox(
-              height: 30,
-            ),
-            Container(
-              width: MediaQuery.of(context).size.width * 0.8,
-              alignment: Alignment.topCenter,
-              child: Image.asset(
-                'assets/images/logo3.png',
-                color: GeneralUtil.greenColor,
-              ),
+              height: 50,
             ),
             Expanded(
               child: PageView(
@@ -447,73 +414,64 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   // Step 2: Email Information
   Widget _buildStep1() {
     return Padding(
-      padding: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.symmetric(horizontal: 20.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(height: MediaQuery.of(context).size.width * 0.1),
+          SizedBox(height: 30),
           Center(
             child: Text(
-              'Құпия сөзді қалпына келтіру',
-              style: TextStyle(
-                fontSize: 18,
-                fontFamily: 'Roboto',
-                fontWeight: FontWeight.bold,
-              ),
+              'Құпиясөзді қалпына келтіру',
+              style: TextStyles.bold(AppColors.black, fontSize: 28),
+              textAlign: TextAlign.center,
             ),
           ),
-          SizedBox(height: 10),
+          SizedBox(height: 48),
+
+          AppTextField(
+            labelText: "Телефон нөмірі", 
+            controller: _phoneNumberController, 
+            hintText: "Телефон нөмірін енгізіңіз", 
+            prefixIcon: Icons.phone_outlined, 
+            keyboardType: TextInputType.phone, 
+            maxLength: 17, 
+            inputFormatters: [KazakhPhoneNumberFormatter()], 
+            errorText: _page1Validator.isNotEmpty ? _page1Validator : null,
+          ),
+          
+          // Center(
+          //   child: SizedBox(
+          //     width: MediaQuery.of(context).size.width * 0.8,
+          //     child: TextField(
+          //       focusNode: _focusNode,
+          //       controller: _phoneNumberController,
+          //       keyboardType: TextInputType.phone,
+          //       inputFormatters: [
+          //         FilteringTextInputFormatter.allow(RegExp(r'[0-9,+]')),
+          //         const NationalPhoneNumberTextInputFormatter(
+          //           prefix: '+7',
+          //           groups: [
+          //             (length: 3, leading: ' (', trailing: ') '),
+          //             (length: 3, leading: '', trailing: '-'),
+          //             (length: 4, leading: '', trailing: ' '),
+          //           ],
+          //         ),
+          //         LengthLimitingTextInputFormatter(17),
+          //       ],
+          //       decoration: widgets.getPhoneDecorationGreen(''),
+          //     ),
+          //   ),
+          // ),
+          Spacer(),
           Center(
             child: Text(
-              'Телефон нөміріңіз',
-              style: TextStyle(
-                fontSize: 14,
-                color: GeneralUtil.greyColor,
-                fontFamily: 'Roboto',
-              ),
-            ),
-          ),
-          SizedBox(height: 20),
-          Center(
-            child: SizedBox(
-              width: MediaQuery.of(context).size.width * 0.8,
-              child: TextField(
-                focusNode: _focusNode,
-                controller: _phoneNumberController,
-                keyboardType: TextInputType.phone,
-                inputFormatters: [
-                  FilteringTextInputFormatter.allow(RegExp(r'[0-9,+]')),
-                  const NationalPhoneNumberTextInputFormatter(
-                    prefix: '+7',
-                    groups: [
-                      (length: 3, leading: ' (', trailing: ') '),
-                      (length: 3, leading: '', trailing: '-'),
-                      (length: 4, leading: '', trailing: ' '),
-                    ],
-                  ),
-                  LengthLimitingTextInputFormatter(17),
-                ],
-                decoration: widgets.getPhoneDecorationGreen(''),
-              ),
-            ),
-          ),
-          SizedBox(height: 20),
-          Center(
-            child: SizedBox(
-              width: MediaQuery.of(context).size.width * 0.7,
-              child: Center(
-                child: Text(
-                  'Сіздің Whats`App нөміріңізге растау кодың жібереміз',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontFamily: 'Roboto',
-                  ),
+                  'Құпиясөзді қадпына келтіру үшін сіздің WhatsApp нөміріңізге верификация коды жіберіледі. ',
+                  style: TextStyles.regular(AppColors.black),
                   textAlign: TextAlign.center,
                 ),
-              ),
-            ),
           ),
-          SizedBox(height: 20),
+
+          SizedBox(height: 250),
           Center(
             child: SizedBox(
               width: MediaQuery.of(context).size.width * 0.8,
@@ -540,16 +498,11 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
         children: [
           SizedBox(height: MediaQuery.of(context).size.width * 0.1),
           Center(
-              child: Text(
-            textAlign: TextAlign.center,
-            'Растау коды сіздің Whats` App нөміріңізге жіберілді.',
-            style: TextStyle(
-              fontSize: 16,
-              fontFamily: 'Roboto', // Add Roboto font family here
-              fontWeight: FontWeight.bold,
-            ),
-          )),
-          SizedBox(height: 20),
+            child: Text("Растау кодын енгізіңіз", style: TextStyles.bold(AppColors.black, fontSize: 28), textAlign: TextAlign.center),
+          ),
+          SizedBox(height: 80),
+          Text("Растау коды сіздің WhatsApp нөміріңізге жіберілді. Верификацияны аяқтау үшін төменге енгізіңіз", style: TextStyles.regular(AppColors.black), textAlign: TextAlign.center),
+          SizedBox(height: 10),
           Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -560,44 +513,34 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                   return Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 5.0),
                     child: SizedBox(
-                      width: 50,
-                      height: 69,
+                      width: 48,
+                      height: 60,
                       child: TextField(
                         controller: controllers[index],
                         keyboardType: TextInputType.number,
                         textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 25,
-                          color: Colors.black, 
-                        ),
+                        style: TextStyles.bold(AppColors.black, fontSize: 24),
                         maxLength: 1,
+                        cursorColor: Colors.white,
                         decoration: InputDecoration(
                           counterText: '',
-                          contentPadding: EdgeInsets.symmetric(vertical: 15, horizontal: 8),
+                          fillColor: AppColors.primaryBlue,
+                          hoverColor: AppColors.primaryBlue,
+                          focusColor: AppColors.primaryBlue,
+                          contentPadding: EdgeInsets.symmetric(vertical: 12, horizontal: 8),
                           border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(20),
                               borderSide:
-                                  BorderSide(color: GeneralUtil.mainColor)),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(20),
-                            // Rounded corners
-                            borderSide: BorderSide(
-                                color: GeneralUtil.greenColor,
-                                width: 2), // Blue color when focused
-                          ),
+                                  BorderSide(color: AppColors.primaryBlue)),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(20),
-                            // Rounded corners
-                            borderSide: BorderSide(
-                                color: GeneralUtil.greenColor, width: 2),
+                            borderSide: BorderSide(color: AppColors.primaryBlue, width: 1),
                           ),
                         ),
                         onChanged: (value) {
-                          // Automatically move to next field when a digit is entered
                           if (value.isNotEmpty && index < 5) {
                             FocusScope.of(context).nextFocus();
                           }
-                          // Optionally, add logic to move focus backward when deleting.
                           if (value.isEmpty && index > 0) {
                             FocusScope.of(context).previousFocus();
                           }
@@ -612,18 +555,21 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
           SizedBox(height: 20),
           isButtonDisabled
               ? Center(
-                  child: Text(
-                    isButtonDisabled
-                        ? "Кодты қайта жіберу  ${formatTime(timerCountdown)} сек."
-                        : "",
+                  child: RichText(
+                    text: TextSpan(
+                      children: [
+                      TextSpan(text: "Кодты қайта жіберу ", style: TextStyles.semibold(AppColors.black, fontSize: 13)),
+                      TextSpan(text: formatTime(timerCountdown), style: TextStyles.semibold(AppColors.primaryBlue, fontSize: 13)),
+                      ],
+                    ),
                   ),
-                )
+                ) 
               : Center(
                   child: TextButton(
                     onPressed: isButtonDisabled ? null : resendCode,
                     child: Text(
                       "Кодты қайта жіберу",
-                      style: TextStyle(color: GeneralUtil.mainColor),
+                      style: TextStyle(color: AppColors.primaryBlue),
                     ),
                   ),
                 ),
@@ -649,126 +595,34 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
 
   Widget _buildStep3() {
     return Padding(
-      padding: const EdgeInsets.all(1.0),
+      padding: const EdgeInsets.symmetric(horizontal: 20.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(height: MediaQuery.of(context).size.width * 0.1),
+          SizedBox(height: 30),
           Center(
             child: Text(
-              'Құпия сөз',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              'Құпиясөз енгізіңіз',
+              style: TextStyles.bold(AppColors.black, fontSize: 28),
             ),
+          ),
+          SizedBox(height: 40),
+          AppTextField(
+            labelText: "Құпиясөз",
+            controller: _password1,
+            hintText: "Құпиясөзді енгізіңіз",
+            prefixIcon: Icons.lock,
+            obscureText: _obscureText,
           ),
           SizedBox(height: 20),
-          Center(
-            child: Text(
-              'Жаңа құпия сөз еңгізіңіз',
-              style: TextStyle(
-                fontSize: 16,
-              ),
-            ),
+          AppTextField(
+            labelText: "Құпиясөзді қайта енгізіңіз",
+            controller: _password2,
+            hintText: "Құпиясөзді енгізіңіз",
+            prefixIcon: Icons.lock,
+            obscureText: _obscureText2,
           ),
-          SizedBox(height: 10),
-          Center(
-            child: SizedBox(
-              width: MediaQuery.of(context).size.width * 0.8,
-              child: TextField(
-                obscureText: _obscureText,
-                controller: _password1,
-                decoration: InputDecoration(
-                  prefixText: ' ',
-                  hintText: ' * * * * * * * * ',
-                  floatingLabelBehavior: FloatingLabelBehavior.auto,
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _obscureText ? Icons.visibility : Icons.visibility_off,
-                      // Toggle eye icon
-                      color: GeneralUtil.greenColor,
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        _obscureText =
-                            !_obscureText; // Toggle the obscureText value
-                      });
-                    },
-                  ),
-                  border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(20),
-                      borderSide: BorderSide(color: GeneralUtil.greenColor)),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(20), // Rounded corners
-                    borderSide: BorderSide(
-                        color: GeneralUtil.greenColor,
-                        width: 2), // Blue color when focused
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(20), // Rounded corners
-                    borderSide: BorderSide(
-                        color: GeneralUtil.greenColor,
-                        width: 2), // Blue color when enabled
-                  ),
-                  contentPadding: EdgeInsets.symmetric(horizontal: 30),
-                ),
-              ),
-            ),
-          ),
-          SizedBox(height: 20),
-          Center(
-            child: Text(
-              'Жаңа құпия сөз еңгізіңіз',
-              style: TextStyle(
-                fontSize: 16,
-              ),
-            ),
-          ),
-          SizedBox(height: 10),
-          Center(
-            child: SizedBox(
-              width: MediaQuery.of(context).size.width * 0.8,
-              child: TextField(
-                obscureText: _obscureText2,
-                controller: _password2,
-                decoration: InputDecoration(
-                  prefixText: ' ',
-                  hintText: ' * * * * * * * * ',
-                  floatingLabelBehavior: FloatingLabelBehavior.auto,
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _obscureText2 ? Icons.visibility : Icons.visibility_off,
-                      // Toggle eye icon
-                      color: GeneralUtil.greenColor,
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        _obscureText2 =
-                            !_obscureText2; // Toggle the obscureText value
-                      });
-                    },
-                  ),
-                  border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(20),
-                      borderSide: BorderSide(color: GeneralUtil.greenColor)),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(20), // Rounded corners
-                    borderSide: BorderSide(
-                        color: GeneralUtil.greenColor,
-                        width: 2), // Blue color when focused
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(20), // Rounded corners
-                    borderSide: BorderSide(
-                        color: GeneralUtil.greenColor,
-                        width: 2), // Blue color when enabled
-                  ),
-                  contentPadding: EdgeInsets.symmetric(horizontal: 30),
-                ),
-              ),
-            ),
-          ),
+          
           SizedBox(height: 20),
           Center(
             child: SizedBox(
