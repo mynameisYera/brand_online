@@ -1,6 +1,10 @@
 import 'dart:ui';
 
+import 'package:brand_online/core/app_colors.dart';
+import 'package:brand_online/core/text_styles.dart';
+import 'package:brand_online/news/ui/NotificationsPage.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 
 import '../../../authorization/entity/ProfileResponse.dart';
 import '../../../authorization/service/auth_service.dart';
@@ -140,57 +144,134 @@ class _CustomAppBarState extends State<CustomAppBar> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  Image.asset("assets/images/star.png", width: 20, height: 20),
-                  const SizedBox(width: 4),
-                  Text(
-                    response.points,
-                    style: TextStyle(
-                      color: Colors.orange,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18,
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                decoration: BoxDecoration(
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.black.withOpacity(0.1),
+                      blurRadius: 10,
+                      offset: const Offset(1, 4),
                     ),
-                  ),
-                ],
-              ),
-              Row(
-                children: [
-                  Image.asset("assets/images/fire.png", width: 20, height: 20),
-                  const SizedBox(width: 4),
-                  Text(
-                    response.strike,
-                    style: TextStyle(
-                      color: GeneralUtil.orangeColor,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18,
-                    ),
-                  ),
-                ],
-              ),
-              Text(
-                "x${response.multiplier}",
-                style: TextStyle(
-                  color: GeneralUtil.mainColor,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
+                  ],
+                  color: AppColors.white,
+                  borderRadius: BorderRadius.circular(22),
                 ),
-              ),
-              InkWell(
-                onTap: () => _showCashbackTopSheet(context),
                 child: Row(
                   children: [
+                    SvgPicture.asset("assets/icons/fire.svg", width: 20, height: 20),
+                    const SizedBox(width: 4),
                     Text(
-                      "${response.permanentBalance}",
-                      style: TextStyle(
-                        color: Colors.red,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
+                      response.strike,
+                      style: TextStyles.medium(AppColors.black)
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                decoration: BoxDecoration(
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.black.withOpacity(0.1),
+                      blurRadius: 10,
+                      offset: const Offset(1, 4),
+                    ),
+                  ],
+                  color: AppColors.white,
+                  borderRadius: BorderRadius.circular(22),
+                ),
+                child: Row(
+                  children: [
+                    SvgPicture.asset("assets/icons/point.svg", width: 20, height: 20),
+                    const SizedBox(width: 4),
+                    Text(
+                      response.points,
+                      style: TextStyles.medium(AppColors.black)
+                    ),
+                  ],
+                ),
+              ),
+              
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                decoration: BoxDecoration(
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.black.withOpacity(0.1),
+                      blurRadius: 10,
+                      offset: const Offset(1, 4),
+                    ),
+                  ],
+                  color: AppColors.white,
+                  borderRadius: BorderRadius.circular(22),
+                ),
+                child: Row(
+                  children: [
+                    RichText(
+                      text: TextSpan(
+                        children: [
+                          TextSpan(text: "X", style: TextStyles.bold(AppColors.primaryBlue, fontSize: 13)),
+                          TextSpan(text: response.multiplier, style: TextStyles.medium(AppColors.black)),
+                        ],
                       ),
                     ),
                   ],
                 ),
               ),
+
+              InkWell(
+                onTap: () => _showCashbackTopSheet(context),
+                child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                decoration: BoxDecoration(
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.black.withOpacity(0.1),
+                      blurRadius: 10,
+                      offset: const Offset(1, 4),
+                    ),
+                  ],
+                  color: AppColors.white,
+                  borderRadius: BorderRadius.circular(22),
+                ),
+                child: Row(
+                  children: [
+                    RichText(
+                      text: TextSpan(
+                        children: [
+                          TextSpan(text: "₸ ", style: TextStyles.bold(AppColors.trueGreen, fontSize: 20)),
+                          TextSpan(text: "${response.permanentBalance}", style: TextStyles.medium(AppColors.black)),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              ),
+              InkWell(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                  decoration: BoxDecoration(
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.black.withOpacity(0.1),
+                        blurRadius: 10,
+                        offset: const Offset(1, 4),
+                      ),
+                    ],
+                    color: AppColors.secondaryBlue,
+                    borderRadius: BorderRadius.circular(22),
+                  ),
+                  child: SvgPicture.asset("assets/icons/notification.svg", width: 20, height: 20),
+                ),
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const NotificationsPage(),
+                  ),
+                ),
+              )
             ],
           ),
         ],
