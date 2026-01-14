@@ -33,7 +33,6 @@ class AppButton extends StatelessWidget {
   final bool isLoading;
   final double? width;
   final double? height;
-
   Color get _backgroundColor {
     if (variant == AppButtonVariant.outlined) {
       return Colors.white;

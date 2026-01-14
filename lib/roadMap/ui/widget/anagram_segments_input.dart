@@ -1,6 +1,7 @@
 // lib/roadMap/ui/widgets/anagram_segments_input.dart
-// ignore_for_file: unused_element_parameter
-
+// ignore_for_file: unused_element_parameter, unused_local_variable
+import 'package:brand_online/core/app_colors.dart';
+import 'package:brand_online/core/text_styles.dart';
 import 'package:flutter/material.dart';
 
 class AnagramSegmentsController extends ChangeNotifier {
@@ -22,7 +23,6 @@ class AnagramSegmentsController extends ChangeNotifier {
     _state?._reset(segments, requiredCount);
   }
 
-  /// Локальная подсветка по позициям
   void checkAndHighlight(List<String> correctOrder) {
     _state?._checkAndHighlight(correctOrder);
   }
@@ -109,31 +109,30 @@ class _AnagramSegmentsInputState extends State<AnagramSegmentsInput> {
 
   @override
   Widget build(BuildContext context) {
-    final base = widget.isRepeat ? Colors.orange : Colors.blue;
+    final base = widget.isRepeat ? Colors.orange : Color(0xFF4CA3FF); // Light blue
 
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        // --- Заголовок слотов (необязательно, но удобно визуально)
-        Padding(
-          padding: const EdgeInsets.only(bottom: 8),
-          child: Text(
-            'Жауап:',
-            style: TextStyle(
-              color: Colors.grey[700],
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ),
+        // Padding(
+        //   padding: const EdgeInsets.only(bottom: 20),
+        //   child: Text(
+        //     'Сәйкестендір',
+        //     style: TextStyle(
+        //       color: Colors.black,
+        //       fontSize: 20,
+        //       fontWeight: FontWeight.w600,
+        //     ),
+        //   ),
+        // ),
 
-        // --- СЛОТЫ
         Wrap(
           spacing: 8,
-          runSpacing: 12,
+          runSpacing: 8,
+          alignment: WrapAlignment.center,
           children: List.generate(_answer.length, (i) {
             final seg = _answer[i];
 
-            // Цвета по состояниям
             Color border;
             Color fill;
             Color text;
@@ -158,17 +157,18 @@ class _AnagramSegmentsInputState extends State<AnagramSegmentsInput> {
               }
             } else {
               if (seg == null) {
-                border = Colors.grey.shade400;
+                border = Colors.grey.shade300;
                 fill = Colors.grey.shade100;
-                text = Colors.black38;
+                text = Colors.transparent;
               } else {
                 border = base;
-                fill = base.withOpacity(.08); // ← выбранный слот — мягкий фон
+                fill = base.withOpacity(0.2);
                 text = Colors.black87;
               }
             }
 
             return GestureDetector(
+              behavior: HitTestBehavior.translucent,
               onTap: widget.disabled || seg == null
                   ? null
                   : () {
@@ -180,61 +180,34 @@ class _AnagramSegmentsInputState extends State<AnagramSegmentsInput> {
                       _paint.length, _SlotPaint.idle);
                 });
               },
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 160),
-                padding:
-                const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              child: Ink(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 7),
                 decoration: BoxDecoration(
-                  color: fill,
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: border, width: 1.6),
-                ),
-                child: AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 120),
-                  child: seg == null
-                      ? SizedBox(
-                    key: ValueKey('empty_$i'),
-                    width: 40,
-                    height: 20,
-                  )
-                      : Text(
-                    seg,
-                    key: ValueKey(seg),
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: text,
+                  color: Color(0xffC5E5FF),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: base, width: 1.5),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Color(0xff0082FF),
+                      offset: Offset(0, 3),
+                      blurRadius: 0,
                     ),
-                  ),
+                  ],
+                ),
+                child: Text(
+                  seg ?? '',
+                  style: TextStyles.bold(Color(0xff0082FF), fontSize: 18),
                 ),
               ),
             );
           }),
         ),
-
-        const SizedBox(height: 16),
-
-        // --- Разделитель (пунктир)
-        const _DashedDivider(),
-
-        const SizedBox(height: 10),
-
-        // --- Заголовок пула
-        Padding(
-          padding: const EdgeInsets.only(bottom: 8),
-          child: Text(
-            'Сегменттер:',
-            style: TextStyle(
-              color: Colors.grey[700],
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ),
-
-        // --- ПУЛ СЕГМЕНТОВ
+        Divider(),
+        SizedBox(height: 10),
         Wrap(
           spacing: 8,
           runSpacing: 8,
+          alignment: WrapAlignment.center,
           children: List.generate(_pool.length, (idx) {
             final seg = _pool[idx];
             return _segmentChip(
@@ -257,6 +230,36 @@ class _AnagramSegmentsInputState extends State<AnagramSegmentsInput> {
             );
           }),
         ),
+        SizedBox(height: 20),
+
+        GestureDetector(
+          onTap: widget.disabled
+              ? null
+              : () {
+            final allSegments = List<String>.from(widget.segments);
+            for (var seg in _answer) {
+              if (seg != null && !allSegments.contains(seg)) {
+                allSegments.add(seg);
+              }
+            }
+            _reset(allSegments, widget.requiredCount);
+          },
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Қайта таңдау',
+                style: TextStyles.medium(AppColors.grey, fontSize: 13),
+              ),
+              const SizedBox(width: 8),
+              Icon(
+                Icons.refresh,
+                size: 18,
+                color: widget.disabled ? AppColors.grey : AppColors.grey,
+              ),
+            ],
+          ),
+        ),
       ],
     );
   }
@@ -269,85 +272,26 @@ class _AnagramSegmentsInputState extends State<AnagramSegmentsInput> {
   }) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(14),
+      borderRadius: BorderRadius.circular(12),
       child: Ink(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          color: base.withOpacity(.10),
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: base, width: 1.4),
+          color: Color(0xffC5E5FF), // Light blue background
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: base, width: 1.5),
+          boxShadow: [
+            BoxShadow(
+              color: Color(0xff0082FF),
+              offset: Offset(0, 3),
+              blurRadius: 0,
+            ),
+          ],
         ),
         child: Text(
           seg,
-          style: TextStyle(
-            fontSize: 15,
-            color: disabled ? Colors.black45 : Colors.black87,
-            fontWeight: FontWeight.w700, // ← читаемее
-          ),
+          style: TextStyles.bold(Color(0xff0082FF), fontSize: 18),
         ),
       ),
     );
-  }
-}
-
-/// Пунктирная линия-разделитель между слотами и пулом
-class _DashedDivider extends StatelessWidget {
-  final double dashWidth;
-  final double dashSpace;
-  final double thickness;
-  final Color? color;
-
-  const _DashedDivider({
-    this.dashWidth = 6,
-    this.dashSpace = 4,
-    this.thickness = 1.2,
-    this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final c = color ?? Colors.grey.shade400;
-    return CustomPaint(
-      painter:
-      _DashedLinePainter(color: c, dashWidth: dashWidth, dashSpace: dashSpace, thickness: thickness),
-      size: const Size(double.infinity, 1),
-    );
-  }
-}
-
-class _DashedLinePainter extends CustomPainter {
-  final Color color;
-  final double dashWidth;
-  final double dashSpace;
-  final double thickness;
-
-  _DashedLinePainter({
-    required this.color,
-    required this.dashWidth,
-    required this.dashSpace,
-    required this.thickness,
-  });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..strokeWidth = thickness
-      ..style = PaintingStyle.stroke;
-
-    double x = 0;
-    final y = size.height / 2;
-    while (x < size.width) {
-      canvas.drawLine(Offset(x, y), Offset(x + dashWidth, y), paint);
-      x += dashWidth + dashSpace;
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant _DashedLinePainter oldDelegate) {
-    return oldDelegate.color != color ||
-        oldDelegate.dashWidth != dashWidth ||
-        oldDelegate.dashSpace != dashSpace ||
-        oldDelegate.thickness != thickness;
   }
 }

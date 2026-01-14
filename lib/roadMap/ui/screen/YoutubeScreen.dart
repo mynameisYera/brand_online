@@ -1,3 +1,6 @@
+import 'package:brand_online/core/app_colors.dart';
+import 'package:brand_online/core/text_styles.dart';
+import 'package:brand_online/core/widgets/app_button_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:no_screenshot/no_screenshot.dart';
@@ -203,13 +206,20 @@ void initState() {
                   ),
                 ),
               ),
-              AspectRatio(
-                aspectRatio: MediaQuery.of(context).size.width > 600 ? 16 / 4 : 16 / 12,
-                child: player,
+              Container(
+                clipBehavior: Clip.hardEdge,
+                margin: EdgeInsets.symmetric(horizontal: 5),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(40),
+                ),
+                child: AspectRatio(
+                  aspectRatio: MediaQuery.of(context).size.width > 600 ? 16 / 4 : 16 / 12,
+                  child: player,
+                ),
               ),
               SizedBox(height: 20,),
-              widget.lesson.materials.length == 0 ? SizedBox() : Row(children: [ Padding(padding: EdgeInsets.only(left: 15), child: Text("Сабақтың материалдары", style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),),) ],),
-              SizedBox(height: 10,),
+              // widget.lesson.materials.length == 0 ? SizedBox() : Row(children: [ Padding(padding: EdgeInsets.only(left: 15), child: Text("Сабақтың материалдары", style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),),) ],),
+              // SizedBox(height: 10,),
               Padding(
                 padding: EdgeInsets.symmetric(
                   horizontal: 15
@@ -240,20 +250,13 @@ void initState() {
               SizedBox(
                 height: 20,
               ),
+              
               Padding(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 15, vertical: 0),
-                child: SizedBox(
-                  width: double.infinity,
-                  height: 50,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.lightBlue,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    onPressed: () {
+                child: AppButton(
+                text: "Тестке өту",
+                onPressed: () {
                       _markVideoAsWatched(shouldPopOnSuccess: false);
                       enableScreenshot();
                       Navigator.push(
@@ -269,48 +272,18 @@ void initState() {
                                 ),
                               ),
                             );
-                    },
-                    child: const Text(
-                      "Тестке өту",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ),
+                    },),
               ),
               SizedBox(height: 10,),
-              Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 15, vertical: 0),
-                child: SizedBox(
-                  width: double.infinity,
-                  height: 50,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    onPressed: () {
+              Center(
+                child: TextButton(
+                  onPressed: () {
                       _markVideoAsWatched();
                       Navigator.of(context).pop(true);
                       enableScreenshot();
                     },
-                    child: const Text(
-                      "Түсінікті",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
+                  child: Text("Артқа қайту", style: TextStyles.medium(AppColors.primaryBlue),)),
+              )
             ],
           ),
         ),

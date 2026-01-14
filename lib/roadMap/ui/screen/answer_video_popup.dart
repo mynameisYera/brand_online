@@ -1,21 +1,21 @@
+import 'package:brand_online/core/app_colors.dart';
+import 'package:brand_online/core/widgets/app_button_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:no_screenshot/no_screenshot.dart';
 import 'package:brand_online/authorization/entity/RoadMapResponse.dart';
-import 'package:brand_online/roadMap/ui/screen/web_view_page.dart';
-import 'package:brand_online/roadMap/ui/widget/materials_widget.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
-class YoutubeUrlScreen extends StatefulWidget {
+class AnswerVideoPopup extends StatefulWidget {
   final String videoSolutionUrl;
   final Lesson lesson;
 
-  const YoutubeUrlScreen({super.key, required this.videoSolutionUrl, required this.lesson});
+  const AnswerVideoPopup({super.key, required this.videoSolutionUrl, required this.lesson});
 
   @override
-  State<YoutubeUrlScreen> createState() => _YoutubeUrlScreenState();
+  State<AnswerVideoPopup> createState() => _AnswerVideoPopupState();
 }
 
-class _YoutubeUrlScreenState extends State<YoutubeUrlScreen> {
+class _AnswerVideoPopupState extends State<AnswerVideoPopup> {
   YoutubePlayerController? _controller;
   bool _markedWatched = false;
   bool _isValid = false;
@@ -132,18 +132,20 @@ class _YoutubeUrlScreenState extends State<YoutubeUrlScreen> {
         body: SafeArea(
           child: Column(
             children: [
-              SizedBox(height: 10),
-              Align(
-                alignment: Alignment.topLeft,
-                child: IconButton(
-                  icon: const Icon(Icons.close, size: 24, color: Colors.black),
-                  onPressed: () => Navigator.of(context).pop(),
+              SizedBox(height: 20),
+              Container(
+                width: 100,
+                height: 6,
+                decoration: BoxDecoration(
+                  color: AppColors.grey,
+                  borderRadius: BorderRadius.circular(2),
                 ),
               ),
-              const Padding(
+              SizedBox(height: 20),
+              Padding(
                 padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 child: Text(
-                  "Видео сабақ",
+                  widget.lesson.lessonTitle,
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
@@ -152,70 +154,26 @@ class _YoutubeUrlScreenState extends State<YoutubeUrlScreen> {
                   ),
                 ),
               ),
-              AspectRatio(
-                aspectRatio: 16 / 9,
-                child: player,
-              ),
-              SizedBox(height: 20,),
-              widget.lesson.materials.length == 0 ? SizedBox() : Row(children: [ Padding(padding: EdgeInsets.only(left: 15), child: Text("Сабақтың материалдары", style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),),) ],),
-              SizedBox(height: 10,),
-              Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: 15
+              Container(
+                clipBehavior: Clip.hardEdge,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
                 ),
-                child: Container(
-                  height: 150,
-                  width: double.infinity,
-                  child: ListView.separated(
-                    separatorBuilder: (context, index) => SizedBox(width: 10,),
-                    scrollDirection: Axis.horizontal,
-                    itemCount: widget.lesson.materials.length,
-                    itemBuilder: (context, index){
-                      return InkWell(
-                        onTap: () async {
-                          String privacyUrl = widget.lesson.materials[index].url;
-                          Navigator.push(context, MaterialPageRoute(builder: (_) => WebViewPage(url: privacyUrl,)));
-                        },
-                        child: MaterialsWidget(
-                          title: widget.lesson.materials[index].name,
-                          url:  widget.lesson.materials[index].url,
-                        )
-                      );
-                    }
-                  ),
-                )
+                margin: EdgeInsets.symmetric(horizontal: 16),
+                child: AspectRatio(
+                  aspectRatio: 16 / 9,
+                  child: player,
+                ),
               ),
-              const Spacer(),
-              SizedBox(
-                height: 20,
-              ),
-              SizedBox(height: 10,),
+              SizedBox(height: 20),
               Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 15, vertical: 0),
-                child: SizedBox(
-                  width: double.infinity,
-                  height: 50,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    onPressed: () {
+                padding: const EdgeInsets.symmetric(horizontal: 15),
+                child: AppButton(
+                  onPressed: () {
                       enableScreenshot();
                       _markVideoAsWatched();
                     },
-                    child: const Text(
-                      "Түсінікті",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
+                  text: "Түсінікті",
                 ),
               ),
             ],

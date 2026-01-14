@@ -180,7 +180,6 @@ class MatchingItem {
   }
 }
 
-// Главная модель
 class DataModel {
   final Profile profile;
   final List<Task> tasks;

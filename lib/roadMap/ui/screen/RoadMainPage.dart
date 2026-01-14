@@ -22,6 +22,7 @@ import '../../ui/widget/RoadWidget.dart';
 import 'ChaptersDialog.dart';
 import 'CustomAppBar.dart';
 import 'RoadMap.dart';
+import 'YoutubeScreen.dart';
 import 'dart:convert';
 
 class RoadMainPage extends StatefulWidget {
@@ -107,6 +108,11 @@ class _RoadMainPageState extends State<RoadMainPage>
   String chapterTitle = '';
   String mainTitle = '';
   String mainTitleDescription = '';
+  
+  // Отслеживание раскрытой кнопки для каждого урока: индекс урока -> тип кнопки (null, 'play', 'math1', 'math2', 'math3')
+  Map<int, String?> expandedButtonMap = {};
+  // Отслеживание раскрытого состояния кнопок: индекс урока -> раскрыта ли кнопка
+  Map<int, bool> expandedButtonsState = {};
 
   @override
   void initState() {
@@ -244,6 +250,8 @@ class _RoadMainPageState extends State<RoadMainPage>
         tarau = [];
         double currentOffset = 0.0;
         structuredChapters.clear();
+        expandedButtonMap.clear(); // Сбрасываем раскрытые кнопки при обновлении
+        expandedButtonsState.clear(); // Сбрасываем состояние раскрытия кнопок
 
         for (var chapter in response.chapters) {
           List<SimpleTaskIndex> lessonsList = [];
@@ -261,26 +269,20 @@ class _RoadMainPageState extends State<RoadMainPage>
             chapters.add(chapterTitle);
             chapterScrollPositions[widgetList.length] = currentOffset;
 
-            widgetList.add((index.isEven)
-                ? roadFromRight(
+            widgetList.add(
+              _buildLessonCard(
                 context,
                 lesson,
                 index,
                 lesson.videoWatched == false
                     ? Colors.grey
-                    : colors[index % 5])
-                : roadFromLeft(
-                context,
-                lesson,
-                index,
-                lesson.videoWatched == false
-                    ? Colors.grey
-                    : colors[index % 5]));
-            widgetList.add(_spaceBreaker(lesson.lessonTitle));
-            currentOffset += 530 + 40;
+                    : colors[index % 5],
+              ),
+            );
+            
+            currentOffset += 380;
             index++;
-            lessonsList
-                .add(SimpleTaskIndex(title: lessonTitle, index: lessonId));
+            lessonsList.add(SimpleTaskIndex(title: lessonTitle, index: lessonId));
           }
           structuredChapters.add({
             SimpleTaskIndex(title: chapterTitle, index: chapterId): lessonsList,
@@ -307,7 +309,7 @@ class _RoadMainPageState extends State<RoadMainPage>
           if (cashbackActiveIndex != -1) {
             Future.delayed(Duration(milliseconds: 300), () {
               _scrollController.animateTo(
-                cashbackActiveIndex * 585,
+                cashbackActiveIndex * 380,
                 duration: Duration(milliseconds: 600),
                 curve: Curves.easeInOut,
               );
@@ -315,7 +317,7 @@ class _RoadMainPageState extends State<RoadMainPage>
           } else if (greyIndex != -1) {
             Future.delayed(Duration(milliseconds: 300), () {
               _scrollController.animateTo(
-                greyIndex * 585,
+                greyIndex * 380,
                 duration: Duration(milliseconds: 600),
                 curve: Curves.easeInOut,
               );
@@ -333,11 +335,475 @@ class _RoadMainPageState extends State<RoadMainPage>
     }
   }
 
+  Widget _buildLessonCard(
+    BuildContext context,
+    Lesson lesson,
+    int index,
+    Color color,
+  ) {
+    final characterImage = lesson.cashbackActive
+        ? 'assets/images/moneyadm.png'
+        : barysImagePaths[index % 5];
+
+    bool allCompleted = lesson.videoWatched &&
+        lesson.group1Completed &&
+        lesson.group2Completed &&
+        lesson.group3Completed;
+
+    return Container(
+      margin: EdgeInsets.only(bottom: 20),
+      width: double.infinity,
+      height: 360,
+      decoration: BoxDecoration(
+        color: colors[index % 5],
+        borderRadius: BorderRadius.circular(20),
+        image: DecorationImage(
+          image: AssetImage(characterImage),
+          fit: BoxFit.cover,
+        ),
+      ),
+      child: Stack(
+        children: [
+          // Полупрозрачный белый overlay, если не все задания завершены
+          if (!allCompleted)
+            Positioned.fill(
+              child: IgnorePointer(
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.5),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                ),
+              ),
+            ),
+          Column(
+            children: [
+              Spacer(),
+              expandedButtonMap[index] != null
+                  ? _buildExpandedButton(
+                      context: context,
+                      lesson: lesson,
+                      index: index,
+                      buttonType: expandedButtonMap[index]!,
+                    )
+                  : Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        _buildCardButton(
+                          context: context,
+                          lesson: lesson,
+                          index: index,
+                          buttonKey: _buttonKeys[index],
+                          isActive: lesson.videoWatched,
+                          iconPath: 'assets/icons/play.svg',
+                          onTap: () async {
+                            if (lesson.isPublished == false) {
+                              RoadWidget().showUndefinedDialog(context);
+                              
+                            } else {
+                              await RoadWidget().playDialogScreen(
+                                context,
+                                index,
+                                _buttonKeys[index],
+                                lesson,
+                                scrollOffset: _scrollController.offset,
+                              ).then((value) {
+                                if (value == true) {
+                                  getRoadMap();
+                                }
+                              });
+                            }
+                          },
+                        ),
+                        
+                        _buildCardButton(
+                          context: context,
+                          lesson: lesson,
+                          index: index,
+                          buttonKey: _buttonMath1[index],
+                          isActive: lesson.group1Completed,
+                          iconPath: 'assets/icons/problems.svg',
+                          showCashback: lesson.cashbackActive && !lesson.group1Completed,
+                          onTap: () async {
+                            if (lesson.isPublished == false) {
+                              RoadWidget().showUndefinedDialog(context);
+                              
+                            } else if (!lesson.videoWatched) {
+                              RoadWidget().showWatchVideoDialog(context);
+                              
+                            } else {
+                              await RoadWidget().math1(
+                                context,
+                                index,
+                                _buttonMath1[index],
+                                lesson,
+                                1,
+                                false,
+                                scrollOffset: _scrollController.offset,
+                              ).then((value) {
+                                if (value == true) {
+                                  getRoadMap();
+                                }
+                              });
+                            }
+                          },
+                        ),
+                        
+                        _buildCardButton(
+                          context: context,
+                          lesson: lesson,
+                          index: index,
+                          buttonKey: _buttonMath2[index],
+                          isActive: lesson.group2Completed,
+                          iconPath: 'assets/icons/problems.svg',
+                          showCashback: lesson.cashbackActive && !lesson.group2Completed,
+                          onTap: () async {
+                            if (lesson.isPublished == false) {
+                              RoadWidget().showUndefinedDialog(context);
+                              
+                            } else if (!lesson.videoWatched) {
+                              RoadWidget().showWatchVideoDialog(context);
+                              
+                            } else if (!lesson.group1Completed) {
+                              RoadWidget().showTaskDoneDialog(context);
+                              
+                            } else {
+                              await RoadWidget().math1(
+                                context,
+                                index,
+                                _buttonMath2[index],
+                                lesson,
+                                2,
+                                false,
+                                scrollOffset: _scrollController.offset,
+                              ).then((value) {
+                                if (value == true) {
+                                  getRoadMap();
+                                }
+                              });
+                            }
+                          },
+                        ),
+                        
+                        _buildCardButton(
+                          context: context,
+                          lesson: lesson,
+                          index: index,
+                          buttonKey: _buttonMath3[index],
+                          isActive: lesson.group3Completed,
+                          iconPath: 'assets/icons/problems.svg',
+                          showCashback: lesson.cashbackActive && !lesson.group3Completed,
+                          onTap: () async {
+                            if (lesson.isPublished == false) {
+                              RoadWidget().showUndefinedDialog(context);
+                              
+                            } else if (!lesson.videoWatched) {
+                              RoadWidget().showWatchVideoDialog(context);
+                              
+                            } else if (!lesson.group1Completed || !lesson.group2Completed) {
+                              RoadWidget().showTaskDoneDialog(context);
+                              
+                            } else {
+                              await RoadWidget().math1(
+                                context,
+                                index,
+                                _buttonMath3[index],
+                                lesson,
+                                3,
+                                false,
+                                scrollOffset: _scrollController.offset,
+                              ).then((value) {
+                                if (value == true) {
+                                  getRoadMap();
+                                }
+                              });
+                            }
+                          },
+                        ),
+                      ],
+                    ),
+              SizedBox(height: 20),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildExpandedButton({
+    required BuildContext context,
+    required Lesson lesson,
+    required int index,
+    required String buttonType,
+  }) {
+    String buttonText;
+    String iconPath;
+    VoidCallback? onTap;
+    
+    switch (buttonType) {
+      case 'play':
+        buttonText = 'Видео сабаққа өту';
+        iconPath = 'assets/icons/play.svg';
+        onTap = () async {
+          if (expandedButtonsState[index] == true) {
+            await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => YoutubeScreen(lesson: lesson),
+              ),
+            );
+            await Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(
+                builder: (_) => RoadMap(initialScrollOffset: _scrollController.offset, selectedIndx: 0, state: 0),
+              ),
+              (route) => false,
+            );
+          } else {
+            setState(() {
+              expandedButtonsState[index] = true;
+            });
+          }
+        };
+        break;
+      case 'math1':
+        buttonText = '1-ші тапсырмаларға өту';
+        iconPath = 'assets/icons/problems.svg';
+        onTap = () async {
+          if (expandedButtonsState[index] == true) {
+            await RoadWidget().math1(
+              context,
+              index,
+              _buttonMath1[index],
+              lesson,
+              1,
+              false,
+              scrollOffset: _scrollController.offset,
+            ).then((value) {
+              if (value == true) {
+                getRoadMap();
+              }
+            });
+          } else {
+            setState(() {
+              expandedButtonsState[index] = true;
+            });
+          }
+        };
+        break;
+      case 'math2':
+        buttonText = '2-ші тапсырмаларға өту';
+        iconPath = 'assets/icons/problems.svg';
+        onTap = () async {
+          if (expandedButtonsState[index] == true) {
+            await RoadWidget().math1(
+              context,
+              index,
+              _buttonMath2[index],
+              lesson,
+              2,
+              false,
+              scrollOffset: _scrollController.offset,
+            ).then((value) {
+              if (value == true) {
+                getRoadMap();
+              }
+            });
+          } else {
+            setState(() {
+              expandedButtonsState[index] = true;
+            });
+          }
+        };
+        break;
+      case 'math3':
+        buttonText = '3-ші тапсырмаларға өту';
+        iconPath = 'assets/icons/problems.svg';
+        onTap = () async {
+          if (expandedButtonsState[index] == true) {
+            await RoadWidget().math1(
+              context,
+              index,
+              _buttonMath3[index],
+              lesson,
+              3,
+              false,
+              scrollOffset: _scrollController.offset,
+            ).then((value) {
+              if (value == true) {
+                getRoadMap();
+              }
+            });
+          } else {
+            setState(() {
+              expandedButtonsState[index] = true;
+            });
+          }
+        };
+        break;
+      default:
+        buttonText = 'Видео сабаққа өту';
+        iconPath = 'assets/icons/play.svg';
+    }
+
+    bool isExpanded = expandedButtonsState[index] == true;
+    
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 16),
+      child: AnimatedContainer(
+        duration: Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+        width: double.infinity,
+        height: isExpanded ? 120 : 56,
+        decoration: BoxDecoration(
+          color: AppColors.primaryBlue,
+          borderRadius: BorderRadius.circular(28),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.primaryBlue.withOpacity(0.3),
+              offset: Offset(0, 4),
+              blurRadius: 8,
+            ),
+          ],
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(28),
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: isExpanded ? 12 : 8),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Center(
+                          child: SvgPicture.asset(
+                            iconPath,
+                            width: 20,
+                            height: 20,
+                            color: AppColors.primaryBlue,
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          buttonText,
+                          style: TextStyles.bold(Colors.white),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                      AnimatedRotation(
+                        duration: Duration(milliseconds: 300),
+                        turns: isExpanded ? 0.5 : 0,
+                        child: Icon(
+                          Icons.keyboard_arrow_down,
+                          color: Colors.white,
+                          size: 24,
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (isExpanded) ...[
+                    SizedBox(height: 12),
+                    Text(
+                      'Екінші рет басыңыз',
+                      style: TextStyles.medium(Colors.white.withOpacity(0.9)),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCardButton({
+    required BuildContext context,
+    required Lesson lesson,
+    required int index,
+    required GlobalKey buttonKey,
+    required bool isActive,
+    required String iconPath,
+    required VoidCallback onTap,
+    bool showCashback = false,
+  }) {
+    Color buttonColor;
+    if (isActive) {
+      buttonColor = Colors.white;
+    } else if (lesson.cashbackActive) {
+      buttonColor = Colors.amber;
+    } else {
+      buttonColor = Color(0xffF1F1F1);
+    }
+
+    return GestureDetector(
+      key: buttonKey,
+      onTap: onTap,
+      child: Container(
+        width: 64,
+        height: 64,
+        decoration: BoxDecoration(
+          color: buttonColor,
+          borderRadius: BorderRadius.circular(100),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.2),
+              offset: Offset(0, 2),
+              blurRadius: 4,
+            ),
+          ],
+        ),
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Center(
+              child: SizedBox(
+                width: 36,
+                height: 36,
+                child: SvgPicture.asset(
+                  iconPath,
+                  fit: BoxFit.contain,
+                  color: isActive || lesson.cashbackActive
+                      ? colors[index % 5]
+                      : AppColors.grey,
+                ),
+              ),
+            ),
+            if (showCashback)
+              Positioned(
+                top: 45,
+                right: 0,
+                child: Image.asset(
+                  'assets/images/dollar.png',
+                  width: 18,
+                  height: 18,
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
   void _onScroll() {
     if (widgetList.isEmpty) return;
 
     double offset = _scrollController.position.pixels;
-    int newChapterIndex = ((offset + 350) / 570).floor();
+    int newChapterIndex = ((offset + 350) / 380).floor(); // Обновлено под новую высоту карточки
 
     if (newChapterIndex != selectedIndex) {
       setState(() {
@@ -669,44 +1135,6 @@ class _RoadMainPageState extends State<RoadMainPage>
           ],
         ),
       ),
-    );
-  }
-
-  Widget _spaceBreaker(String text) {
-    return Row(
-      children: [
-        Expanded(
-          child: Divider(
-            color: Colors.grey,
-            thickness: 1,
-            endIndent: 10, // Space between line and text
-          ),
-        ),
-        Center(
-          child: SizedBox(
-            width: MediaQuery
-                .of(context)
-                .size
-                .width * 0.5,
-            child: Text(
-              text,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-                color: Colors.grey,
-              ),
-            ),
-          ),
-        ),
-        Expanded(
-          child: Divider(
-            color: Colors.grey,
-            thickness: 1,
-            indent: 10, // Space between line and text
-          ),
-        ),
-      ],
     );
   }
 
@@ -1155,7 +1583,7 @@ class _RoadMainPageState extends State<RoadMainPage>
                       findIndexForScroll(chapter, titleName);
                       if (scrollIndex != -1) {
                         _scrollController.animateTo(
-                          scrollIndex * 580,
+                          scrollIndex * 380,
                           duration: Duration(milliseconds: 500),
                           curve: Curves.easeInOut,
                         );

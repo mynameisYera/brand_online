@@ -150,6 +150,14 @@ flutter:
     - assets/icons/tasks_active.svg
     - assets/icons/notification.svg
     - assets/icons/burger.svg
+    - assets/images/satti.png
+    - assets/images/brandon.png
+    - assets/icons/logo_e.svg
+    - assets/icons/slogan.svg
+    - assets/icons/play.svg
+    - assets/icons/problems.svg
+    - assets/images/correct.png
+    - assets/images/incorrect.png
 
 
 

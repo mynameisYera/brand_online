@@ -5,6 +5,7 @@ import 'package:brand_online/core/text_styles.dart';
 import 'package:brand_online/core/widgets/app_button_widget.dart';
 import 'package:brand_online/core/widgets/app_text_field.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import '../../../general/ResetPasswordScreen.dart';
 import '../../../roadMap/ui/screen/RoadMap.dart';
 import '../../service/auth_service.dart';
@@ -18,7 +19,7 @@ class LoginScreen extends StatefulWidget {
   State<StatefulWidget> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStateMixin {
   final TextEditingController _username = TextEditingController();
   final TextEditingController _password = TextEditingController();
   bool _obscureText = true;
@@ -32,6 +33,22 @@ class _LoginScreenState extends State<LoginScreen> {
   );
 
   final LoginScreenWidget widgets = LoginScreenWidget();
+  late AnimationController _rotationController;
+
+  @override
+  void initState() {
+    super.initState();
+    _rotationController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 3),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _rotationController.dispose();
+    super.dispose();
+  }
 
   @override
   void setState(VoidCallback fn) {
@@ -54,7 +71,33 @@ class _LoginScreenState extends State<LoginScreen> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 const SizedBox(height: 20),
-                Image.asset('assets/images/logoTitle2.png', width: 250, color: AppColors.primaryBlue),
+                AnimatedBuilder(
+                  animation: _rotationController,
+                  builder: (context, child) {
+                    return Transform.rotate(
+                      angle: _rotationController.value * 2 * 3.14159,
+                      child: Container(
+                        width: 180,
+                        height: 180,
+                        padding: EdgeInsets.all(50),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [Color(0xFF0082FF), Color(0xFF104CAA)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(100),
+                        ),
+                        child: Transform.rotate(
+                          angle: -_rotationController.value * 2 * 3.14159,
+                          child: SvgPicture.asset('assets/icons/logo_e.svg', width: 50, color: Colors.white),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(height: 16),
+                SvgPicture.asset('assets/icons/slogan.svg', width: 300),
                 const SizedBox(height: 30),
                 SizedBox(
                   child: AppTextField(
@@ -80,7 +123,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(height: 20),
 
                 SizedBox(
-                  // width: MediaQuery.of(context).size.width * 0.8,
                   child: AppTextField(
                     labelText: 'Құпия сөз',
                     hintText: 'Құпия сөзді енгізіңіз',
@@ -121,7 +163,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 Expanded(child: SizedBox()),
 
-                // ЖАЛҒАСТЫРУ
                 AppButton(
                   text: 'ЖАЛҒАСТЫРУ',
                   variant: AppButtonVariant.solid,
@@ -129,9 +170,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   onPressed: _isLoading ? null : _handleLogin,
                   isLoading: _isLoading,
                 ),
-                
                 const SizedBox(height: 10),
-                
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
