@@ -166,16 +166,8 @@ class _ProfilePageState extends State<ProfilePage> {
                 )
               ],
             ),
-            // const SizedBox(height: 20),
-            // Row(
-            //   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            //   children: [
-            //     _iconText("assets/images/users.png", GeneralUtil.yellowColor, 'Топ\n${profile!.group?.name}'),
-            //   ],
-            // ),
             const SizedBox(height: 20),
-            
-            Container(
+            profile!.daysLeft != 0 ? Container(
               padding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
@@ -212,42 +204,75 @@ class _ProfilePageState extends State<ProfilePage> {
                   Icon(Icons.arrow_forward_ios, color: Colors.white, size: 16),
                 ],
               ),
+            ) : GestureDetector(
+              onTap: (){
+                Platform.isIOS ? Navigator.of(context).push(MaterialPageRoute(builder: (_) =>  SubscriptionPage())) : null;
+              },
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: Color(0xffFF8D28), width: 1),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: Colors.orange[100],
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Center(child: SvgPicture.asset('assets/icons/primer.svg')),
+                    ),
+                    const SizedBox(width: 10),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Premium жазылым сатып алу', style: TextStyles.medium(Colors.black)),
+                      ],
+                    ),
+                    Spacer(),
+                    Icon(Icons.arrow_forward_ios, color: Colors.orange, size: 16),
+                  ],
+                ),
+              ),
             ),
 
             SizedBox(height: 16),
 
-                Platform.isAndroid ? SizedBox() : profile!.daysLeft == 0 ? Column(
-                  children: [
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.of(context).push(MaterialPageRoute(builder: (_) =>  SubscriptionPage()));
-                      },
-                      child: Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                        decoration: BoxDecoration(
-                          color: Colors.lightGreen,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                'Подписка сатып алу',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      )
-                    ),
-                    const SizedBox(height: 10),
-                  ],
-                ) : SizedBox(),
+                // Platform.isAndroid ? SizedBox() : profile!.daysLeft == 0 ? Column(
+                //   children: [
+                //     GestureDetector(
+                //       onTap: () {
+                //         Navigator.of(context).push(MaterialPageRoute(builder: (_) =>  SubscriptionPage()));
+                //       },
+                //       child: Container(
+                //         width: double.infinity,
+                //         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                //         decoration: BoxDecoration(
+                //           color: Colors.lightGreen,
+                //           borderRadius: BorderRadius.circular(12),
+                //         ),
+                //         child: Row(
+                //           children: [
+                //             Expanded(
+                //               child: Text(
+                //                 'Подписка сатып алу',
+                //                 style: const TextStyle(
+                //                   color: Colors.white,
+                //                   fontSize: 16,
+                //                   fontWeight: FontWeight.bold,
+                //                 ),
+                //               ),
+                //             ),
+                //           ],
+                //         ),
+                //       )
+                //     ),
+                //     const SizedBox(height: 10),
+                //   ],
+                // ) : SizedBox(),
 
                 GestureDetector(
                   onTap: () {
@@ -301,7 +326,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 const SizedBox(height: 20),
 
                 if (profile != null && profile!.curator != null) ...[
-                  Text('Ментор', style: TextStyle(fontWeight: FontWeight.w500)),
+                  Text('Ментор', style: TextStyles.medium(AppColors.black)),
                   const SizedBox(height: 10),
                   _curatorBox(
                     "${profile!.curator?.lastName} ${profile!.curator?.firstName}",
@@ -479,7 +504,7 @@ void showDeleteConfirmationSheet(BuildContext context) {
     return GestureDetector(
       onTap: () => launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication),
       child: Container(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 15),
         decoration: BoxDecoration(
           color: color.withOpacity(1),
           borderRadius: BorderRadius.circular(12),
@@ -488,7 +513,7 @@ void showDeleteConfirmationSheet(BuildContext context) {
           children: [
             Icon(Icons.person, color: Colors.white),
             const SizedBox(width: 8),
-            Expanded(child: Text('$name', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold))),
+            Expanded(child: Text('$name', style: TextStyles.bold(Colors.white))),
             const Icon(FontAwesomeIcons.whatsapp, color: Colors.white),
           ],
         ),

@@ -1,11 +1,11 @@
-// import 'dart:io';
 import 'dart:io';
-
 import 'package:brand_online/authorization/ui/screen/LoginScreen.dart';
+import 'package:brand_online/core/app_colors.dart';
 import 'package:brand_online/roadMap/ui/screen/RoadMap.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:brand_online/core/notification/firebase_utils.dart';
 import 'package:brand_online/core/subscription_service.dart';
 import 'package:brand_online/firebase_options.dart';
@@ -13,6 +13,7 @@ import 'package:brand_online/pursache/purchase_config.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await initializeDateFormatting('kk_KZ');
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
@@ -86,7 +87,7 @@ class _ApplicationState extends State<Application> {
       },
       home:
       isTokenValid == null
-          ? const Scaffold(backgroundColor: Colors.blue, body: Center(child: CircularProgressIndicator(
+          ? const Scaffold(backgroundColor: AppColors.primaryBlue, body: Center(child: CircularProgressIndicator(
             color: Colors.white,
           )))
           : isTokenValid == true

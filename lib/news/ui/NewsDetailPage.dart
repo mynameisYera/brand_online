@@ -1,4 +1,7 @@
 import 'dart:async';
+import 'package:brand_online/core/app_colors.dart';
+import 'package:brand_online/core/text_styles.dart';
+import 'package:brand_online/core/widgets/app_button_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:flutter_math_fork/flutter_math.dart';
@@ -9,8 +12,9 @@ import '../entity/NewsDetailed.dart';
 import '../../general/GeneralUtil.dart';
 class NewsDetailPage extends StatefulWidget {
   final int newsId;
+  final Color color;
 
-  const NewsDetailPage({super.key, required this.newsId});
+  const NewsDetailPage({super.key, required this.newsId, required this.color});
 
   @override
   State<NewsDetailPage> createState() => _NewsDetailPageState();
@@ -63,6 +67,16 @@ class _NewsDetailPageState extends State<NewsDetailPage> {
 
     return Scaffold(
       backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        shadowColor: Colors.white,
+        surfaceTintColor: Colors.white,
+        elevation: 0,
+        title: Text(
+          "Жаңалықтар",
+          style: TextStyles.bold(AppColors.black, fontSize: 28),
+        ),
+      ),
       body: SafeArea(
         child: news == null
             ? const Center(child: Text("Жаңалық табылмады"))
@@ -73,63 +87,75 @@ class _NewsDetailPageState extends State<NewsDetailPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                /// Top bar
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.close),
-                      onPressed: () => Navigator.pop(context),
+                Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: widget.color),
+                      borderRadius: BorderRadius.circular(16),
                     ),
-                    Text(
-                      DateFormat('dd.MM.yyyy').format(
-                        DateTime.parse(news!.publishedAt 
-                        // ?? DateTime.now().toIso8601String()
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              width: 50,
+                              height: 6,
+                              decoration: BoxDecoration(
+                                color: widget.color,
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                            ),
+                            SizedBox(width: 8),
+                            Text(
+                              "Жаңалықтар",
+                              style: TextStyles.regular(widget.color, fontSize: 13),
+                            ),
+                            Spacer(),
+                            Text(
+                              '${news?.publishedAt.day} ${DateFormat('MMMM', 'kk_KZ').format(news?.publishedAt ?? DateTime.now())}',
+                              style: TextStyles.semibold(widget.color, fontSize: 13),
+                            ),
+                          ],
                         ),
-                      ),
-                      style: const TextStyle(color: Colors.grey),
-                    )
-                  ],
-                ),
-                const SizedBox(height: 20),
+                        const SizedBox(height: 6),
 
-                /// HTML Content
-                Center(
-                  child: Html(
-                    data: news?.content,
-                    shrinkWrap: true,
-                    style: {
-                      "*": Style(
-                        fontSize: FontSize(18),
-                      ),
-                    },
-                    extensions: [_mathExtension()],
-                  ),
-                ),
+                        Text(
+                              news?.title ?? '',
+                              style: TextStyles.bold(widget.color, fontSize: 20),
+                            ),
+                        const SizedBox(height: 6),
+                        Divider(
+                          color: AppColors.grey,
+                          height: 0.7,
+                        ),
+                        const SizedBox(height: 20),
 
-                const SizedBox(height: 30),
+                        /// HTML Content
+                        Center(
+                          child: Html(
+                            data: news?.content,
+                            shrinkWrap: true,
+                            style: {
+                              "*": Style(
+                                fontSize: FontSize(13), fontFamily: 'Manrope',
+                                fontWeight: FontWeight.w500,
+                                color: AppColors.grey,
+                              ),
+                            },
+                            extensions: [_mathExtension()],
+                          ),
+                        ),
 
-                /// Button
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () => Navigator.pop(context),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: const Text(
-                      'КЕРЕМЕТ!',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
+                        const SizedBox(height: 30),
+
+                        AppButton(
+                          onPressed: () => Navigator.pop(context),
+                          text: 'КЕРЕМЕТ!',
+                        ),
+                      ],
                     ),
                   ),
-                ),
               ],
             ),
           ),

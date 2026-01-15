@@ -1,7 +1,8 @@
+import 'package:brand_online/core/app_colors.dart';
+import 'package:brand_online/core/text_styles.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
-import 'package:google_fonts/google_fonts.dart';
-
 import '../../general/GeneralUtil.dart';
 import '../service/leaderboard_service.dart';
 import '../entity/LeaderboardResponse.dart';
@@ -24,7 +25,7 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
   LeaderboardResponse? monthlyLeaderboard;
   LeaderboardResponse? totalLeaderboard;
 
-  final List<String> titles = ['Апта', 'Ай', 'Жалпы'];
+  final List<String> titles = ['Апта', 'Ай', 'Барлығы'];
 
   @override
   void initState() {
@@ -107,48 +108,49 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
           Container(
             child: Text(
               'Үздіктер $classTitle',
-              style: TextStyle(
-                fontFamily: 'Roboto',
-                fontWeight: FontWeight.bold,
-                fontSize: 20,
-              ),
+              style: TextStyles.bold(AppColors.black, fontSize: 28),
             ),
           ),
-          const SizedBox(height: 10),
-
+          const SizedBox(height: 24),
           /// Tabs
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: List.generate(titles.length, (index) {
-              final isSelected = selectedIndex == index;
-              return GestureDetector(
-                onTap: () {
-                  _pageController.animateToPage(
-                    index,
+          Container(
+            margin: const EdgeInsets.symmetric(horizontal: 20),
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            decoration: BoxDecoration(
+              color: Color(0xffF3F3F3),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(titles.length, (index) {
+                final isSelected = selectedIndex == index;
+                return GestureDetector(
+                  onTap: () {
+                    _pageController.animateToPage(
+                      index,
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.ease,
+                    );
+                  },
+                  child: AnimatedContainer(
                     duration: const Duration(milliseconds: 300),
-                    curve: Curves.ease,
-                  );
-                },
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 300),
-                  padding:
-                      const EdgeInsets.symmetric(vertical: 8, horizontal: 20),
-                  margin: const EdgeInsets.symmetric(horizontal: 6),
-                  decoration: BoxDecoration(
-                    color: isSelected ? Colors.grey[300] : Colors.transparent,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    titles[index],
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                      color: isSelected ? Colors.black : Colors.grey,
+                    padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 30),
+                    margin: const EdgeInsets.symmetric(horizontal: 6),
+                    decoration: BoxDecoration(
+                      color: isSelected ? AppColors.primaryBlue : Colors.transparent,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      titles[index],
+                      style: TextStyles.medium(
+                        isSelected ? Colors.white : AppColors.black,
+                        fontSize: 16,
+                      ),
                     ),
                   ),
-                ),
-              );
-            }),
+                );
+              }),
+            ),
           ),
 
           const SizedBox(height: 46),
@@ -160,22 +162,22 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
               _TopCircle(
                 name: top20.length > 1 ? top20[1].firstName : '',
                 index: 1,
-                color: Color.fromRGBO(205, 205, 205, 1),
-                size: 90,
+                color: Color(0xffA3A3A3),
+                size: 100,
                 cash: currentLeaderboard!.secondPlace,
               ),
               _TopCircle(
                 name: top20.isNotEmpty ? top20[0].firstName : '',
                 index: 0,
-                color: Color.fromRGBO(255, 196, 0, 1),
-                size: 120,
+                color: Color(0xffFFB703),
+                size: 121,
                 cash: currentLeaderboard!.firstPlace,
               ),
               _TopCircle(
                 name: top20.length > 2 ? top20[2].firstName : '',
                 index: 2,
-                color: Color.fromRGBO(205, 142, 70, 1),
-                size: 90,
+                color: Color(0xffFF6700),
+                size: 100,
                 cash: currentLeaderboard!.thirdPlace,
               ),
             ],
@@ -213,12 +215,12 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
                       child: Container(
                         decoration: BoxDecoration(
                           color: i == 0
-                              ? Color.fromRGBO(255, 196, 0, 1)
+                              ? Color(0xffFFB703)
                               : i == 1
-                                  ? Color.fromRGBO(205, 205, 205, 1)
+                                  ? Color(0xffA3A3A3)
                                   : i == 2
-                                      ? Color.fromRGBO(205, 142, 70, 1)
-                                      : Colors.white,
+                                      ? Color(0xffFF6700)
+                                      : Color(0xffF3F3F3),
                           borderRadius: BorderRadius.circular(12),
                           border: isCurrentUser
                               ? Border.all(
@@ -226,45 +228,42 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
                               : Border.all(color: Colors.transparent),
                         ),
                         child: ListTile(
-                          leading: Text(
-                            '${i + 1}',
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 18,
-                              color: Colors.black,
+                          subtitle: Text(
+                            '${_getPointsBySelectedType(user)} ұпай',
+                            style: TextStyles.regular(i >= 3 ? Colors.black : Colors.white, fontSize: 13),
+                          ),
+                          leading: Container(
+                            width: 30,
+                            height: 30,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(color: i >= 3 ? AppColors.grey : Colors.white, width: 2),
+                            ),
+                            child: Center(
+                              child: Text(
+                                '${i + 1}',
+                                style: TextStyles.bold(i >= 3 ? AppColors.grey : Colors.white, fontSize: 18),
+                              ),
                             ),
                           ),
                           title: Row(
                             children: [
-                              Text(
-                                user.firstName,
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black,
-                                ),
-                              ),
-                              const SizedBox(width: 8),
+                              Text(user.firstName, style: TextStyles.bold(i >= 3 ? Colors.black : Colors.white, fontSize: 18)),
+                              const SizedBox(width: 20),
                               if (user.strike > 0)
                                 Row(
                                   children: [
-                                    Image.asset('assets/images/fire1.png',
-                                        width: 20),
                                     Text(
                                       '${user.strike}',
-                                      style: TextStyle(
-                                          color: GeneralUtil.orangeColor),
+                                      style: TextStyles.bold(i >= 3 ? Colors.black : Colors.white, fontSize: 18),
                                     ),
+                                    const SizedBox(width: 4),
+                                    SvgPicture.asset('assets/icons/fire.svg',
+                                        width: 20),
                                   ],
                                 ),
+  
                             ],
-                          ),
-                          trailing: Text(
-                            '${_getPointsBySelectedType(user)}',
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                              color: Colors.black,
-                            ),
                           ),
                         ),
                       ),
@@ -372,13 +371,14 @@ class _TopCircle extends StatelessWidget {
       height: size + 60,
       child: Column(
         children: [
+          SizedBox(height: 26),
           Stack(
             alignment: Alignment.center,
             clipBehavior: Clip.none,
             children: [
               if (index == 0)
                 const Positioned(
-                  top: -40,
+                  top: -60,
                   child: Image(
                     image: AssetImage('assets/images/crown.png'),
                     width: 60,
@@ -395,11 +395,7 @@ class _TopCircle extends StatelessWidget {
                 child: Center(
                   child: Text(
                     getRomanText(index),
-                    style: GoogleFonts.robotoSerif(
-                      fontSize: size / 2,
-                      fontWeight: FontWeight.w700,
-                      color: color,
-                    ),
+                    style: TextStyles.bold(color, fontSize: 60),
                   ),
                 ),
               ),

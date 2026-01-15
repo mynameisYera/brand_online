@@ -78,11 +78,11 @@ class SubscriptionBloc extends Bloc<SubscriptionEvent, SubscriptionState> {
           final storeProduct = monthlyPackage.storeProduct;
 
           // Format price with currency
-          final currentPrice = '${storeProduct.priceString} в месяц';
+          final currentPrice = '${storeProduct.priceString}';
 
           // For original price, you might want to show a discounted price
           // This is just an example - adjust based on your pricing strategy
-          final originalPrice = '${storeProduct.priceString} в месяц';
+          final originalPrice = '${storeProduct.priceString}';
 
           emit(
             state.copyWith(
@@ -95,8 +95,8 @@ class SubscriptionBloc extends Bloc<SubscriptionEvent, SubscriptionState> {
           emit(
             state.copyWith(
               isLoading: false,
-              currentPrice: '00,000₸ в месяц',
-              originalPrice: '00,000₸ в месяц',
+              currentPrice: '00,000₸',
+              originalPrice: '00,000₸',
             ),
           );
         }
@@ -105,8 +105,8 @@ class SubscriptionBloc extends Bloc<SubscriptionEvent, SubscriptionState> {
         emit(
           state.copyWith(
             isLoading: false,
-            currentPrice: '00,000₸ в месяц',
-            originalPrice: '00,000₸ в месяц',
+            currentPrice: '00,000₸',
+            originalPrice: '00,000₸',
           ),
         );
       }
@@ -184,8 +184,8 @@ class SubscriptionBloc extends Bloc<SubscriptionEvent, SubscriptionState> {
             final monthlyPackage = spaceProOffering.availablePackages.first;
             final storeProduct = monthlyPackage.storeProduct;
 
-            final currentPrice = '${storeProduct.priceString} в месяц';
-            final originalPrice = '${storeProduct.priceString} в месяц';
+            final currentPrice = '${storeProduct.priceString}';
+            final originalPrice = '${storeProduct.priceString}';
 
 
             emit(

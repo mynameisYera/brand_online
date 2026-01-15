@@ -1,4 +1,7 @@
+import 'package:brand_online/core/app_colors.dart';
+import 'package:brand_online/core/text_styles.dart';
 import 'package:flutter/material.dart' hide Notification;
+import 'package:intl/intl.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 
 import '../../general/GeneralUtil.dart';
@@ -44,16 +47,13 @@ class _NotificationsPageState extends State<NotificationsPage> {
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
+        shadowColor: Colors.white,
+        surfaceTintColor: Colors.white,
         elevation: 0,
         centerTitle: true,
-        title: const Text(
+        title: Text(
           'Хабарламалар',
-          style: TextStyle(
-            fontFamily: 'Roboto',
-            fontWeight: FontWeight.bold,
-            fontSize: 20,
-          ),
+          style: TextStyles.bold(AppColors.black, fontSize: 28),
         ),
       ),
       body: isLoading
@@ -68,15 +68,14 @@ class _NotificationsPageState extends State<NotificationsPage> {
           : notifications.isEmpty
               ? _buildEmptyNotifications()
               : ListView.separated(
-                  padding: const EdgeInsets.all(16),
                   itemCount: notifications.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 12),
+                  separatorBuilder: (_, __) => const Divider(color: AppColors.grey, height: 0.7),
                   itemBuilder: (context, index) {
                     final notification = notifications[index];
                     return _NotificationTile(
                       title: notification.title,
                       message: notification.body,
-                      time: notification.createdAt.split("T").first,
+                      time: '${notification.createdAt.day} ${DateFormat('MMMM', 'kk_KZ').format(notification.createdAt.toLocal())}',
                       accentColor: colors[index % colors.length],
                     );
                   },
@@ -131,26 +130,25 @@ class _NotificationTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
-          ),
-        ],
-        border: Border.all(color: Colors.black.withOpacity(0.05)),
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(18),
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
-              width: 6,
-              height: 90,
-              color: accentColor,
+              margin: const EdgeInsets.only(top: 18),
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: accentColor.withOpacity(0.5),
+                borderRadius: BorderRadius.circular(100),
+              ),
+              child: Icon(
+                Icons.notifications_active_outlined,
+                size: 27,
+                color: accentColor,
+              ),
             ),
             Expanded(
               child: Padding(
@@ -166,18 +164,7 @@ class _NotificationTile extends StatelessWidget {
                             title,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Text(
-                          time,
-                          style: const TextStyle(
-                            color: Colors.black45,
-                            fontSize: 12,
+                            style: TextStyles.semibold(AppColors.black, fontSize: 16),
                           ),
                         ),
                       ],
@@ -191,21 +178,16 @@ class _NotificationTile extends StatelessWidget {
                         height: 1.4,
                       ),
                     ),
+                    const SizedBox(height: 6),
+                    Text(
+                          time,
+                          style: const TextStyle(
+                            color: Colors.black45,
+                            fontSize: 12,
+                          ),
+                        ),
                   ],
                 ),
-              ),
-            ),
-            Container(
-              margin: const EdgeInsets.only(right: 14),
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: accentColor.withOpacity(0.15),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                Icons.notifications_active,
-                size: 18,
-                color: accentColor,
               ),
             ),
           ],

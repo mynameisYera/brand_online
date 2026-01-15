@@ -22,7 +22,7 @@ class Notification {
   final int id;
   final String title;
   final String body;
-  final String createdAt;
+  final DateTime createdAt;
 
   Notification({
     required this.id,
@@ -31,14 +31,13 @@ class Notification {
     required this.createdAt,
   });
 
-  factory Notification.fromJson(Map<String, dynamic> json) {
-    final dynamic createdAtValue = json['createdAt'] ?? json['created_at'];
 
-    return Notification(
-      id: json['id'] ?? 0,
-      title: (json['title'] ?? '').toString(),
-      body: (json['body'] ?? '').toString(),
-      createdAt: createdAtValue != null ? createdAtValue.toString() : '',
-    );
-  }
+factory Notification.fromJson(Map<String, dynamic> json) {
+  return Notification(
+    id: json['id'],
+    title: json['title'],
+    body: json['body'],
+    createdAt: DateTime.parse(json['created_at']),
+  );
+}
 }

@@ -1,7 +1,7 @@
 name: brand_online
 description: "Study smart online with Brand Online KZ"
 publish_to: 'none' 
-version: 1.0.1+2
+version: 1.0.2+3
 
 environment:
   sdk: ^3.6.0
@@ -158,6 +158,8 @@ flutter:
     - assets/icons/problems.svg
     - assets/images/correct.png
     - assets/images/incorrect.png
+    - assets/images/subscription.png
+    - assets/images/course.png
 
 
 

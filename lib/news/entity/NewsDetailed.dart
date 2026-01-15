@@ -2,7 +2,7 @@ class NewsDetailed {
   final int id;
   final String title;
   String content;
-  final String publishedAt;
+  final DateTime publishedAt;
 
   NewsDetailed({
     required this.id,
@@ -16,7 +16,7 @@ class NewsDetailed {
       id: json['id'],
       title: json['title'],
       content: json['content'],
-      publishedAt: json['published_at'],
+      publishedAt: DateTime.parse(json['published_at']),
     );
   }
 }
