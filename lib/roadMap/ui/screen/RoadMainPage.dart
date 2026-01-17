@@ -2,6 +2,9 @@ import 'dart:io';
 
 import 'package:brand_online/core/app_colors.dart';
 import 'package:brand_online/core/text_styles.dart';
+import 'package:brand_online/roadMap/ui/screen/Math1Screen.dart';
+import 'package:brand_online/roadMap/ui/screen/YoutubeScreen.dart';
+import 'package:brand_online/roadMap/ui/widget/letsgo_popup.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_svg/svg.dart';
@@ -22,7 +25,6 @@ import '../../ui/widget/RoadWidget.dart';
 import 'ChaptersDialog.dart';
 import 'CustomAppBar.dart';
 import 'RoadMap.dart';
-import 'YoutubeScreen.dart';
 import 'dart:convert';
 
 class RoadMainPage extends StatefulWidget {
@@ -108,11 +110,6 @@ class _RoadMainPageState extends State<RoadMainPage>
   String chapterTitle = '';
   String mainTitle = '';
   String mainTitleDescription = '';
-  
-  // Отслеживание раскрытой кнопки для каждого урока: индекс урока -> тип кнопки (null, 'play', 'math1', 'math2', 'math3')
-  Map<int, String?> expandedButtonMap = {};
-  // Отслеживание раскрытого состояния кнопок: индекс урока -> раскрыта ли кнопка
-  Map<int, bool> expandedButtonsState = {};
 
   @override
   void initState() {
@@ -250,8 +247,6 @@ class _RoadMainPageState extends State<RoadMainPage>
         tarau = [];
         double currentOffset = 0.0;
         structuredChapters.clear();
-        expandedButtonMap.clear(); // Сбрасываем раскрытые кнопки при обновлении
-        expandedButtonsState.clear(); // Сбрасываем состояние раскрытия кнопок
 
         for (var chapter in response.chapters) {
           List<SimpleTaskIndex> lessonsList = [];
@@ -282,10 +277,10 @@ class _RoadMainPageState extends State<RoadMainPage>
             
             currentOffset += 380;
             index++;
-            lessonsList.add(SimpleTaskIndex(title: lessonTitle, index: lessonId));
+            lessonsList.add(SimpleTaskIndex(title: lessonTitle, index: lessonId, isCompleted: lesson.videoWatched && lesson.group1Completed && lesson.group2Completed && lesson.group3Completed, isCashback: lesson.cashbackActive));
           }
           structuredChapters.add({
-            SimpleTaskIndex(title: chapterTitle, index: chapterId): lessonsList,
+            SimpleTaskIndex(title: chapterTitle, index: chapterId, isCompleted: lessonsList.every((lesson) => lesson.isCompleted), isCashback: lessonsList.any((lesson) => lesson.isCashback)): lessonsList,
           });
         }
 
@@ -364,7 +359,6 @@ class _RoadMainPageState extends State<RoadMainPage>
       ),
       child: Stack(
         children: [
-          // Полупрозрачный белый overlay, если не все задания завершены
           if (!allCompleted)
             Positioned.fill(
               child: IgnorePointer(
@@ -379,354 +373,283 @@ class _RoadMainPageState extends State<RoadMainPage>
           Column(
             children: [
               Spacer(),
-              expandedButtonMap[index] != null
-                  ? _buildExpandedButton(
-                      context: context,
-                      lesson: lesson,
-                      index: index,
-                      buttonType: expandedButtonMap[index]!,
-                    )
-                  : Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        _buildCardButton(
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _buildCardButton(
+                    context: context,
+                    lesson: lesson,
+                    index: index,
+                    buttonKey: _buttonKeys[index],
+                    isActive: lesson.videoWatched,
+                    iconPath: 'assets/icons/play.svg',
+                    onTap: () async {
+                      if (lesson.isPublished == false) {
+                        // RoadWidget().showUndefinedDialog(context);
+                        showModalBottomSheet(
                           context: context,
-                          lesson: lesson,
-                          index: index,
-                          buttonKey: _buttonKeys[index],
-                          isActive: lesson.videoWatched,
-                          iconPath: 'assets/icons/play.svg',
-                          onTap: () async {
-                            if (lesson.isPublished == false) {
-                              RoadWidget().showUndefinedDialog(context);
-                              
-                            } else {
-                              await RoadWidget().playDialogScreen(
-                                context,
-                                index,
-                                _buttonKeys[index],
-                                lesson,
-                                scrollOffset: _scrollController.offset,
-                              ).then((value) {
-                                if (value == true) {
-                                  getRoadMap();
-                                }
-                              });
-                            }
-                          },
-                        ),
+                          builder: (context) => LetsgoPopup(
+                            title: 'Кеттік!',
+                            subtitle: 'Кеттік!',
+                            onContinue: () => Navigator.pop(context),
+                          ),
+                        );
                         
-                        _buildCardButton(
+                      } else {
+                        showModalBottomSheet(
                           context: context,
-                          lesson: lesson,
-                          index: index,
-                          buttonKey: _buttonMath1[index],
-                          isActive: lesson.group1Completed,
-                          iconPath: 'assets/icons/problems.svg',
-                          showCashback: lesson.cashbackActive && !lesson.group1Completed,
-                          onTap: () async {
-                            if (lesson.isPublished == false) {
-                              RoadWidget().showUndefinedDialog(context);
-                              
-                            } else if (!lesson.videoWatched) {
-                              RoadWidget().showWatchVideoDialog(context);
-                              
-                            } else {
-                              await RoadWidget().math1(
+                          builder: (context) => LetsgoPopup(
+                            title: 'Видеосабақты көру',
+                            subtitle: 'Сабақты бастауға дайынсыз ба?',
+                            onContinue: () async {
+                            await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => YoutubeScreen(lesson: lesson),
+                              ),
+                            );
+                            await Navigator.pushAndRemoveUntil(
                                 context,
-                                index,
-                                _buttonMath1[index],
-                                lesson,
-                                1,
-                                false,
-                                scrollOffset: _scrollController.offset,
-                              ).then((value) {
-                                if (value == true) {
-                                  getRoadMap();
-                                }
-                              });
-                            }
+                                MaterialPageRoute(
+                                  builder: (_) => RoadMap(initialScrollOffset: _scrollController.offset, selectedIndx: 0,state: 0,),
+                                ),
+                                    (route) => false,
+                              );
                           },
-                        ),
+                          ),
+                        );
+                        // await RoadWidget().playDialogScreen(
+                        //   context,
+                        //   index,
+                        //   _buttonKeys[index],
+                        //   lesson,
+                        //   scrollOffset: _scrollController.offset,
+                        // ).then((value) {
+                        //   if (value == true) {
+                        //     getRoadMap();
+                        //   }
+                        // });
+                      }
+                    },
+                  ),
+                  
+                  _buildCardButton(
+                    context: context,
+                    lesson: lesson,
+                    index: index,
+                    buttonKey: _buttonMath1[index],
+                    isActive: lesson.group1Completed,
+                    iconPath: 'assets/icons/problems.svg',
+                    showCashback: lesson.cashbackActive && !lesson.group1Completed,
+                    onTap: () async {
+                      if (lesson.isPublished == false) {
+                        // RoadWidget().showUndefinedDialog(context);
+                        showModalBottomSheet(
+                          context: context,
+                          builder: (context) => LetsgoPopup(
+                            title: 'Кеттік!',
+                            subtitle: 'Кеттік!',
+                            onContinue: () => Navigator.pop(context),
+                          ),
+                        );
                         
-                        _buildCardButton(
+                      } else if (!lesson.videoWatched) {
+                        // RoadWidget().showWatchVideoDialog(context);
+                        showModalBottomSheet(
                           context: context,
-                          lesson: lesson,
-                          index: index,
-                          buttonKey: _buttonMath2[index],
-                          isActive: lesson.group2Completed,
-                          iconPath: 'assets/icons/problems.svg',
-                          showCashback: lesson.cashbackActive && !lesson.group2Completed,
-                          onTap: () async {
-                            if (lesson.isPublished == false) {
-                              RoadWidget().showUndefinedDialog(context);
-                              
-                            } else if (!lesson.videoWatched) {
-                              RoadWidget().showWatchVideoDialog(context);
-                              
-                            } else if (!lesson.group1Completed) {
-                              RoadWidget().showTaskDoneDialog(context);
-                              
-                            } else {
-                              await RoadWidget().math1(
-                                context,
-                                index,
-                                _buttonMath2[index],
-                                lesson,
-                                2,
-                                false,
-                                scrollOffset: _scrollController.offset,
-                              ).then((value) {
-                                if (value == true) {
-                                  getRoadMap();
-                                }
-                              });
-                            }
-                          },
-                        ),
+                          builder: (context) => LetsgoPopup(
+                            title: 'Видеосабақты көру',
+                            subtitle: 'Сабақты бастауға дайынсыз ба?',
+                            onContinue: () => Navigator.pop(context),
+                          ),
+                        );
                         
-                        _buildCardButton(
+                      } else {
+                        showModalBottomSheet(
                           context: context,
-                          lesson: lesson,
-                          index: index,
-                          buttonKey: _buttonMath3[index],
-                          isActive: lesson.group3Completed,
-                          iconPath: 'assets/icons/problems.svg',
-                          showCashback: lesson.cashbackActive && !lesson.group3Completed,
-                          onTap: () async {
-                            if (lesson.isPublished == false) {
-                              RoadWidget().showUndefinedDialog(context);
-                              
-                            } else if (!lesson.videoWatched) {
-                              RoadWidget().showWatchVideoDialog(context);
-                              
-                            } else if (!lesson.group1Completed || !lesson.group2Completed) {
-                              RoadWidget().showTaskDoneDialog(context);
-                              
-                            } else {
-                              await RoadWidget().math1(
+                          builder: (context) => LetsgoPopup(
+                            title: lesson.lessonTitle,
+                            subtitle: 'Сабақты бастауға дайынсыз ба?',
+                            onContinue: () async {
+                            await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => Math1Screen(
+                                  initialScrollOffset: _scrollController.offset,  
+                                  lessonId: lesson.lessonId,
+                                  groupId: 1,
+                                  cashbackActive: lesson.cashbackActive,
+                                  isCash: false,
+                                  lesson: lesson,
+                                ),
+                              ),
+                            ) ?? false;
+
+                              Navigator.pushAndRemoveUntil(
                                 context,
-                                index,
-                                _buttonMath3[index],
-                                lesson,
-                                3,
-                                false,
-                                scrollOffset: _scrollController.offset,
-                              ).then((value) {
-                                if (value == true) {
-                                  getRoadMap();
-                                }
-                              });
-                            }
+                                MaterialPageRoute(
+                                  builder: (_) => RoadMap(initialScrollOffset: _scrollController.offset, selectedIndx: 0,state: 0,),
+                                ),
+                                    (route) => false,
+                              );
                           },
-                        ),
-                      ],
-                    ),
+                          ),
+                        );
+                        // await RoadWidget().math1(
+                        //   context,
+                        //   index,
+                        //   _buttonMath1[index],
+                        //   lesson,
+                        //   1,
+                        //   false,
+                        //   scrollOffset: _scrollController.offset,
+                        // ).then((value) {
+                        //   if (value == true) {
+                        //     getRoadMap();
+                        //   }
+                        // });
+                      }
+                    },
+                  ),
+                  
+                  _buildCardButton(
+                    context: context,
+                    lesson: lesson,
+                    index: index,
+                    buttonKey: _buttonMath2[index],
+                    isActive: lesson.group2Completed,
+                    iconPath: 'assets/icons/problems.svg',
+                    showCashback: lesson.cashbackActive && !lesson.group2Completed,
+                    onTap: () async {
+                      if (lesson.isPublished == false) {
+                        RoadWidget().showUndefinedDialog(context);
+                        
+                      } else if (!lesson.videoWatched) {
+                        RoadWidget().showWatchVideoDialog(context);
+                        
+                      } else if (!lesson.group1Completed) {
+                        RoadWidget().showTaskDoneDialog(context);
+                        
+                      } else {
+                        showModalBottomSheet(
+                          context: context,
+                          builder: (context) => LetsgoPopup(
+                            title: lesson.lessonTitle,
+                            subtitle: 'Сабақты бастауға дайынсыз ба?',
+                            onContinue: () async {
+                            await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => Math1Screen(
+                                  initialScrollOffset: _scrollController.offset,  
+                                  lessonId: lesson.lessonId,
+                                  groupId: 2,
+                                  cashbackActive: lesson.cashbackActive,
+                                  isCash: false,
+                                  lesson: lesson,
+                                ),
+                              ),
+                            ) ?? false;
+
+                              Navigator.pushAndRemoveUntil(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => RoadMap(initialScrollOffset: _scrollController.offset, selectedIndx: 0,state: 0,),
+                                ),
+                                    (route) => false,
+                              );
+                          },
+                          ),
+                        );
+                        // await RoadWidget().math1(
+                        //   context,
+                        //   index,
+                        //   _buttonMath2[index],
+                        //   lesson,
+                        //   2,
+                        //   false,
+                        //   scrollOffset: _scrollController.offset,
+                        // ).then((value) {
+                        //   if (value == true) {
+                        //     getRoadMap();
+                        //   }
+                        // });
+                      }
+                    },
+                  ),
+                  
+                  _buildCardButton(
+                    context: context,
+                    lesson: lesson,
+                    index: index,
+                    buttonKey: _buttonMath3[index],
+                    isActive: lesson.group3Completed,
+                    iconPath: 'assets/icons/problems.svg',
+                    showCashback: lesson.cashbackActive && !lesson.group3Completed,
+                    onTap: () async {
+                      if (lesson.isPublished == false) {
+                        RoadWidget().showUndefinedDialog(context);
+                        
+                      } else if (!lesson.videoWatched) {
+                        RoadWidget().showWatchVideoDialog(context);
+                        
+                      } else if (!lesson.group1Completed || !lesson.group2Completed) {
+                        RoadWidget().showTaskDoneDialog(context);
+                        
+                      } else {
+
+                        showModalBottomSheet(
+                          context: context,
+                          builder: (context) => LetsgoPopup(
+                            title: lesson.lessonTitle,
+                            subtitle: 'Сабақты бастауға дайынсыз ба?',
+                            onContinue: () async {
+                            await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => Math1Screen(
+                                  initialScrollOffset: _scrollController.offset,  
+                                  lessonId: lesson.lessonId,
+                                  groupId: 3,
+                                  cashbackActive: lesson.cashbackActive,
+                                  isCash: false,
+                                  lesson: lesson,
+                                ),
+                              ),
+                            ) ?? false;
+
+                              Navigator.pushAndRemoveUntil(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => RoadMap(initialScrollOffset: _scrollController.offset, selectedIndx: 0,state: 0,),
+                                ),
+                                    (route) => false,
+                              );
+                          },
+                          ),
+                        );
+                        // await RoadWidget().math1(
+                        //   context,
+                        //   index,
+                        //   _buttonMath3[index],
+                        //   lesson,
+                        //   3,
+                        //   false,
+                        //   scrollOffset: _scrollController.offset,
+                        // ).then((value) {
+                        //   if (value == true) {
+                        //     getRoadMap();
+                        //   }
+                        // });
+                      }
+                    },
+                  ),
+                ],
+              ),
               SizedBox(height: 20),
             ],
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildExpandedButton({
-    required BuildContext context,
-    required Lesson lesson,
-    required int index,
-    required String buttonType,
-  }) {
-    String buttonText;
-    String iconPath;
-    VoidCallback? onTap;
-    
-    switch (buttonType) {
-      case 'play':
-        buttonText = 'Видео сабаққа өту';
-        iconPath = 'assets/icons/play.svg';
-        onTap = () async {
-          if (expandedButtonsState[index] == true) {
-            await Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => YoutubeScreen(lesson: lesson),
-              ),
-            );
-            await Navigator.pushAndRemoveUntil(
-              context,
-              MaterialPageRoute(
-                builder: (_) => RoadMap(initialScrollOffset: _scrollController.offset, selectedIndx: 0, state: 0),
-              ),
-              (route) => false,
-            );
-          } else {
-            setState(() {
-              expandedButtonsState[index] = true;
-            });
-          }
-        };
-        break;
-      case 'math1':
-        buttonText = '1-ші тапсырмаларға өту';
-        iconPath = 'assets/icons/problems.svg';
-        onTap = () async {
-          if (expandedButtonsState[index] == true) {
-            await RoadWidget().math1(
-              context,
-              index,
-              _buttonMath1[index],
-              lesson,
-              1,
-              false,
-              scrollOffset: _scrollController.offset,
-            ).then((value) {
-              if (value == true) {
-                getRoadMap();
-              }
-            });
-          } else {
-            setState(() {
-              expandedButtonsState[index] = true;
-            });
-          }
-        };
-        break;
-      case 'math2':
-        buttonText = '2-ші тапсырмаларға өту';
-        iconPath = 'assets/icons/problems.svg';
-        onTap = () async {
-          if (expandedButtonsState[index] == true) {
-            await RoadWidget().math1(
-              context,
-              index,
-              _buttonMath2[index],
-              lesson,
-              2,
-              false,
-              scrollOffset: _scrollController.offset,
-            ).then((value) {
-              if (value == true) {
-                getRoadMap();
-              }
-            });
-          } else {
-            setState(() {
-              expandedButtonsState[index] = true;
-            });
-          }
-        };
-        break;
-      case 'math3':
-        buttonText = '3-ші тапсырмаларға өту';
-        iconPath = 'assets/icons/problems.svg';
-        onTap = () async {
-          if (expandedButtonsState[index] == true) {
-            await RoadWidget().math1(
-              context,
-              index,
-              _buttonMath3[index],
-              lesson,
-              3,
-              false,
-              scrollOffset: _scrollController.offset,
-            ).then((value) {
-              if (value == true) {
-                getRoadMap();
-              }
-            });
-          } else {
-            setState(() {
-              expandedButtonsState[index] = true;
-            });
-          }
-        };
-        break;
-      default:
-        buttonText = 'Видео сабаққа өту';
-        iconPath = 'assets/icons/play.svg';
-    }
-
-    bool isExpanded = expandedButtonsState[index] == true;
-    
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 16),
-      child: AnimatedContainer(
-        duration: Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-        width: double.infinity,
-        height: isExpanded ? 120 : 56,
-        decoration: BoxDecoration(
-          color: AppColors.primaryBlue,
-          borderRadius: BorderRadius.circular(28),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.primaryBlue.withOpacity(0.3),
-              offset: Offset(0, 4),
-              blurRadius: 8,
-            ),
-          ],
-        ),
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: onTap,
-            borderRadius: BorderRadius.circular(28),
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16, vertical: isExpanded ? 12 : 8),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          shape: BoxShape.circle,
-                        ),
-                        child: Center(
-                          child: SvgPicture.asset(
-                            iconPath,
-                            width: 20,
-                            height: 20,
-                            color: AppColors.primaryBlue,
-                          ),
-                        ),
-                      ),
-                      SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          buttonText,
-                          style: TextStyles.bold(Colors.white),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                      AnimatedRotation(
-                        duration: Duration(milliseconds: 300),
-                        turns: isExpanded ? 0.5 : 0,
-                        child: Icon(
-                          Icons.keyboard_arrow_down,
-                          color: Colors.white,
-                          size: 24,
-                        ),
-                      ),
-                    ],
-                  ),
-                  if (isExpanded) ...[
-                    SizedBox(height: 12),
-                    Text(
-                      'Екінші рет басыңыз',
-                      style: TextStyles.medium(Colors.white.withOpacity(0.9)),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                ],
-              ),
-            ),
-          ),
-        ),
       ),
     );
   }
@@ -743,7 +666,7 @@ class _RoadMainPageState extends State<RoadMainPage>
   }) {
     Color buttonColor;
     if (isActive) {
-      buttonColor = Colors.white;
+      buttonColor = colors[index % 5];
     } else if (lesson.cashbackActive) {
       buttonColor = Colors.amber;
     } else {
@@ -778,7 +701,7 @@ class _RoadMainPageState extends State<RoadMainPage>
                   iconPath,
                   fit: BoxFit.contain,
                   color: isActive || lesson.cashbackActive
-                      ? colors[index % 5]
+                      ? AppColors.white
                       : AppColors.grey,
                 ),
               ),

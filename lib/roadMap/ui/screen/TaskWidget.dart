@@ -1,8 +1,5 @@
 import 'dart:io';
-import 'package:brand_online/core/app_colors.dart';
-import 'package:brand_online/core/text_styles.dart';
-import 'package:brand_online/core/widgets/app_button_widget.dart';
-import 'package:brand_online/roadMap/ui/screen/answer_video_popup.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:flutter_math_fork/flutter_math.dart';
@@ -11,20 +8,19 @@ import 'package:brand_online/authorization/entity/RoadMapResponse.dart';
 import 'package:brand_online/roadMap/service/task_service.dart';
 import 'package:brand_online/roadMap/ui/screen/NewResultScreen.dart';
 import 'package:brand_online/roadMap/ui/screen/ResultScreen.dart';
-import 'package:brand_online/roadMap/ui/widget/correct_answer_popup.dart';
-import 'package:brand_online/roadMap/ui/widget/error_occured_bottom_widget.dart';
-import 'package:brand_online/roadMap/ui/widget/incorrect_answer_popup.dart';
 import 'package:audioplayers/audioplayers.dart' as ap;
 import 'package:just_audio/just_audio.dart' as ja;
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:dio/dio.dart';
+import 'package:brand_online/roadMap/ui/widget/error_occured_bottom_widget.dart';
 import '../../entity/ProfileController.dart';
 import 'dart:async';
 import '../../entity/TaskEntity.dart';
 import '../widget/anagram_input.dart';
 import '../widget/anagram_segments_input.dart';
 import 'RoadMap.dart';
+import 'YoutubeUrlScreen.dart';
 
-// NEW:
 class TaskWidget extends StatefulWidget {
   final Task task;
   final bool isRepeat;
@@ -40,6 +36,18 @@ class TaskWidget extends StatefulWidget {
   final VoidCallback? onCorrect;
   final bool dailyReview;
   final Lesson lesson;
+  final bool dailySubjectMode;
+  final Future<void> Function(
+    int score,
+    int percentage,
+    int strike,
+    int temporaryBalance,
+    double factory,
+    int money,
+    bool isCash,
+    int taskCashback,
+    int totalCashback,
+  )? customShowResultScreen;
 
   const TaskWidget({
     super.key,
@@ -54,7 +62,10 @@ class TaskWidget extends StatefulWidget {
     required this.isCash,
     required this.cashbackActive,
     required this.actionButtonKey,
-    required this.onCorrect, required this.lesson,
+    required this.onCorrect, 
+    required this.lesson,
+    this.dailySubjectMode = false,
+    this.customShowResultScreen,
   });
 
   @override
@@ -73,8 +84,7 @@ class _TaskWidgetState extends State<TaskWidget>
   int? selectedRightIndex;
   String userAnswer = "";
   List<Map<String, int>> selectedPairs = [];
-  List<List<Color>> pairColors = [];
-  List<Color> pairColors2 = [];
+  List<Color> pairColors = [];
   Color buttonColor = Colors.blue;
   String buttonText = "ТЕКСЕРУ";
   final ap.AudioPlayer _iosAudioPlayer = ap.AudioPlayer();
@@ -90,6 +100,7 @@ class _TaskWidgetState extends State<TaskWidget>
 
   // animations & submit
   late AnimationController _shakeController;
+  late Animation<double> _offsetAnimation;
   bool isSubmitting = false;
   CancelToken? _inFlightCancel;
   final _noScreenshot = NoScreenshot.instance;
@@ -117,6 +128,9 @@ class _TaskWidgetState extends State<TaskWidget>
       vsync: this,
       duration: const Duration(milliseconds: 400),
     );
+    _offsetAnimation = Tween<double>(begin: 0, end: 12)
+        .chain(CurveTween(curve: Curves.elasticIn))
+        .animate(_shakeController);
 
     if (Platform.isAndroid) {
       _androidAudioPlayer = ja.AudioPlayer();
@@ -132,22 +146,16 @@ class _TaskWidgetState extends State<TaskWidget>
     super.dispose();
   }
 
-  final List<List<Color>> colors = const [
-    [AppColors.secondaryBlue, AppColors.primaryBlue],
-    [Color(0xffFFF0C9), AppColors.primaryBlue],
-    [Color(0xffFFDAC2), AppColors.primaryBlue ],
-    [Color(0xffFFC2F9), AppColors.primaryBlue ],
-  ];
-  final List<Color> colors2 = const [
-    AppColors.primaryBlue,
-    Color(0xffFFC430),
-    Color(0xffFF8E40),
-    Color(0xffFF40D6),
+  final List<Color> colors = const [
+    Color.fromRGBO(75, 167, 255, 1.0),
+    Color.fromRGBO(141, 223, 84, 1.0),
+    Color.fromRGBO(211, 157, 255, 1.0),
+    Color.fromRGBO(255, 217, 66, 1.0),
+    Color.fromRGBO(255, 130, 85, 1.0),
   ];
   void _generateColors() {
     final totalItems = widget.task.matchingPairs?.leftItems.length ?? 0;
     pairColors = List.generate(totalItems, (index) => colors[index % colors.length]);
-    pairColors2 = List.generate(totalItems, (index) => colors2[index % colors2.length]);
   }
 
   // --- small helpers ---
@@ -234,74 +242,9 @@ class _TaskWidgetState extends State<TaskWidget>
     });
 
     if (answer == true) {
-      final correctAnswerText = _getCorrectAnswerText();
-      if (mounted) {
-        await showModalBottomSheet(
-          context: context,
-          isScrollControlled: false,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(30))),
-          builder: (context) => CorrectAnswerPopup(
-            answer: correctAnswerText,
-            onContinue: () {
-              setState(() {
-                _onMainButtonPressed();
-                Navigator.of(context).pop();
-              });
-            },
-            onReportTap: () async {
-              Navigator.of(context).pop();
-              await Future.delayed(const Duration(milliseconds: 150));
-              if (!mounted) return;
-              await showModalBottomSheet(
-                context: context,
-                isScrollControlled: true,
-                backgroundColor: Colors.white,
-                shape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-                ),
-                builder: (context) => ErrorOccuredBottomWidget(
-                  taskId: widget.task.id.toString(),
-                ),
-              );
-            },
-          ),
-        );
-      }
       WidgetsBinding.instance.addPostFrameCallback((_) {
         widget.onCorrect?.call();
       });
-    } else {
-      if (mounted) {
-        await showModalBottomSheet(
-          context: context,
-          isScrollControlled: false,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(30))),
-          builder: (context) => IncorrectAnswerPopup(
-            onContinue: () {
-              setState(() {
-                _onMainButtonPressed();
-                Navigator.of(context).pop();
-              });
-            },
-            onReportTap: () async {
-              Navigator.of(context).pop();
-              await Future.delayed(const Duration(milliseconds: 150));
-              if (!mounted) return;
-              await showModalBottomSheet(
-                context: context,
-                isScrollControlled: true,
-                backgroundColor: Colors.white,
-                shape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-                ),
-                builder: (context) => ErrorOccuredBottomWidget(
-                  taskId: widget.task.id.toString(),
-                ),
-              );
-            },
-          ),
-        );
-      }
     }
   }
 
@@ -323,12 +266,14 @@ class _TaskWidgetState extends State<TaskWidget>
                   child: Html(
                     data: widget.task.content,
                     shrinkWrap: true,
-                    style: {"*": Style(fontSize: FontSize(22), color: AppColors.black, fontFamily: 'Manrope', fontWeight: FontWeight.bold, textAlign: TextAlign.center)},
+                    style: {"*": Style(fontSize: FontSize(18))},
                     extensions: [_mathExtension()],
                   ),
                 ),
                 const SizedBox(height: 10),
-                // Tyoes of question
+                const Divider(thickness: 1, color: Colors.black),
+                const SizedBox(height: 10),
+
                 if (widget.task.taskType == "fill-in-the-blank")
                   _buildFillInTheBlank(disabled),
 
@@ -367,16 +312,54 @@ class _TaskWidgetState extends State<TaskWidget>
                           fontSize: 24,
                           fontWeight: FontWeight.bold)),
                 ),
-
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20),
-                child: AppButton(
-                  text: buttonText,
-                  onPressed: _onMainButtonPressed,
-                  variant: AppButtonVariant.solid,
-                  color: AppButtonColor.blue,
-                  isLoading: isSubmitting,
+              
+              SizedBox(
+                width: MediaQuery.of(context).size.width * 0.8,
+                height: 57,
+                child: AnimatedBuilder(
+                  animation: _shakeController,
+                  builder: (context, child) =>
+                      Transform.translate(offset: Offset(_offsetAnimation.value, 0), child: child),
+                  child: isSubmitting
+                      ? Container(
+                    decoration: BoxDecoration(color: buttonColor, borderRadius: BorderRadius.circular(20)),
+                    alignment: Alignment.center,
+                    child: LoadingAnimationWidget.progressiveDots(color: Colors.white, size: 40),
+                  )
+                      : ElevatedButton(
+                    key: widget.actionButtonKey,
+                    onPressed: _onMainButtonPressed,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: buttonColor,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                    ),
+                    child: Text(
+                      buttonText,
+                      style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                  ),
                 ),
+              ),
+              SizedBox(
+                height: 10,
+              ),
+              GestureDetector(
+                onTap: () => showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  backgroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+                  ),
+                  builder: (context) => ErrorOccuredBottomWidget(
+                    taskId: widget.task.id.toString(),
+                  ),
+                ),
+
+                child: Text("Қате байқадыңыз ба?", style: TextStyle(color: Colors.blue ,decoration: TextDecoration.underline, decorationColor: Colors.blue),),
+              ),
+              SizedBox(
+                height: 10,
               ),
             ],
           ),
@@ -427,6 +410,7 @@ class _TaskWidgetState extends State<TaskWidget>
           usedHelp: usedHelp,
           state: widget.task.state,
           dailyReview: widget.dailyReview,
+          dailySubjectMode: widget.dailySubjectMode,
           answer: userAnswer,
           isCash: widget.isCash,
           cancelToken: ct,
@@ -435,7 +419,7 @@ class _TaskWidgetState extends State<TaskWidget>
           onNext: _handleNext,
           onError: _onErrorUI,
           showAnswer: (c, a) async => _handleAnswerUI(c, a),
-          showResultScreen: _showResultScreenAndExit,
+          showResultScreen: widget.customShowResultScreen ?? _showResultScreenAndExit,
         );
       });
       return;
@@ -457,6 +441,7 @@ class _TaskWidgetState extends State<TaskWidget>
           isCash: widget.isCash,
           state: widget.task.state,
           dailyReview: widget.dailyReview,
+          dailySubjectMode: widget.dailySubjectMode,
           selectedChoice: selectedChoice,
           cancelToken: ct,
           updateMultiplier: (m) { setState(() { widget.profile?.multiplier = m; ProfileController.updateMultiplier(m); }); },
@@ -464,7 +449,7 @@ class _TaskWidgetState extends State<TaskWidget>
           onNext: _handleNext,
           onError: _onErrorUI,
           showAnswer: (c, a) async => _handleAnswerUI(c, a),
-          showResultScreen: _showResultScreenAndExit,
+          showResultScreen: widget.customShowResultScreen ?? _showResultScreenAndExit,
         );
       });
       return;
@@ -486,6 +471,7 @@ class _TaskWidgetState extends State<TaskWidget>
           state: widget.task.state,
           usedHelp: usedHelp,
           dailyReview: widget.dailyReview,
+          dailySubjectMode: widget.dailySubjectMode,
           isCash: widget.isCash,
           matches: selectedPairsWithIds,
           cancelToken: ct,
@@ -494,7 +480,7 @@ class _TaskWidgetState extends State<TaskWidget>
           onNext: _handleNext,
           onError: _onErrorUI,
           showAnswer: (c, a) async => _handleAnswerUI(c, a),
-          showResultScreen: _showResultScreenAndExit,
+          showResultScreen: widget.customShowResultScreen ?? _showResultScreenAndExit,
         );
       });
       return;
@@ -524,6 +510,7 @@ class _TaskWidgetState extends State<TaskWidget>
           usedHelp: usedHelp,
           state: widget.task.state,
           dailyReview: widget.dailyReview,
+          dailySubjectMode: widget.dailySubjectMode,
           isCash: widget.isCash,
           cancelToken: ct,
           updateMultiplier: (m) {
@@ -536,7 +523,7 @@ class _TaskWidgetState extends State<TaskWidget>
           onNext: _handleNext,
           onError: _onErrorUI,
           showAnswer: (c, a) async => _handleAnswerUI(c, a),
-          showResultScreen: _showResultScreenAndExit,
+          showResultScreen: widget.customShowResultScreen ?? _showResultScreenAndExit,
         );
       });
       return;
@@ -625,24 +612,17 @@ class _TaskWidgetState extends State<TaskWidget>
             setState(() { selectedChoice = choice.id; FocusManager.instance.primaryFocus?.unfocus(); });
           },
           child: Container(
-            margin: const EdgeInsets.symmetric(vertical: 8),
-            padding: const EdgeInsets.all(8),
+            margin: const EdgeInsets.symmetric(vertical: 10),
+            padding: const EdgeInsets.all(10),
             width: double.infinity,
             decoration: BoxDecoration(
-              boxShadow: [
-                BoxShadow(
-                  color: selected ? (widget.isRepeat) ? Colors.orange.withOpacity(.2) : AppColors.primaryBlue.withOpacity(.8) : Colors.white,
-                  blurRadius: 1,
-                  offset: Offset(0, 5),
-                ),
-              ],
               border: Border.all(
-                color: selected ? (widget.isRepeat) ? Colors.orange : AppColors.primaryBlue.withOpacity(.8) : AppColors.grey,
+                color: (widget.isRepeat) ? Colors.orange : Colors.blue,
                 width: 2,
               ),
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(20),
               color: selected
-                  ? ((widget.isRepeat) ? Colors.orange.withOpacity(.2) : AppColors.secondaryBlue)
+                  ? ((widget.isRepeat) ? Colors.orange.withOpacity(.2) : Colors.blue.withOpacity(.2))
                   : Colors.white,
             ),
             child: Center(
@@ -677,14 +657,14 @@ class _TaskWidgetState extends State<TaskWidget>
                     Expanded(
                       child: GestureDetector(
                         onTap: disabled ? null : () => _selectPair(index, true),
-                        child: _buildMatchingItem(left.content, _getPairColor(index, true), _getPairColor2(index, true)),
+                        child: _buildMatchingItem(left.content, _getPairColor(index, true)),
                       ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: GestureDetector(
                         onTap: disabled ? null : () => _selectPair(index, false),
-                        child: _buildMatchingItem(right.content, _getPairColor(index, false), _getPairColor2(index, false)),
+                        child: _buildMatchingItem(right.content, _getPairColor(index, false)),
                       ),
                     ),
                   ],
@@ -693,7 +673,6 @@ class _TaskWidgetState extends State<TaskWidget>
             );
           }),
         ),
-        const SizedBox(height: 10),
         AnimatedSwitcher(
           duration: const Duration(milliseconds: 200),
           child: selectedPairsWithIds.isNotEmpty
@@ -701,7 +680,8 @@ class _TaskWidgetState extends State<TaskWidget>
             alignment: Alignment.center,
             child: Padding(
               padding: const EdgeInsets.only(bottom: 10, right: 16),
-              child: TextButton(
+              child: ElevatedButton.icon(
+                key: const ValueKey('reselect-visible'),
                 onPressed: disabled
                     ? null
                     : () {
@@ -712,15 +692,16 @@ class _TaskWidgetState extends State<TaskWidget>
                     selectedRightIndex = null;
                   });
                 },
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text("Қайта таңдау", style: TextStyles.medium(AppColors.grey, fontSize: 15)),
-                    SizedBox(width: 5),
-                    Icon(Icons.refresh, size: 20, color: AppColors.grey),
-                  ],
+                icon: const Icon(Icons.refresh, size: 20),
+                label: const Text("Қайта таңдау"),
+                style: ElevatedButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  backgroundColor: Colors.orange,
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                 ),
-              )
+              ),
             ),
           )
               : const SizedBox.shrink(key: ValueKey('reselect-hidden')),
@@ -729,74 +710,77 @@ class _TaskWidgetState extends State<TaskWidget>
     );
   }
 
-  Widget _buildMatchingItem(String content, Color color, Color color2) {
+  Widget _buildMatchingItem(String content, Color color) {
     return Container(
       constraints: const BoxConstraints(minHeight: 60),
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+      padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
         color: color,
-        border: Border.all(color: color2 == AppColors.white ? AppColors.grey : color2),
-        borderRadius: BorderRadius.circular(8),
-        boxShadow: [
-          BoxShadow(
-            color: color2,
-            blurRadius: 2,
-            offset: const Offset(0, 5),
-          ),
-        ],
+        border: Border.all(color: Colors.black26),
+        borderRadius: BorderRadius.circular(16),
       ),
-      child: Center(
-        child: Html(
-          data: content,
-          shrinkWrap: true,
-          style: {
-            "*": Style(
-              fontSize: FontSize(18),
-              fontWeight: FontWeight.w700,
-              color: color2 == AppColors.white ? AppColors.black : color2,
-              maxLines: 3,
-              textAlign: TextAlign.center,
-            ),
-          },
-          extensions: [_mathExtension2()],
-        ),
-      )
+      child: Html(
+        data: content,
+        shrinkWrap: true,
+        style: {
+          "*": Style(
+            fontSize: FontSize(14),
+            whiteSpace: WhiteSpace.normal,
+            maxLines: 3,
+            textAlign: TextAlign.center,
+          ),
+        },
+        extensions: [_mathExtension2()],
+      ),
     );
   }
 
 
   // hints
   Widget _buildHints() {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20),
-      width: double.infinity,
+    return SizedBox(
+      width: MediaQuery.of(context).size.width * 0.8,
       child: Row(
         children: [
           Expanded(
             child: GestureDetector(
               onTap: () async {
+                if (widget.task.videoSolutionUrl == null || widget.task.videoSolutionUrl!.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Видео сілтемесі жоқ")),
+                  );
+                  return;
+                }
                 final result = await showModalBottomSheet(
                   context: context,
+                  isScrollControlled: true,
+                  isDismissible: false,
+                  enableDrag: false,
+                  backgroundColor: Colors.transparent,
                   builder: (context) => Container(
-                    clipBehavior: Clip.hardEdge,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                    height: MediaQuery.of(context).size.height * 0.95,
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(20),
+                        topRight: Radius.circular(20),
+                      ),
                     ),
-                    child: AnswerVideoPopup(videoSolutionUrl: widget.task.videoSolutionUrl, lesson: widget.lesson),
+                    child: YoutubeUrlScreen(videoSolutionUrl: widget.task.videoSolutionUrl ?? "", lesson: widget.lesson,),
                   ),
                 );
-                if (result == true) setState(() => usedHelp = true);
+                if (mounted && result == true) setState(() => usedHelp = true);
               },
               child: Container(
                 height: 48,
                 decoration: BoxDecoration(
                   border: Border.all(color: Colors.orange, width: 2),
-                  borderRadius: const BorderRadius.only(topLeft: Radius.circular(8), bottomLeft: Radius.circular(8)),
+                  borderRadius: const BorderRadius.only(topLeft: Radius.circular(16), bottomLeft: Radius.circular(16)),
                 ),
-                child:  Center(
+                child: const Center(
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
-                    children: [Text('ВИДЕО', style: TextStyles.bold(Colors.orange, fontSize: 18)), SizedBox(width: 6), Icon(Icons.play_circle_fill, color: Colors.orange, size: 30)],
+                    children: [Text('ВИДЕО', style: TextStyle(color: Colors.orange, fontWeight: FontWeight.bold)), SizedBox(width: 6), Icon(Icons.play_circle_fill, color: Colors.orange)],
                   ),
                 ),
               ),
@@ -804,7 +788,7 @@ class _TaskWidgetState extends State<TaskWidget>
           ),
           Expanded(
             child: GestureDetector(
-              onTap: () async {
+              onTap: () {
                 setState(() => usedHelp = true);
                 showModalBottomSheet(
                   context: context,
@@ -816,10 +800,10 @@ class _TaskWidgetState extends State<TaskWidget>
                 height: 48,
                 decoration: BoxDecoration(
                   border: Border.all(color: Colors.orange, width: 2),
-                  borderRadius: const BorderRadius.only(topRight: Radius.circular(8), bottomRight: Radius.circular(8)),
+                  borderRadius: const BorderRadius.only(topRight: Radius.circular(16), bottomRight: Radius.circular(16)),
                 ),
-                child:  Center(
-                  child: Text('ЖАУАБЫ', style: TextStyles.bold(Colors.orange, fontSize: 18)),
+                child: const Center(
+                  child: Text('ЖАУАБЫ', style: TextStyle(color: Colors.orange, fontWeight: FontWeight.bold)),
                 ),
               ),
             ),
@@ -863,7 +847,7 @@ class _TaskWidgetState extends State<TaskWidget>
       final asText = answer.anagramAnswer.join("  ");
       answerContent = Center(
         child: Text(asText, textAlign: TextAlign.center,
-            style: TextStyles.medium(Colors.black, fontSize: 30)),
+            style: const TextStyle(fontSize: 18, color: Colors.black87)),
       );
     } else if (answer.choices.isNotEmpty) {
       final correctChoice = answer.choices.firstWhere((c) => c.isCorrect, orElse: () => answer.choices.first);
@@ -879,7 +863,7 @@ class _TaskWidgetState extends State<TaskWidget>
         final r = answer.matchingPairs!.rightItems.firstWhere((x) => x.id == l.id);
         final cleanLeft = _stripMathTex(l.content);
         final cleanRight = _stripMathTex(r.content);
-        return ["$cleanLeft", "$cleanRight"];
+        return '"$cleanLeft" :  "$cleanRight"';
       }).toList();
 
       answerContent = Column(
@@ -887,15 +871,7 @@ class _TaskWidgetState extends State<TaskWidget>
         children: pairs
             .map((p) => Padding(
           padding: const EdgeInsets.symmetric(vertical: 4),
-          child: Center(
-            child: Row(
-              children: [
-                Html(data: p[0], shrinkWrap: true, style: {"*": Style(color: AppColors.errorRed ,fontSize: FontSize(23), fontFamily: 'Manrope', fontWeight: FontWeight.bold)}, extensions: [_mathExtension2()]),
-                Text(' - ', style: TextStyles.medium(Colors.black, fontSize: 32)),
-                Html(data: p[1], shrinkWrap: true, style: {"*": Style(color: AppColors.trueGreen ,fontSize: FontSize(23), fontFamily: 'Manrope', fontWeight: FontWeight.bold)}, extensions: [_mathExtension2()])
-              ],
-            )
-          ),
+          child: Center(child: Html(data: p, shrinkWrap: true, style: {"*": Style(fontSize: FontSize(14))}, extensions: [_mathExtension2()])),
         ))
             .toList(),
       );
@@ -908,58 +884,33 @@ class _TaskWidgetState extends State<TaskWidget>
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
       decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       child: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Row(
-              children: [
-                Text('Жауабы:', style: TextStyles.bold(Colors.black87, fontSize: 36)),
-              ],
-            ),
-            const SizedBox(height: 15),
+            const Text('Жауабы:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.black87)),
+            const SizedBox(height: 10),
             answerContent,
             const SizedBox(height: 20),
-            AppButton(
-              onPressed: () => Navigator.pop(context),
-              text: 'ТҮСІНІКТІ',
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () => Navigator.pop(context),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: (widget.isRepeat) ? Colors.orange : Colors.blue,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                child: const Text('ТҮСІНІКТІ', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+              ),
             ),
             const SizedBox(height: 50),
           ],
         ),
       ),
     );
-  }
-
-  String _getCorrectAnswerText() {
-    if (widget.task.taskType == "anagram" && widget.task.anagramAnswer.isNotEmpty) {
-      return widget.task.anagramAnswer.join("  ");
-    }
-    if (widget.task.taskType == "multiple-choice" && widget.task.choices.isNotEmpty) {
-      final correctChoice = widget.task.choices
-          .firstWhere((c) => c.isCorrect, orElse: () => widget.task.choices.first);
-      return _stripMathTex(correctChoice.content);
-    }
-    if (widget.task.taskType == "matching-pairs" &&
-        widget.task.matchingPairs != null &&
-        widget.task.matchingPairs!.leftItems.isNotEmpty &&
-        widget.task.matchingPairs!.rightItems.isNotEmpty) {
-      final pairs = widget.task.matchingPairs!.leftItems.where((l) {
-        return widget.task.matchingPairs!.rightItems.any((r) => r.id == l.id);
-      }).map((l) {
-        final r = widget.task.matchingPairs!.rightItems.firstWhere((x) => x.id == l.id);
-        final cleanLeft = _stripMathTex(l.content);
-        final cleanRight = _stripMathTex(r.content);
-        return '"$cleanLeft" : "$cleanRight"';
-      }).toList();
-      return pairs.join('\n');
-    }
-    if (widget.task.taskType == "fill-in-the-blank") {
-      return widget.task.answer?.correctAnswer ?? "Жауап жоқ";
-    }
-    return widget.task.answer?.correctAnswer ?? "Жауап жоқ";
   }
 
   String _stripMathTex(String html) {
@@ -995,18 +946,10 @@ class _TaskWidgetState extends State<TaskWidget>
       selectedPairs.any((pair) => pair[isLeft ? "left" : "right"] == index);
   Color _getPairColor(int index, bool isLeft) {
     int? pairIndex = selectedPairs.indexWhere((pair) => pair[isLeft ? "left" : "right"] == index);
-    if (pairIndex != -1) return pairColors[pairIndex][0];
+    if (pairIndex != -1) return pairColors[pairIndex];
     if ((isLeft && selectedLeftIndex == index) || (!isLeft && selectedRightIndex == index)) {
-      return AppColors.secondaryBlue;
+      return Colors.blue.withOpacity(0.5);
     }
     return Colors.white;
-  }
-  Color _getPairColor2(int index, bool isLeft) {
-    int? pairIndex = selectedPairs.indexWhere((pair) => pair[isLeft ? "left" : "right"] == index);
-    if (pairIndex != -1) return pairColors2[pairIndex];
-    if ((isLeft && selectedLeftIndex == index) || (!isLeft && selectedRightIndex == index)) {
-      return AppColors.white;
-    }
-    return AppColors.white;
   }
 }

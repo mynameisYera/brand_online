@@ -252,12 +252,14 @@ void initState() {
               ),
               
               Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 15, vertical: 0),
+                padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 0),
                 child: AppButton(
                 text: "Тестке өту",
                 onPressed: () {
                       _markVideoAsWatched(shouldPopOnSuccess: false);
+                      _controller?.removeListener(_onPlayerStateChanged);
+                      _controller?.dispose();
+                      _controller = null;
                       enableScreenshot();
                       Navigator.push(
                               context,

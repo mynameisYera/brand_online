@@ -6,6 +6,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:dio/dio.dart';
 import 'package:brand_online/roadMap/entity/SubjectModel.dart';
+import 'package:brand_online/roadMap/entity/daily_entity.dart';
 
 import '../../general/GeneralUtil.dart';
 import '../entity/ControlExam.dart';
@@ -46,6 +47,7 @@ class TaskService {
     required bool isLast,
     bool dailyReview = false,
     required bool isCash,
+    bool dailySubjectMode = false,
     required Function(
         int score,
         int percentage,
@@ -75,6 +77,7 @@ class TaskService {
           '/edu/task/$lessonId/submit/fill/',
           data: {
             "answer": answer,
+            "daily_subject_mode": dailySubjectMode,
             "videosolution_watched": false,
             "answer_watched": false,
             "state": state,
@@ -184,6 +187,7 @@ class TaskService {
     required VoidCallback onNext,
     required Function(String) onError,
     bool dailyReview = false,
+    bool dailySubjectMode = false,
     required bool isCash,
     required Function(
         int score,
@@ -219,6 +223,7 @@ class TaskService {
           '/edu/task/$lessonId/submit/multiple/',
           data: {
             "choice_id": selectedChoice,
+            "daily_subject_mode": dailySubjectMode,
             "videosolution_watched": false,
             "answer_watched": false,
             "state": state,
@@ -328,6 +333,7 @@ class TaskService {
     required int state,
     required bool isCash,
     bool dailyReview = false,
+    bool dailySubjectMode = false,
     required Function(String) onError,
     required Function(
         int score,
@@ -354,6 +360,7 @@ class TaskService {
 
     final Map<String, dynamic> requestData = {
       "matches": matches,
+      "daily_subject_mode": dailySubjectMode,
       "videosolution_watched": false,
       "answer_watched": false,
       "state": state,
@@ -467,6 +474,7 @@ class TaskService {
     required int state,
     required bool isCash,
     bool dailyReview = false,
+    bool dailySubjectMode = false,
     required Function(String) updateMultiplier,
     required Function(Task) updateTask,
     required VoidCallback onNext,
@@ -496,6 +504,7 @@ class TaskService {
 
     final Map<String, dynamic> data = {
       "segments": segments, // <-- ВАЖНО! отправляем строки
+      "daily_subject_mode": dailySubjectMode,
       "videosolution_watched": false,
       "answer_watched": false,
       "state": state,
@@ -662,6 +671,30 @@ class TaskService {
     }
   }
 
+  Future<DailyEntity?> getDailyTasks(int gradeId) async {
+    final storage = FlutterSecureStorage(
+      aOptions: const AndroidOptions(encryptedSharedPreferences: true),
+    );
+    final String? token = await storage.read(key: 'auth_token');
+    try {
+      final response = await _requestWithRetry<dynamic>(
+            (ct) => _dio.get(
+          '/edu/daily-subject/grade/$gradeId/tasks',
+          options: Options(headers: {
+            'Authorization': 'Bearer $token',
+            'Content-Type': 'application/json',
+          }),
+          cancelToken: ct,
+        ),
+      );
+      
+    return DailyEntity.fromJson(response.data);
+    } catch (e) {
+      print(e);
+      return null;
+    }
+  }
+
   Future<RestartLessonsResponse?> getRestartLessons({
     CancelToken? cancelToken,
     int maxRetries = 2,
@@ -699,6 +732,7 @@ class TaskService {
       return null;
     }
   }
+
 
   Future<String> sendReport({
     String? taskId,

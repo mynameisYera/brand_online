@@ -24,7 +24,7 @@ class IncorrectAnswerPopup extends StatelessWidget {
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
             color: AppColors.errorRed,
-            borderRadius: BorderRadius.circular(19),
+            borderRadius: BorderRadius.only(topLeft: Radius.circular(19), topRight: Radius.circular(19)),
           ),
           child: Column(
                 mainAxisSize: MainAxisSize.min,

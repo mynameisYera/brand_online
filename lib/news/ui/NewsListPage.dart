@@ -119,10 +119,6 @@ class _NewsListPageState extends State<NewsListPage> {
                               style: TextStyles.bold(color, fontSize: 20),
                             ),
                         const SizedBox(height: 6),
-                        Divider(
-                          color: AppColors.grey,
-                          height: 0.7,
-                        )
                       ],
                     ),
                   ),

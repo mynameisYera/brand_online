@@ -480,7 +480,7 @@ class RoadWidget {
                             ),
                             child: Center(
                               child: Text(
-                                "Кеттік !",
+                                "Кеттік!",
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,

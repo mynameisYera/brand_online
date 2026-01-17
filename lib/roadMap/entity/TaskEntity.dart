@@ -56,7 +56,7 @@ class Task {
   final int group;
   final String content;
   final int number;
-  final String videoSolutionUrl;
+  final String? videoSolutionUrl;
   final String? audioUrl;
   final int state;
   final List<Choice> choices;
@@ -74,7 +74,7 @@ class Task {
     required this.group,
     required this.content,
     required this.number,
-    required this.videoSolutionUrl,
+    this.videoSolutionUrl,
     this.anagramItems = const [],
     this.audioUrl,
     required this.state,
@@ -94,7 +94,7 @@ class Task {
       group: json['group'],
       content: json['content'],
       number: json['number'] ?? 0,
-      videoSolutionUrl: json['video_solution_url'],
+      videoSolutionUrl: json['video_solution_url'] as String?,
       audioUrl: json['audio_url'] as String?,
       state: json['state'],
       choices: (json['choices'] as List)
@@ -180,6 +180,7 @@ class MatchingItem {
   }
 }
 
+// Главная модель
 class DataModel {
   final Profile profile;
   final List<Task> tasks;

@@ -159,7 +159,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     children: [
                       SvgPicture.asset('assets/icons/multiplayer.svg'),
                       const SizedBox(height: 5),
-                      Text('${profile!.points}', style: TextStyles.bold(AppColors.black)),
+                      Text('${profile!.multiplier}', style: TextStyles.bold(AppColors.black)),
                       Text('Көбейткіш', style: TextStyles.regular(AppColors.black, fontSize: 10)),
                     ],
                   ),
