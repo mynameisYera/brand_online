@@ -1,6 +1,10 @@
 // ignore_for_file: unused_element
 
+import 'package:brand_online/core/app_colors.dart';
+import 'package:brand_online/core/text_styles.dart';
+import 'package:brand_online/roadMap/ui/widget/repeat_cart.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:brand_online/authorization/entity/RoadMapResponse.dart';
 import 'package:brand_online/roadMap/entity/daily_entity.dart';
 import 'package:brand_online/roadMap/ui/screen/NoTaskPage.dart';
@@ -9,7 +13,6 @@ import '../../../general/GeneralUtil.dart';
 import '../../entity/ControlExam.dart';
 import '../../entity/DailyReview.dart';
 import '../../entity/ProfileController.dart';
-import '../widget/DailyReviewCard.dart';
 import 'CustomAppBar.dart';
 import 'Math1Screen.dart';
 import '../../service/task_service.dart';
@@ -155,17 +158,12 @@ class _RepeatPageState extends State<RepeatPage> {
                 children: [
                   const SizedBox(height: 8),
                   CustomAppBar(),
-                  const SizedBox(height: 12),
-                  if (controlExam?.isOpen ?? false)
-                    _ControlExamCard(
-                      controlExam: controlExam!,
-                      started: controlExamStarted,
-                      onTap: () {
-                        setState(() {
-                          controlExamStarted = true;
-                        });
-                      },
-                      onStart: () async {
+                  if (controlExam?.isOpen ?? false) RepeatCart(
+                    subject: "Кэшбекті еселендір!", 
+                    title: "Апталық қорытынды тест", 
+                    mascotAsset: "assets/images/SHOQAN.png", 
+                    iconAsset: "assets/icons/qortyndy.svg",
+                    onStart: () async {
                         await Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -180,14 +178,17 @@ class _RepeatPageState extends State<RepeatPage> {
                           ),
                         );
                       },
-                    ),
-                  if (dailyReview?.isOpen == true && dailyReview?.isCompleted == false)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 16),
-                      child: DailyReviewTile(
-                        subject: dailyReview!.subjectName,
-                        isCompleted: dailyReview!.isCompleted,
-                        onStart: () async {
+                    isCompleted: false,
+                    color: AppColors.trueGreen,
+                  ),
+                  SizedBox(height: 16),
+                  if (dailyReview?.isOpen == true && dailyReview?.isCompleted == false) RepeatCart(
+                    subject: "Өзіңді сынап көр!", 
+                    subtitle: dailyReview!.subjectName,
+                    title: "Күнделікті қайталау ", 
+                    mascotAsset: "assets/images/ABAI.png", 
+                    iconAsset: "assets/icons/repeat.svg",
+                    onStart: () async {
                           await Navigator.push(
                             context,
                             MaterialPageRoute(
@@ -205,8 +206,62 @@ class _RepeatPageState extends State<RepeatPage> {
                           if (!mounted) return;
                           fetchLessons();
                         },
-                      ),
-                    ),
+                    isCompleted: false,
+                    color: AppColors.yellow,
+                  ),
+                  
+                  const SizedBox(height: 12),
+                  // if (controlExam?.isOpen ?? false)
+                  //   _ControlExamCard(
+                  //     controlExam: controlExam!,
+                  //     started: controlExamStarted,
+                  //     onTap: () {
+                  //       setState(() {
+                  //         controlExamStarted = true;
+                  //       });
+                  //     },
+                  //     onStart: () async {
+                  //       await Navigator.push(
+                  //         context,
+                  //         MaterialPageRoute(
+                  //           builder: (context) => Math1Screen(
+                  //             initialScrollOffset: 0,
+                  //             lessonId: 0,
+                  //             cashbackActive: false,
+                  //             groupId: 0,
+                  //             isCash: true,
+                  //             lesson: Lesson(lessonId: 0, lessonTitle: "lll", lessonNumber: 0, videoUrl: "lll", videoWatched: true, group1Completed: true, group2Completed: true, group3Completed: true, cashbackActive: false, isPublished: true, materials: [],)
+                  //           ),
+                  //         ),
+                  //       );
+                  //     },
+                  //   ),
+                  // if (dailyReview?.isOpen == true && dailyReview?.isCompleted == false)
+                  //   Padding(
+                  //     padding: const EdgeInsets.only(bottom: 16),
+                  //     child: DailyReviewTile(
+                  //       subject: dailyReview!.subjectName,
+                  //       isCompleted: dailyReview!.isCompleted,
+                  //       onStart: () async {
+                  //         await Navigator.push(
+                  //           context,
+                  //           MaterialPageRoute(
+                  //             builder: (_) => Math1Screen(
+                  //               lesson: Lesson(lessonId: 0, lessonTitle: "lll", lessonNumber: 0, videoUrl: "lll", videoWatched: true, group1Completed: true, group2Completed: true, group3Completed: true, cashbackActive: false, isPublished: true, materials: []),
+                  //               initialScrollOffset: 0,
+                  //               lessonId: 0,
+                  //               cashbackActive: false,
+                  //               dailyReview: true,
+                  //               groupId: 0,
+                  //               isCash: false,
+                  //             ),
+                  //           ),
+                  //         );
+                  //         if (!mounted) return;
+                  //         fetchLessons();
+                  //       },
+                  //     ),
+                  //   ),
                   if (hasActiveDailySessions)
                     Padding(
                       padding: const EdgeInsets.only(bottom: 16),
@@ -760,108 +815,89 @@ class _ExpandableDailyTasksSection extends StatelessWidget {
         GestureDetector(
           onTap: onToggle,
           child: Container(
-            height: 140,
             decoration: BoxDecoration(
-              color: const Color(0xFF3A8FE6),
+              color: AppColors.fiolet,
               borderRadius: BorderRadius.only(
-                topLeft: const Radius.circular(18),
-                topRight: const Radius.circular(18),
-                bottomLeft: isExpanded ? Radius.zero : const Radius.circular(18),
-                bottomRight: isExpanded ? Radius.zero : const Radius.circular(18),
+                topLeft: const Radius.circular(8),
+                topRight: const Radius.circular(8),
+                bottomLeft: isExpanded ? Radius.zero : const Radius.circular(8),
+                bottomRight: isExpanded ? Radius.zero : const Radius.circular(8),
               ),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFF3A8FE6).withOpacity(0.3),
-                  blurRadius: 8,
-                  offset: const Offset(0, 4),
-                ),
-              ],
             ),
             child: Material(
               color: Colors.transparent,
               child: InkWell(
                 borderRadius: BorderRadius.only(
-                  topLeft: const Radius.circular(18),
-                  topRight: const Radius.circular(18),
-                  bottomLeft: isExpanded ? Radius.zero : const Radius.circular(18),
-                  bottomRight: isExpanded ? Radius.zero : const Radius.circular(18),
+                  topLeft: const Radius.circular(8),
+                  topRight: const Radius.circular(8),
+                  bottomLeft: isExpanded ? Radius.zero : const Radius.circular(8),
+                  bottomRight: isExpanded ? Radius.zero : const Radius.circular(8),
                 ),
                 onTap: onToggle,
                 child: Stack(
                   children: [
                     Positioned(
-                      left: -20,
-                      bottom: -20,
-                      child: Container(
+                      right: 0,
+                      bottom: 0,
+                      child: Image.asset(
+                        "assets/images/MYRZHAKYP.png",
                         width: 100,
                         height: 100,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: Colors.white.withOpacity(0.2),
-                            width: 2,
-                          ),
-                        ),
+                        fit: BoxFit.cover,
                       ),
                     ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Row(
-                                  children: [
-                                    Container(
-                                      padding: const EdgeInsets.all(8),
-                                      decoration: BoxDecoration(
-                                        color: Colors.white.withOpacity(0.2),
-                                        borderRadius: BorderRadius.circular(10),
-                                      ),
-                                      child: const Icon(
-                                        Icons.calendar_today,
-                                        color: Colors.white,
-                                        size: 20,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: Text(
-                                        "Жеке даму траекториясы",
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 24),
+                        Row(
+                          children: [
+                            const SizedBox(width: 16),
+                            Container(
+                              padding: const EdgeInsets.all(7),
+                              width: 32,
+                              height: 32,
+                              decoration: BoxDecoration(
+                                color: AppColors.white,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: SvgPicture.asset(
+                                "assets/icons/upup.svg",
+                              ),
                             ),
-                          ),
-                          Container(
-                            width: 100,
-                            height: 100,
-                          ),
-                        ],
-                      ),
-                      
-                    ),
-                    Positioned(
-                      right: 22,
-                      bottom: 0,
-                      child: Container(
-                        child: Image.asset(
-                          "assets/images/ualikhanov.png",
-                          width: 110,
-                          height: 110,
-                          fit: BoxFit.contain,
+                            const SizedBox(width: 8),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "Жеке даму траекториясы",
+                                  style: TextStyles.semibold(
+                                    AppColors.white,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                                
+                              ],
+                            )
+                          ],
                         ),
-                      ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            const SizedBox(width: 16),
+                            Text(
+                              "Өзіңді сынап көр!",
+                              style: TextStyles.semibold(
+                                AppColors.white,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ],
+                        ),
+                        
+                        
+                        const SizedBox(height: 16),
+                      ],
                     ),
                   ],
                 ),
@@ -879,8 +915,8 @@ class _ExpandableDailyTasksSection extends StatelessWidget {
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                       colors: [
-                        const Color(0xFF4BA7FF),
-                        const Color(0xFF3A8FE6),
+                        AppColors.fiolet,
+                        AppColors.fiolet,
                       ],
                     ),
                     borderRadius: const BorderRadius.only(
@@ -893,143 +929,168 @@ class _ExpandableDailyTasksSection extends StatelessWidget {
                       ...dailyTasks.asMap().entries.map((entry) {
                         final index = entry.key;
                         final dailySession = entry.value;
-                        
-                        return dailySession.remainingTasks == 0 && dailySession.completedTasks == 0 ? const SizedBox.shrink() : dailySession.isCompleted ? const SizedBox.shrink() : 
-                        GestureDetector(
+
+                        if (dailySession.isCompleted) {
+                          return const SizedBox.shrink();
+                        }
+                        if (dailySession.remainingTasks == 0 &&
+                            dailySession.completedTasks == 0) {
+                          return const SizedBox.shrink();
+                        }
+
+                        return GestureDetector(
                           behavior: HitTestBehavior.opaque,
-                          onTap: dailySession.isCompleted ? null : () async{
-                                                final dailyEntity = await TaskService().getDailyTasks(dailySession.gradeId);
-                                                if (dailyEntity != null) {
-                                                  Navigator.push(
-                                                    context,
-                                                    MaterialPageRoute(builder: (context) => DailyTestScreen(dailyEntity: dailyEntity)),
-                                                  );
-                                                }
-                                              },
-                        child: Column(
-                          children: [
-                            if (index > 0)
-                              Divider(
-                                height: 1,
-                                thickness: 1,
-                                color: Colors.white.withOpacity(0.3),
-                              ),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 18,
-                                vertical: 12,
+                          onTap: () async {
+                            final dailyEntity = await TaskService()
+                                .getDailyTasks(dailySession.gradeId);
+                            if (dailyEntity != null) {
+                              if (!context.mounted) return;
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      DailyTestScreen(dailyEntity: dailyEntity),
+                                ),
+                              );
+                            }
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.fromLTRB(16, 0, 16, 6),
+                            child: Container(
+                              padding: const EdgeInsets.only(left: 16, right: 16, top: 10, bottom: 10),
+                              decoration: BoxDecoration(
+                                color: AppColors.white,
+                                borderRadius: BorderRadius.circular(8),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.08),
+                                    blurRadius: 16,
+                                    offset: const Offset(0, 6),
+                                  ),
+                                ],
                               ),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Row(
                                     children: [
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              "Сабақ ${index + 1}",
-                                              style: TextStyle(
-                                                color: Colors.white.withOpacity(0.8),
-                                                fontSize: 12,
-                                                fontWeight: FontWeight.w500,
-                                              ),
-                                            ),
-                                            const SizedBox(height: 4),
-                                            Text(
-                                              dailySession.subjectName,
-                                              style: const TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
-                                            const SizedBox(height: 8),
-                                            Row(
-                                              children: [
-                                                Icon(
-                                                  Icons.assignment,
-                                                  color: Colors.white.withOpacity(0.9),
-                                                  size: 14,
-                                                ),
-                                                const SizedBox(width: 6),
-                                                Text(
-                                                  "${dailySession.completedTasks}/${dailySession.totalTasks} тапсырма",
-                                                  style: TextStyle(
-                                                    color: Colors.white.withOpacity(0.9),
-                                                    fontSize: 12,
-                                                    fontWeight: FontWeight.w500,
-                                                  ),
-                                                ),
-                                                if (dailySession.remainingTasks > 0) ...[
-                                                  const SizedBox(width: 12),
-                                                  Icon(
-                                                    Icons.timer,
-                                                    color: Colors.white.withOpacity(0.9),
-                                                    size: 14,
-                                                  ),
-                                                  const SizedBox(width: 6),
-                                                  Text(
-                                                    "${dailySession.remainingTasks} қалды",
-                                                    style: TextStyle(
-                                                      color: Colors.white.withOpacity(0.9),
-                                                      fontSize: 12,
-                                                      fontWeight: FontWeight.w500,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ],
-                                            ),
-                                          ],
+                                      Text(
+                                        "Сабақ ${index + 1}",
+                                        style: TextStyles.regular(
+                                          AppColors.black,
+                                          fontSize: 9,
                                         ),
                                       ),
-                                      dailySession.isCompleted 
-                                          ? IconButton(
-                                              icon: const Icon(Icons.check_circle, color: Colors.white), 
-                                              onPressed: null,
-                                            )
-                                          : IconButton(
-                                              icon: const Icon(
-                                                Icons.arrow_forward_ios,
-                                                color: Colors.white,
-                                                size: 18,
-                                              ),
-                                              onPressed: dailySession.isCompleted ? null : () async{
-                                                final dailyEntity = await TaskService().getDailyTasks(dailySession.gradeId);
-                                                if (dailyEntity != null) {
-                                                  Navigator.push(
-                                                    context,
-                                                    MaterialPageRoute(builder: (context) => DailyTestScreen(dailyEntity: dailyEntity)),
-                                                  );
-                                                }
-                                              },
-                                            ),
+                                      const Spacer(),
+                                      Container(
+                                        width: 34,
+                                        height: 34,
+                                        decoration: const BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: AppColors.fiolet,
+                                        ),
+                                        child: const Icon(
+                                          Icons.arrow_forward_ios,
+                                          color: AppColors.white,
+                                          size: 16,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  // const SizedBox(height: 8),
+                                  Text(
+                                    dailySession.subjectName,
+                                    style: TextStyles.semibold(
+                                      AppColors.black,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 10),
+                                  Row(
+                                    children: [
+                                      _DailyInfoPill(
+                                        icon: Icons.calendar_today_outlined,
+                                        label:
+                                            "${dailySession.completedTasks}/${dailySession.totalTasks} тапсырма",
+                                      ),
+                                      if (dailySession.remainingTasks > 0) ...[
+                                        const SizedBox(width: 12),
+                                        _DailyInfoPill(
+                                          icon: Icons.timer_outlined,
+                                          label:
+                                              "${dailySession.remainingTasks} қалды",
+                                        ),
+                                      ],
                                     ],
                                   ),
                                   if (dailySession.totalTasks > 0) ...[
-                                    const SizedBox(height: 8),
+                                    const SizedBox(height: 12),
                                     ClipRRect(
-                                      borderRadius: BorderRadius.circular(4),
+                                      borderRadius: BorderRadius.circular(6),
                                       child: LinearProgressIndicator(
-                                        value: (dailySession.completedTasks / 
-                                                dailySession.totalTasks).clamp(0.0, 1.0),
-                                        backgroundColor: Colors.white.withOpacity(0.2),
-                                        valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
-                                        minHeight: 4,
+                                        value:
+                                            (dailySession.completedTasks /
+                                                    dailySession.totalTasks)
+                                                .clamp(0.0, 1.0),
+                                        backgroundColor:
+                                            AppColors.grey.withOpacity(0.35),
+                                        valueColor:
+                                            const AlwaysStoppedAnimation<Color>(
+                                          AppColors.fiolet,
+                                        ),
+                                        minHeight: 6,
                                       ),
                                     ),
                                   ],
                                 ],
                               ),
                             ),
-                          ],
-                        ));
+                          ),
+                        );
                       }).toList(),
                     ],
                   ),
                 )
               : const SizedBox.shrink(),
+        ),
+      ],
+    );
+  }
+}
+
+class _DailyInfoPill extends StatelessWidget {
+  const _DailyInfoPill({
+    required this.icon,
+    required this.label,
+  });
+
+  final IconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Container(
+          width: 22,
+          height: 22,
+          decoration: BoxDecoration(
+            color: AppColors.fiolet.withOpacity(0.5),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(
+            icon,
+            color: AppColors.white,
+            size: 14,
+          ),
+        ),
+        const SizedBox(width: 6),
+        Text(
+          label,
+          style: TextStyles.regular(
+            AppColors.black,
+            fontSize: 10,
+          ),
         ),
       ],
     );

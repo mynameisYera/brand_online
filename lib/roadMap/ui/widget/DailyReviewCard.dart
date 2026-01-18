@@ -6,8 +6,8 @@ class DailyReviewTile extends StatefulWidget {
     required this.subject,
     required this.onStart,
     required this.isCompleted,
-    this.title = 'Жеке даму траекториясы',
-    this.mascotAsset = 'assets/images/girl_half.png',
+    this.title = 'Күнделікті қайталау',
+    this.mascotAsset = 'assets/images/SHOQAN.png',
     this.mascotAsset2 = 'assets/images/admbrs12.png',
   });
 
