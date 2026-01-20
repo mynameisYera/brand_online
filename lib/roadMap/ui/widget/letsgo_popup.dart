@@ -15,7 +15,7 @@ class LetsgoPopup extends StatelessWidget {
     final onBackTap = onReportTap ?? () => Navigator.pop(context);
 
     return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 20),
         decoration: const BoxDecoration(
           color: AppColors.primaryBlue,
           borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
@@ -26,17 +26,17 @@ class LetsgoPopup extends StatelessWidget {
             Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const SizedBox(height: 10),
+                const SizedBox(height: 20),
                 Text(
                   title,
                   textAlign: TextAlign.center,
-                  style: TextStyles.bold(AppColors.white, fontSize: 24),
+                  style: TextStyles.bold(AppColors.white, fontSize: 18),
                 ),
                 const SizedBox(height: 12),
                 Text(
                   subtitle,
                   textAlign: TextAlign.center,
-                  style: TextStyles.semibold(AppColors.white, fontSize: 16),
+                  style: TextStyles.semibold(AppColors.white, fontSize: 14),
                 ),
                 const SizedBox(height: 24),
                 AppButton(

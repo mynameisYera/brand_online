@@ -1,7 +1,11 @@
 // ignore_for_file: unused_element
 
+import 'package:brand_online/core/app_colors.dart';
+import 'package:brand_online/core/text_styles.dart';
+import 'package:brand_online/core/widgets/app_button_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:no_screenshot/no_screenshot.dart';
 import 'package:brand_online/authorization/entity/RoadMapResponse.dart';
 import 'package:brand_online/roadMap/ui/screen/Math1Screen.dart';
@@ -65,143 +69,72 @@ class _NewResultScreenState extends State<NewResultScreen> {
   Widget build(BuildContext context) {
     final t = _themes[widget.stage.clamp(1, 3)]!;
 
-    const double maxScore = 80.0;
-    final double scoreHeight = (widget.score / maxScore * 100).clamp(40, 100);
-    final double questionHeight =
-    (widget.percentage / 100 * 120).clamp(40, 120);
-    final double multiplierHeight =
     ((widget.factory.isFinite ? widget.factory : 1.0) * 60)
         .clamp(40, 120);
 
     final bool showCashCol = widget.cashbackActive || widget.isCash;
-
-    const double _headerHeight = 350;
-    const double _headerContentTop = 150;
 
     return Scaffold(
       backgroundColor: t.bg,
       body: SafeArea(
         child: Column(
           children: [
-            SizedBox(
-              height: _headerHeight,
-              child: Stack(
-                children: [
-                  Positioned(
-                    top: 6,
-                    left: 6,
-                    child: IconButton(
-                      icon: const Icon(Icons.close, color: Colors.white),
-                      onPressed: () { 
-                        enableScreenshot();
-                        Navigator.of(context).pop();
-                      }
-                    ),
-                  ),
-                  if (widget.factory >= 2)
-                    Positioned(
-                      top: 12,
-                      right: 12,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(.18),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.white24),
-                        ),
-                        child: Text(
-                          'x${widget.factory.toStringAsFixed(0)}',
-                          style: const TextStyle(
-                              color: Colors.white, fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                    ),
-                  Positioned(
-                    top: _headerContentTop,
-                    left: 16,
-                    right: 16,
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        RichText(
-                          text: TextSpan(
-                            children: [
-                              const TextSpan(
-                                text: '3/',
-                                style: TextStyle(
-                                  fontSize: 35,
-                                  fontWeight: FontWeight.w700,
-                                  color: Colors.white,
-                                  shadows: [
-                                    Shadow(
-                                        color: Colors.black26, blurRadius: 6)
-                                  ],
-                                ),
-                              ),
-                              TextSpan(
-                                text: '${widget.stage}',
-                                style: const TextStyle(
-                                  fontSize: 94,
-                                  fontWeight: FontWeight.w800,
-                                  color: Colors.white,
-                                  height: .9,
-                                  shadows: [
-                                    Shadow(
-                                        color: Colors.black26, blurRadius: 6)
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Padding(
-                            padding: const EdgeInsets.only(top: 15),
-                            child: Text(
-                              widget.stage == 1
-                                  ? "Сіз бірінші деңгейді\nсәтті аяқтадыңыз.\nЕкінші деңгей ашылды."
-                                  : widget.stage == 2
-                                  ? "Сіз екінші деңгейді\nаяқтадыңыз. Келесі\n– шешуші деңгей\nашық."
-                                  : widget.stage == 3 ? "Сіз барлық деңгейді\nсәтті аяқтадыңыз.\nЖарайсыз!" 
-                                  : "Сіз қайталау сұрақтарын сәтті аяқтадыңыз!",
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 20,
-                                fontWeight: FontWeight.w600,
-                                height: 1.25,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Positioned(
-                    left: 24,
-                    right: 24,
-                    bottom: 16,
-                    child: Row(
-                      children: List.generate(_maxStages, (i) {
-                        final filled = i < widget.stage;
-                        return Expanded(
-                          child: Container(
-                            height: 6,
-                            margin: EdgeInsets.only(right: i < 2 ? 6 : 0),
-                            decoration: BoxDecoration(
-                              color: filled ? Colors.white : Colors.white30,
-                              borderRadius: BorderRadius.circular(3),
-                            ),
-                          ),
-                        );
-                      }),
-                    ),
-                  ),
-                ],
+            Row(
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.close, color: Colors.white, size: 24,),
+                  onPressed: () { 
+                    enableScreenshot();
+                    Navigator.of(context).pop();
+                  }
+                ),
+              ],
+            ),
+            Text(
+              "${widget.stage}",
+              style: TextStyles.bold(
+                AppColors.white,
+                fontSize: 94,
               ),
             ),
-
+            Padding(
+              padding: const EdgeInsets.only(top: 15),
+              child: Text(
+                widget.stage == 1
+                    ? "Сіз бірінші деңгейді\nсәтті аяқтадыңыз.\nЕкінші деңгей ашылды."
+                    : widget.stage == 2
+                    ? "Сіз екінші деңгейді\nсәтті аяқтадыңыз.\nЕкінші деңгей ашылды."
+                    : widget.stage == 3 ? "Сіз барлық деңгейді\nсәтті аяқтадыңыз.\nЖарайсыз!" 
+                    : "Сіз қайталау сұрақтарын сәтті аяқтадыңыз!",
+                style: TextStyles.bold(
+                  AppColors.white,
+                  fontSize: 20,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+            SizedBox(height: 30,),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 30),
+              child: Row(
+                children: List.generate(_maxStages, (i) {
+                  final filled = i < widget.stage;
+                  return Expanded(
+                    child: Container(
+                      height: 10,
+                      margin: EdgeInsets.only(right: i < 2 ? 6 : 0),
+                      decoration: BoxDecoration(
+                        color: filled ? Colors.white : Colors.white30,
+                        borderRadius: BorderRadius.circular(3),
+                      ),
+                    ),
+                  );
+                }),
+              ),
+            ),
+            const SizedBox(height: 20),
+            Text("ЖАРАЙСЫҢ!", style: TextStyles.bold(AppColors.white, fontSize: 24),),
+            SizedBox(height: 40,),
             Expanded(
               child: Container(
                 width: double.infinity,
@@ -212,123 +145,91 @@ class _NewResultScreenState extends State<NewResultScreen> {
                 padding: const EdgeInsets.fromLTRB(20, 30, 20, 32),
                 child: Column(
                   children: [
-                    // const SizedBox(height: 6),
-                    const Text(
-                      "ЖАРАЙСЫҢ!",
-                      style:
-                      TextStyle(fontSize: 24, fontWeight: FontWeight.w800,),
-                    ),
-                    // const SizedBox(height: 8),
-                    // const SizedBox(height: 22),
-
-                    SizedBox(
-                      height: 200,
-                      child: LayoutBuilder(
-                        builder: (ctx, cons) {
-                          const double overhead = 72;
-                          final double maxBarH =
-                          (cons.maxHeight - overhead)
-                              .clamp(0.0, cons.maxHeight);
-
-                          return Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              _metricBarConstrained(
-                                topText: '${widget.score}',
-                                label: 'ұпай',
-                                barColor: t.bar1,
-                                barHeight: scoreHeight.clamp(0, maxBarH),
-                              ),
-                              _metricBarConstrained(
-                                topText: '${widget.percentage}%',
-                                label: 'сұрақ',
-                                barColor: t.bar2,
-                                barHeight: questionHeight.clamp(0, maxBarH),
-                              ),
-                              if (showCashCol)
-                                _metricBarConstrained(
-                                  topText: widget.isCash
-                                      ? 'x${widget.factory.toStringAsFixed(0)}'
-                                      : '${widget.totalCashback}',
-                                  label:
-                                  widget.isCash ? 'еселік' : 'кэшбек',
-                                  barColor: t.bar3,
-                                  barHeight:
-                                  multiplierHeight.clamp(0, maxBarH),
-                                ),
-                            ],
-                          );
-                        },
-                      ),
-                    ),
-                    // const Spacer(),
-                    // CustomButtonWidget(color: Colors.blue, text: "text", onTap: (){
-                    //   Navigator.push(
-                    //           context,
-                    //           MaterialPageRoute(
-                    //             builder: (context) => Math1Screen(
-                    //               initialScrollOffset: 20,
-                    //               lessonId: widget.lesson.lessonId,
-                    //               groupId: widget.stage + 1,
-                    //               cashbackActive: widget.lesson.cashbackActive,
-                    //               isCash: false,
-                    //             ),
-                    //           ),
-                    //         );
-                    // }),
-
-                    // SizedBox(
-                    //   width: double.infinity,
-                    //   height: 54,
-                    //   child: ElevatedButton(
-                    //     style: ElevatedButton.styleFrom(
-                    //       backgroundColor: t.cta,
-                    //       shape: RoundedRectangleBorder(
-                    //         borderRadius: BorderRadius.circular(16),
-                    //       ),
-                    //     ),
-                    //     onPressed: () async {
-                    //       enableScreenshot();
-                    //       if (widget.strike > 0) {
-                    //         await _showStrikeDialog(context, widget.strike);
-                    //       }
-                    //       if (widget.isCash == true) {
-                    //         await _showCashbackDialog(context);
-                    //       }
-                    //       if (!context.mounted) return;
-                    //       Navigator.pushAndRemoveUntil(
-                    //         context,
-                    //         MaterialPageRoute(
-                    //           builder: (_) =>
-                    //           const RoadMap(selectedIndx: 0, state: 0),
-                    //         ),
-                    //             (_) => false,
-                    //       );
-                    //     },
-                    //     child: const Text(
-                    //       "КЕРЕМЕТ!",
-                    //       style: TextStyle(
-                    //         color: Colors.white,
-                    //         fontWeight: FontWeight.w800,
-                    //         fontSize: 14,
-                    //       ),
-                    //     ),
-                    //   ),
-                    // ),
-                    // SizedBox(height: 5),
                     Spacer(),
-                    widget.stage != 3 ? SizedBox(
-                      width: double.infinity,
-                      height: 54,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: t.cta,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Container(
+                          height: 140,
+                          padding: const EdgeInsets.symmetric(vertical: 18.0, horizontal: 21.0),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: AppColors.grey, width: 1),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Column(
+                            children: [
+                              Container(
+                                decoration: BoxDecoration(
+                                  color: AppColors.primaryBlue.withOpacity(0.2),
+                                  borderRadius: BorderRadius.circular(50),
+                                ),
+                                padding: EdgeInsets.all(10),
+                                child: SvgPicture.asset('assets/icons/star.svg'),
+                              ),
+                              const SizedBox(height: 5),
+                              Text('${widget.score}', style: TextStyles.bold(AppColors.black)),
+                              Text('ұпай', style: TextStyles.regular(AppColors.black, fontSize: 10)),
+                            ],
                           ),
                         ),
-                        onPressed: () async {
+                        Container(
+                          height: 140,
+                          padding: const EdgeInsets.symmetric(vertical: 18.0, horizontal: 21.0),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: AppColors.grey, width: 1),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Column(
+                            children: [
+                              Container(
+                                decoration: BoxDecoration(
+                                  color: AppColors.trueGreen.withOpacity(0.2),
+                                  borderRadius: BorderRadius.circular(50),
+                                ),
+                                padding: EdgeInsets.all(10),
+                                child: SvgPicture.asset('assets/icons/increase.svg'),
+                              ),
+                              const SizedBox(height: 5),
+                              Text('${widget.percentage}%', style: TextStyles.bold(AppColors.black)),
+                              Text('сұрақ', style: TextStyles.regular(AppColors.black, fontSize: 10)),
+                            ],
+                          ),
+                        ),
+                        if (showCashCol)
+                          Container(
+                          height: 140,
+                          padding: const EdgeInsets.symmetric(vertical: 18.0, horizontal: 21.0),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: AppColors.grey, width: 1),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Column(
+                            children: [
+                              Container(
+                                decoration: BoxDecoration(
+                                  color: AppColors.yellow.withOpacity(0.2),
+                                  borderRadius: BorderRadius.circular(50),
+                                ),
+                                padding: EdgeInsets.all(10),
+                                child: SvgPicture.asset('assets/icons/repeat.svg'),
+                              ),
+                              const SizedBox(height: 5),
+                              Text(widget.isCash
+                                ? 'x${widget.factory.toStringAsFixed(0)}'
+                                : '${widget.totalCashback}', style: TextStyles.bold(AppColors.black, fontSize: 20)),
+                              Text(widget.isCash ? 'еселік' : 'кэшбек', style: TextStyles.regular(AppColors.black, fontSize: 10)),
+                            ],
+                          ),
+                        ) ,
+                              
+                      ],
+                    ),
+                    Spacer(),
+                    
+                    widget.stage != 3 ? AppButton(
+                      text: "Жалғастыру",
+                      onPressed: () async {
                           enableScreenshot();
                           
                           Navigator.push(
@@ -345,15 +246,6 @@ class _NewResultScreenState extends State<NewResultScreen> {
                               ),
                             );
                         },
-                        child: const Text(
-                          "Келесі тестке өту!",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w800,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ),
                     ) : SizedBox()
                   ],
                 ),
@@ -587,8 +479,8 @@ class _ResultTheme {
 }
 
 final _themes = <int, _ResultTheme>{
-  1: const _ResultTheme(
-    bg: Color(0xFF3D8BFF),
+  1: _ResultTheme(
+    bg: AppColors.primaryBlue,
     accent: Color(0xFF00E676),
     badgeBg: Color(0x332C5DE5),
     badgeBorder: Color(0x55FFFFFF),
@@ -597,8 +489,8 @@ final _themes = <int, _ResultTheme>{
     bar2: Color(0xFF00C853),
     bar3: Color(0xFFFF7043),
   ),
-  2: const _ResultTheme(
-    bg: Color(0xFFFF7043),
+  2: _ResultTheme(
+    bg: AppColors.yellow,
     accent: Color(0xFF2EE6A4),
     badgeBg: Color(0x33FFAB91),
     badgeBorder: Color(0x55FFFFFF),
@@ -607,8 +499,8 @@ final _themes = <int, _ResultTheme>{
     bar2: Color(0xFF00C853),
     bar3: Color(0xFFFF8A65),
   ),
-  3: const _ResultTheme(
-    bg: Color(0xFFFFC107),
+  3: _ResultTheme(
+    bg: Color(0xffFF6700),
     accent: Color(0xFF00C853),
     badgeBg: Color(0x33FFE082),
     badgeBorder: Color(0x55FFFFFF),

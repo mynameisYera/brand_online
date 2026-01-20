@@ -7,6 +7,7 @@ import '../../../profile/ui/ProfilePage.dart';
 import '../../../leaderboard/ui/LeaderboardPage.dart';
 import '../../../core/widgets/custom_bottom_navbar.dart';
 import '../../entity/ProfileController.dart';
+import '../../service/task_service.dart';
 import 'RepeatPage.dart';
 import 'RoadMainPage.dart';
 
@@ -27,6 +28,7 @@ class RoadMap extends StatefulWidget {
 }
 
 class _RoadMapState extends State<RoadMap> {
+  final TaskService _taskService = TaskService();
   late ProfileResponse profileResponse = ProfileResponse(
       permanent_balance: 0,
       temporary_balance: 0,
@@ -49,6 +51,7 @@ class _RoadMapState extends State<RoadMap> {
   void initState() {
     super.initState();
     getProfile();
+    _syncRepeatCount();
     _selectedIndex = widget.selectedIndx;
     _scrollController.addListener(_onScroll);
   }
@@ -91,6 +94,38 @@ class _RoadMapState extends State<RoadMap> {
       setState(() {
         profileResponse = res;
       });
+    }
+  }
+
+  Future<void> _syncRepeatCount() async {
+    try {
+      final result = await _taskService.getRestartLessons();
+      if (!mounted) return;
+
+      final lessons = result?.lessons ?? [];
+      final exam = result?.controlExam;
+      final dr = result?.dailyReview;
+      final dailySubjectTasks = result?.dailySubjectTasks;
+
+      final hasActiveDailySessions = dailySubjectTasks != null &&
+          dailySubjectTasks.isNotEmpty &&
+          dailySubjectTasks.any(
+            (session) =>
+                !session.isCompleted &&
+                (session.remainingTasks > 0 || session.completedTasks > 0),
+          );
+      final hasActiveDailyReview =
+          dr?.isOpen == true && dr?.isCompleted == false;
+
+      int count = 0;
+      if (hasActiveDailyReview) count++;
+      if (hasActiveDailySessions) count++;
+      if (lessons.isNotEmpty) count++;
+      if (exam?.isOpen == true) count++;
+
+      ProfileController.setRepeatCount(count);
+    } catch (_) {
+      // Keep previous count on error.
     }
   }
 

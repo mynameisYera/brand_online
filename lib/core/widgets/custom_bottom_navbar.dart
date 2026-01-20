@@ -55,59 +55,59 @@ class CustomBottomNavBar extends StatelessWidget {
         ),
         // Повтор (Tasks)
         BottomNavigationBarItem(
-          icon: Column(
-            children: [
-              Stack(
-                clipBehavior: Clip.none,
+          icon: ValueListenableBuilder<int>(
+            valueListenable: ProfileController.repeatLessonsCountNotifier,
+            builder: (_, count, __) {
+              return Column(
                 children: [
-                  SvgPicture.asset(
-                    currentIndex == 1
-                        ? 'assets/icons/tasks_active.svg'
-                        : 'assets/icons/tasks.svg',
-                    width: 24,
-                    height: 24,
-                  ),
-                  Positioned(
-                    right: -2,
-                    top: -2,
-                    child: ValueListenableBuilder<int>(
-                      valueListenable: ProfileController.repeatLessonsCountNotifier,
-                      builder: (_, count, __) {
-                        if (count <= 0) return const SizedBox.shrink();
-                        return Container(
-                          padding: const EdgeInsets.all(2),
-                          decoration: const BoxDecoration(
-                            color: Colors.red,
-                            shape: BoxShape.circle,
-                          ),
-                          constraints: const BoxConstraints(
-                            minWidth: 16,
-                            minHeight: 16,
-                          ),
-                          child: Center(
-                            child: Text(
-                              '$count',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold,
+                  Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      SvgPicture.asset(
+                        currentIndex == 1
+                            ? 'assets/icons/tasks_active.svg'
+                            : 'assets/icons/tasks.svg',
+                        width: 24,
+                        height: 24,
+                      ),
+                      if (count > 0)
+                        Positioned(
+                          right: -2,
+                          top: -2,
+                          child: Container(
+                            padding: const EdgeInsets.all(2),
+                            decoration: const BoxDecoration(
+                              color: Colors.red,
+                              shape: BoxShape.circle,
+                            ),
+                            constraints: const BoxConstraints(
+                              minWidth: 16,
+                              minHeight: 16,
+                            ),
+                            child: Center(
+                              child: Text(
+                                '$count',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ),
                           ),
-                        );
-                      },
-                    ),
+                        ),
+                    ],
                   ),
+                  const SizedBox(height: 5),
+                  if (currentIndex == 1)
+                    Container(
+                      height: 3,
+                      width: 20,
+                      color: Colors.blue,
+                    )
                 ],
-              ),
-              const SizedBox(height: 5),
-              if (currentIndex == 1)
-                Container(
-                  height: 3,
-                  width: 20,
-                  color: Colors.blue,
-                )
-            ],
+              );
+            },
           ),
           label: '',
         ),

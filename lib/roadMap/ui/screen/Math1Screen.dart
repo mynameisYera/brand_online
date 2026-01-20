@@ -1,4 +1,7 @@
 import 'dart:math';
+import 'package:brand_online/core/app_colors.dart';
+import 'package:brand_online/core/text_styles.dart';
+import 'package:brand_online/core/widgets/app_button_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:no_screenshot/no_screenshot.dart';
@@ -385,40 +388,43 @@ class _Math1ScreenState extends State<Math1Screen> with TickerProviderStateMixin
       backgroundColor: Colors.white,
       builder: (context) {
         return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 0),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text(
+              const SizedBox(height: 8),
+              Container(
+                height: 8,
+                width: 60,
+                decoration: BoxDecoration(
+                  color: AppColors.grey,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              const SizedBox(height: 15),
+              Text(
                 'Сіз сенімдісіз бе?',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
+                style: TextStyles.semibold(AppColors.black, fontSize: 20),
               ),
               const SizedBox(height: 15),
               Center(
                 child: SizedBox(
                   width: MediaQuery.sizeOf(context).width * 0.7,
-                  child: const Text(
+                  child: Text(
                     'Бұл сабақтағы барлық жетістіктер жоғалады.',
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: GeneralUtil.orangeColor),
+                    style: TextStyles.bold(AppColors.errorRed, fontSize: 24),
                   ),
                 ),
               ),
               const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton(
-                  onPressed: () async {
-                    Navigator.of(context).pop();
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  ),
-                  child: const Text('ЖАЛҒАСТЫРУ', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
-                ),
+              AppButton(
+                text: 'ЖАЛҒАСТЫРУ', 
+                onPressed: () async {
+                  Navigator.of(context).pop();
+                }
               ),
+              
               const SizedBox(height: 12),
               GestureDetector(
                 onTap: () { Navigator.pushAndRemoveUntil(

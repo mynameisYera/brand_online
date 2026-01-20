@@ -1,3 +1,4 @@
+import 'package:brand_online/core/widgets/app_button_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
@@ -96,22 +97,13 @@ class _HowCashbackCalculatedScreenState
               ),
             ),
             const Spacer(),
-            // Кнопка "понятно" (по желанию)
             Padding(
-              padding:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-              child: SizedBox(
-                width: double.infinity,
-                height: 52,
-                child: ElevatedButton(
-                  onPressed: () => Navigator.of(context).maybePop(),
-                  child: const Text(
-                    'ТҮСІНІКТІ!',
-                    style: TextStyle(fontSize: 16),
-                  ),
-                ),
-              ),
-            ),
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+              child: AppButton(text: "ТҮСІНІКТІ", onPressed: (){
+                Navigator.of(context).maybePop();
+              }),
+            )
+            
           ],
         ),
       ),

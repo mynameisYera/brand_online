@@ -168,6 +168,8 @@ flutter:
     - assets/icons/repeat.svg
     - assets/icons/qortyndy.svg
     - assets/icons/upup.svg
+    - assets/icons/increase.svg
+    - assets/icons/star.svg
 
 
 

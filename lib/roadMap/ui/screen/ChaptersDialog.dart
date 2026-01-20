@@ -69,10 +69,10 @@ class _ChaptersDialogState extends State<ChaptersDialog> with TickerProviderStat
                   final isSelected = selectedChapterIndex == index;
                   final isExpanded = expandedIndex == index;
                   final color = colorList[index % colorList.length];
-
                   final entry = widget.data[index].entries.first;
                   final chapterTitle = entry.key;
                   final lessonTitles = entry.value;
+                  final isCompleted = chapterTitle.isCompleted;
 
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -96,6 +96,7 @@ class _ChaptersDialogState extends State<ChaptersDialog> with TickerProviderStat
                           margin: const EdgeInsets.only(bottom: 10, top: 5),
                           padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
                           decoration: BoxDecoration(
+                            color: isCompleted ? AppColors.trueGreen.withOpacity(0.1) : Colors.white,
                             border: Border.all(color: AppColors.primaryBlue, width: 2),
                             borderRadius: BorderRadius.circular(15),
                           ),

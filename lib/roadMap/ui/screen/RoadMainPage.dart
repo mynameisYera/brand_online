@@ -1439,7 +1439,7 @@ class _RoadMainPageState extends State<RoadMainPage>
         elevation: 0,
         backgroundColor: Colors.transparent,
       ),
-      backgroundColor: Colors.white,
+      backgroundColor: Colors.transparent,
       body: Center(
         child: SizedBox(
           width: screenWidth,

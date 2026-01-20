@@ -7,7 +7,7 @@ class IncorrectAnswerPopup extends StatelessWidget {
     super.key,
     this.answer = '',
     this.title = 'Қате Жауап!',
-    this.subtitle = 'Дұрыс жауапты тапңыз',
+    this.subtitle = 'Қате таптыңыз ба?',
     this.onContinue,
     this.onReportTap,
   });

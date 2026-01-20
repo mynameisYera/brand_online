@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 
 import '../../authorization/entity/ProfileResponse.dart';
@@ -13,7 +14,11 @@ class ProfileController {
 
   static void updateFromProfile(ProfileResponse p) {
     multiplierNotifier.value = p.multiplier.toString();
-    repeatLessonsCountNotifier.value = p.repeatLessonsCount ?? 0;
+    final serverCount = p.repeatLessonsCount ?? 0;
+    repeatLessonsCountNotifier.value = max(
+      repeatLessonsCountNotifier.value,
+      serverCount,
+    );
   }
 
   static void setRepeatCount(int v) => repeatLessonsCountNotifier.value = v;
