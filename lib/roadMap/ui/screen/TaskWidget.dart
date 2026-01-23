@@ -347,8 +347,10 @@ class _TaskWidgetState extends State<TaskWidget>
                   ),
                 ),
                 const SizedBox(height: 10),
-                const Divider(thickness: 1, color: Colors.black),
+                widget.task.taskType == "fill-in-the-blank" ? const SizedBox.shrink() : const Divider(thickness: 1, color: Colors.black),
                 const SizedBox(height: 10),
+
+                // TASK TYPES ------------------------------------------------------------
 
                 if (widget.task.taskType == "fill-in-the-blank")
                   _buildFillInTheBlank(disabled),
@@ -625,17 +627,26 @@ class _TaskWidgetState extends State<TaskWidget>
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: TextField(
-        textAlign: TextAlign.center,
+        onTapOutside: (event) => FocusManager.instance.primaryFocus?.unfocus(),
+        textAlign: TextAlign.start,
         style: const TextStyle(fontSize: 20),
         enabled: !disabled,
+        cursorColor: AppColors.primaryBlue,
         onChanged: disabled ? null : (v) => setState(() => userAnswer = v),
         decoration: InputDecoration(
-          contentPadding: const EdgeInsets.symmetric(vertical: 14),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
+          focusColor: AppColors.primaryBlue,
+          fillColor: AppColors.primaryBlue.withOpacity(0.2),
+          hoverColor: AppColors.primaryBlue.withOpacity(0.2),
+          focusedBorder: UnderlineInputBorder(
             borderSide: BorderSide(
-              color: (widget.isRepeat) ? Colors.orange : Colors.blue,
+              color: AppColors.grey,
               width: 2,
+            ),
+          ),
+          enabledBorder: UnderlineInputBorder(
+            borderSide: BorderSide(
+              color: AppColors.primaryBlue,
+              width: 1,
             ),
           ),
         ),
@@ -658,7 +669,7 @@ class _TaskWidgetState extends State<TaskWidget>
             decoration: BoxDecoration(
               boxShadow: [
                 BoxShadow(
-                  color: selected ? (widget.isRepeat) ? Colors.orange.withOpacity(.2) : AppColors.primaryBlue.withOpacity(.8) : Colors.white,
+                  color: selected ? (widget.isRepeat) ? Colors.orange : AppColors.primaryBlue.withOpacity(.8) : Colors.white,
                   blurRadius: 1,
                   offset: Offset(0, 5),
                 ),
@@ -669,7 +680,7 @@ class _TaskWidgetState extends State<TaskWidget>
               ),
               borderRadius: BorderRadius.circular(8),
               color: selected
-                  ? ((widget.isRepeat) ? Colors.orange.withOpacity(.2) : AppColors.secondaryBlue)
+                  ? ((widget.isRepeat) ? AppColors.yellow : AppColors.secondaryBlue)
                   : Colors.white,
             ),
             child: Center(

@@ -176,7 +176,7 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
               _TopCircle(
                 name: top20.length > 2 ? top20[2].firstName : '',
                 index: 2,
-                color: Color(0xffFF6700),
+                color: Color(0xffC27A4A),
                 size: 100,
                 cash: currentLeaderboard!.thirdPlace,
               ),
@@ -219,7 +219,7 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
                               : i == 1
                                   ? Color(0xffA3A3A3)
                                   : i == 2
-                                      ? Color(0xffFF6700)
+                                      ? Color(0xffC27A4A)
                                       : Color(0xffF3F3F3),
                           borderRadius: BorderRadius.circular(12),
                           border: isCurrentUser

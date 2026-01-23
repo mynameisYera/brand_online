@@ -4,6 +4,7 @@ import 'package:brand_online/core/app_colors.dart';
 import 'package:brand_online/roadMap/ui/screen/RoadMap.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:brand_online/core/notification/firebase_utils.dart';
@@ -17,6 +18,9 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+  ]);
   FirebaseUtil().initialize();
   Platform.isIOS ? await PurchasesConfig.init() : print("android");
   runApp(const Application());
