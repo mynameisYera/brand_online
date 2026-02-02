@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import '../service/display_chacker.dart';
 import '../../roadMap/entity/ProfileController.dart';
 
 class CustomBottomNavBar extends StatelessWidget {
@@ -15,6 +16,10 @@ class CustomBottomNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (!DisplayChacker.isDisplay(context)) {
+      return const SizedBox.shrink();
+    }
+
     return ClipRect(
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),

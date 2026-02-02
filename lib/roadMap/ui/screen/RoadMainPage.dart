@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:brand_online/core/app_colors.dart';
+import 'package:brand_online/core/service/display_chacker.dart';
 import 'package:brand_online/core/text_styles.dart';
 import 'package:brand_online/roadMap/ui/screen/Math1Screen.dart';
 import 'package:brand_online/roadMap/ui/screen/YoutubeScreen.dart';
@@ -75,6 +76,14 @@ class _RoadMainPageState extends State<RoadMainPage>
     'assets/images/A5.png',
   ];
 
+  final List<String> displayImagePaths = [
+    'assets/images/B1.png',
+    'assets/images/B2.png',
+    'assets/images/B3.png',
+    'assets/images/B4.png',
+    'assets/images/B5.png',
+  ];
+
   Map<int, double> chapterScrollPositions = {};
   List<Map<SimpleTaskIndex, List<SimpleTaskIndex>>> structuredChapters = [];
   late LessonResponse response;
@@ -121,6 +130,22 @@ class _RoadMainPageState extends State<RoadMainPage>
     getProfile();
     getMyCourses();
     getRoadMap();
+  }
+
+  double _cardHeight(BuildContext context) {
+    return DisplayChacker.isDisplay(context) ? 300 : 360;
+  }
+
+  double _cardWidth(BuildContext context) {
+    return DisplayChacker.isDisplay(context) ? 700 : double.infinity;
+  }
+
+  double _cardSpacing(BuildContext context) {
+    return DisplayChacker.isDisplay(context) ? 320 : 380;
+  }
+
+  double _cardScrollOffsetBase(BuildContext context) {
+    return _cardHeight(context) - 10;
   }
 
 
@@ -246,6 +271,7 @@ class _RoadMainPageState extends State<RoadMainPage>
         takyryp = [];
         tarau = [];
         double currentOffset = 0.0;
+        final cardSpacing = _cardSpacing(context);
         structuredChapters.clear();
 
         for (var chapter in response.chapters) {
@@ -275,7 +301,7 @@ class _RoadMainPageState extends State<RoadMainPage>
               ),
             );
             
-            currentOffset += 380;
+            currentOffset += cardSpacing;
             index++;
             lessonsList.add(SimpleTaskIndex(title: lessonTitle, index: lessonId, isCompleted: lesson.videoWatched && lesson.group1Completed && lesson.group2Completed && lesson.group3Completed, isCashback: lesson.cashbackActive));
           }
@@ -301,10 +327,11 @@ class _RoadMainPageState extends State<RoadMainPage>
         if (mounted) {
           int greyIndex = findLastGreyIndex();
           int cashbackActiveIndex = findCashbackIndex();
+          final cardSpacing = _cardSpacing(context);
           if (cashbackActiveIndex != -1) {
             Future.delayed(Duration(milliseconds: 300), () {
               _scrollController.animateTo(
-                cashbackActiveIndex * 380,
+                cashbackActiveIndex * cardSpacing,
                 duration: Duration(milliseconds: 600),
                 curve: Curves.easeInOut,
               );
@@ -312,7 +339,7 @@ class _RoadMainPageState extends State<RoadMainPage>
           } else if (greyIndex != -1) {
             Future.delayed(Duration(milliseconds: 300), () {
               _scrollController.animateTo(
-                greyIndex * 380,
+                greyIndex * cardSpacing,
                 duration: Duration(milliseconds: 600),
                 curve: Curves.easeInOut,
               );
@@ -338,7 +365,7 @@ class _RoadMainPageState extends State<RoadMainPage>
   ) {
     final characterImage = lesson.cashbackActive
         ? 'assets/images/moneyadm.png'
-        : barysImagePaths[index % 5];
+        : DisplayChacker.isDisplay(context) ? barysImagePaths[index % 5] : displayImagePaths[index % 5];
 
     bool allCompleted = lesson.videoWatched &&
         lesson.group1Completed &&
@@ -347,8 +374,8 @@ class _RoadMainPageState extends State<RoadMainPage>
 
     return Container(
       margin: EdgeInsets.only(bottom: 20),
-      width: double.infinity,
-      height: 360,
+      width: _cardWidth(context),
+      height: _cardHeight(context),
       decoration: BoxDecoration(
         color: colors[index % 5],
         borderRadius: BorderRadius.circular(20),
@@ -374,8 +401,9 @@ class _RoadMainPageState extends State<RoadMainPage>
             children: [
               Spacer(),
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                mainAxisAlignment: MainAxisAlignment.start,
                 children: [
+                  SizedBox(width: 24),
                   _buildCardButton(
                     context: context,
                     lesson: lesson,
@@ -432,7 +460,7 @@ class _RoadMainPageState extends State<RoadMainPage>
                       }
                     },
                   ),
-                  
+                  SizedBox(width: 24),
                   _buildCardButton(
                     context: context,
                     lesson: lesson,
@@ -511,6 +539,9 @@ class _RoadMainPageState extends State<RoadMainPage>
                       }
                     },
                   ),
+
+                  SizedBox(width: 24),
+
                   
                   _buildCardButton(
                     context: context,
@@ -578,6 +609,9 @@ class _RoadMainPageState extends State<RoadMainPage>
                     },
                   ),
                   
+                  SizedBox(width: 24),
+                  
+
                   _buildCardButton(
                     context: context,
                     lesson: lesson,
@@ -644,6 +678,7 @@ class _RoadMainPageState extends State<RoadMainPage>
                       }
                     },
                   ),
+                  
                 ],
               ),
               SizedBox(height: 20),
@@ -726,7 +761,9 @@ class _RoadMainPageState extends State<RoadMainPage>
     if (widgetList.isEmpty) return;
 
     double offset = _scrollController.position.pixels;
-    int newChapterIndex = ((offset + 350) / 380).floor(); // Обновлено под новую высоту карточки
+    final cardSpacing = _cardSpacing(context);
+    final offsetBase = _cardScrollOffsetBase(context);
+    int newChapterIndex = ((offset + offsetBase) / cardSpacing).floor(); // Обновлено под новую высоту карточки
 
     if (newChapterIndex != selectedIndex) {
       setState(() {
@@ -743,7 +780,7 @@ class _RoadMainPageState extends State<RoadMainPage>
   Widget roadFromRight(BuildContext context, Lesson lesson, int index,
       Color color) {
     return SizedBox(
-      height: 530,
+      height: 700,
       child: Center(
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -753,7 +790,7 @@ class _RoadMainPageState extends State<RoadMainPage>
                     child: Image.asset('assets/images/moneyadm.png',
                         fit: BoxFit.cover))
                 : Expanded(
-                    child: Image.asset(barysImagePaths[index % 5],
+                    child: Image.asset(displayImagePaths[index % 5],
                         fit: BoxFit.cover)),
             Column(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -1064,7 +1101,7 @@ class _RoadMainPageState extends State<RoadMainPage>
   Widget roadFromLeft(BuildContext context, Lesson lesson, int index,
       Color color) {
     return SizedBox(
-      height: 530,
+      height: 700,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
@@ -1375,7 +1412,7 @@ class _RoadMainPageState extends State<RoadMainPage>
                   child: Image.asset('assets/images/moneyadm.png',
                       fit: BoxFit.cover))
               : Expanded(
-                  child: Image.asset(barysImagePaths[index % 5],
+                  child: Image.asset(displayImagePaths[index % 5],
                       fit: BoxFit.cover)),
         ],
       ),
@@ -1440,85 +1477,91 @@ class _RoadMainPageState extends State<RoadMainPage>
         backgroundColor: Colors.transparent,
       ),
       backgroundColor: Colors.transparent,
-      body: Center(
-        child: SizedBox(
-          width: screenWidth,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              CustomAppBar(),
-              const SizedBox(height: 10),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 16, vertical: 12),
-                decoration: BoxDecoration(
-                  color: AppColors.primaryBlue,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: InkWell(
-                  onTap: () => _showSubjectList(context),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                            decoration: BoxDecoration(
-                              color: AppColors.white,
-                              borderRadius: BorderRadius.circular(10),
+      body: Container(
+        padding: EdgeInsets.symmetric(horizontal: 16),
+        child: Center(
+          child: SizedBox(
+            width: screenWidth,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: DisplayChacker.isDisplay(context)
+                  ? CrossAxisAlignment.center
+                  : CrossAxisAlignment.start,
+              children: [
+                CustomAppBar(),
+                const SizedBox(height: 10),
+                Container(
+                  width: DisplayChacker.isDisplay(context) ? screenWidth : 600,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryBlue,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: InkWell(
+                    onTap: () => _showSubjectList(context),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 8),
+                              decoration: BoxDecoration(
+                                color: AppColors.white,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: SvgPicture.asset("assets/icons/burger.svg",
+                                  width: 18, height: 18),
                             ),
-                            child: SvgPicture.asset("assets/icons/burger.svg", width: 18, height: 18),
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            profileResponse.selectedGrade?.subjectName ?? '-',
-                            style: TextStyles.bold(AppColors.white),
-                          ),
-                        ],
-                      ),
-                      if (profileResponse.selectedGrade?.cashbackPending == true)
-                        Image.asset(
-                          'assets/images/dollar.png',
-                          width: 20,
-                          height: 20,
+                            const SizedBox(width: 8),
+                            Text(
+                              profileResponse.selectedGrade?.subjectName ?? '-',
+                              style: TextStyles.bold(AppColors.white),
+                            ),
+                          ],
                         ),
-                    ],
+                        if (profileResponse.selectedGrade?.cashbackPending == true)
+                          Image.asset(
+                            'assets/images/dollar.png',
+                            width: 20,
+                            height: 20,
+                          ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-              SizedBox(
-                height: 10,
-              ),
-              GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) =>
-                          ChaptersDialog(data: structuredChapters),
-                    ),
-                  ).then((result) {
-                    if (result != null && result is Map<String, String>) {
-                      final chapter = result['chapter'];
-                      final titleName = result['title'];
-                      final scrollIndex =
-                      findIndexForScroll(chapter, titleName);
-                      if (scrollIndex != -1) {
-                        _scrollController.animateTo(
-                          scrollIndex * 380,
-                          duration: Duration(milliseconds: 500),
-                          curve: Curves.easeInOut,
-                        );
+                SizedBox(
+                  height: 10,
+                ),
+                GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => ChaptersDialog(data: structuredChapters),
+                      ),
+                    ).then((result) {
+                      if (result != null && result is Map<String, String>) {
+                        final chapter = result['chapter'];
+                        final titleName = result['title'];
+                        final scrollIndex =
+                            findIndexForScroll(chapter, titleName);
+                        if (scrollIndex != -1) {
+                          _scrollController.animateTo(
+                            scrollIndex * _cardSpacing(context),
+                            duration: Duration(milliseconds: 500),
+                            curve: Curves.easeInOut,
+                          );
+                        }
                       }
-                    }
-                  });
-                },
-                child: Center(
+                    });
+                  },
                   child: AnimatedContainer(
+                    width: DisplayChacker.isDisplay(context) ? screenWidth : 600,
                     key: ValueKey<int>(selectedIndex),
                     duration: Duration(milliseconds: 500),
-                    width: screenWidth,
                     padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     decoration: BoxDecoration(
                       color: AppColors.white,
@@ -1532,14 +1575,16 @@ class _RoadMainPageState extends State<RoadMainPage>
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                                mainTitleDescription,
-                                textAlign: TextAlign.left,
-                                style: TextStyles.medium(AppColors.grey),
-                              ),
+                              mainTitleDescription,
+                              textAlign: TextAlign.left,
+                              style: TextStyles.medium(AppColors.grey),
+                            ),
                             SizedBox(height: 4),
                             Text(
                               textAlign: TextAlign.left,
-                              chapterTitle.length > 30 ? chapterTitle.substring(0, 30) + '..' : chapterTitle,
+                              chapterTitle.length > 30
+                                  ? chapterTitle.substring(0, 30) + '..'
+                                  : chapterTitle,
                               style: TextStyles.medium(AppColors.black),
                               overflow: TextOverflow.ellipsis,
                               maxLines: 1,
@@ -1547,27 +1592,31 @@ class _RoadMainPageState extends State<RoadMainPage>
                           ],
                         ),
                         Spacer(),
-                        Icon(Icons.keyboard_arrow_down_outlined, color: AppColors.grey),
+                        Icon(Icons.keyboard_arrow_down_outlined,
+                            color: AppColors.grey),
                       ],
-                    )
+                    ),
                   ),
                 ),
-              ),
-              SizedBox(
-                height: 10,
-              ),
-              Expanded(
-                child: SingleChildScrollView(
-                  controller: _scrollController,
-                  reverse: true,
-                  child: Column(
-                    children: widgetList
-                        .map((widget) => SizedBox(child: widget))
-                        .toList(),
-                  ),
+                SizedBox(
+                  height: 10,
                 ),
-              ),
-            ],
+                Expanded(
+                  child: SizedBox(
+                    width: DisplayChacker.isDisplay(context) ? screenWidth : 770,
+                    child: SingleChildScrollView(
+                      controller: _scrollController,
+                      reverse: true,
+                      child: Column(
+                        children: widgetList
+                            .map((widget) => SizedBox(child: widget))
+                            .toList(),
+                      ),
+                    ),
+                  ),
+                )
+              ],
+            ),
           ),
         ),
       ),
@@ -1599,15 +1648,17 @@ class _RoadMainPageState extends State<RoadMainPage>
                   ),
                   elevation: 8,
                   child: Container(
-                    height: myCourses.length * 64.0 + 16,
+                    height: myCourses.length * 90.0 + 16,
                     width: double.infinity,
-                    margin: const EdgeInsets.symmetric(horizontal: 8),
+                    margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
                     padding: const EdgeInsets.symmetric(vertical: 8),
                     child: ListView.builder(
                       itemCount: myCourses.length,
                       itemBuilder: (ctx, i) {
                         final course = myCourses[i];
                         final color = colors[i % colors.length];
+                        final int percentage = course.percentage.clamp(0, 100);
+                        final double progress = (percentage / 100).clamp(0.0, 1.0);
                         return GestureDetector(
                           onTap: () async {
                             await setGrade(course.id);
@@ -1621,42 +1672,79 @@ class _RoadMainPageState extends State<RoadMainPage>
                             );
                           },
                           child: Container(
-                            height: 56,
-                            margin: const EdgeInsets.symmetric(
-                                vertical: 4, horizontal: 8),
-                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            margin: const EdgeInsets.symmetric(vertical: 4),
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                             decoration: BoxDecoration(
-                              color: color,
+                              color: Color(0xffEEF8FF),
                               borderRadius: BorderRadius.circular(10),
+                              // border: Border.all(color: AppColors.primaryBlue, width: 2),
                             ),
-                            child: Row(
+                            child: Column(
                               children: [
-                                Text(
-                                  '${course.name}',
-                                  style: const TextStyle(
-                                    color: Colors.white70,
-                                    fontSize: 14,
-                                  ),
+                                Row(
+                                  children: [
+                                    Container(
+                                      width: 40,
+                                      height: 40,
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                        color: color,
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      child: Icon(Icons.school, color: Colors.white, size: 24),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            course.subjectName,
+                                            style: TextStyles.semibold(AppColors.black),
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            '$percentage% аяқталды',
+                                            style: TextStyles.medium(AppColors.black, fontSize: 12),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    if (course.name.isNotEmpty)
+                                      Padding(
+                                        padding: const EdgeInsets.only(left: 8),
+                                        child: Text(
+                                          "${course.name} класс",
+                                          style: TextStyles.medium(AppColors.black, fontSize: 12),
+                                        ),
+                                      ),
+                                    if (course.cashbackPending == true)
+                                      Image.asset(
+                                        'assets/images/dollar.png',
+                                        width: 20,
+                                        height: 20,
+                                      ),
+                                  ],
                                 ),
-                                const SizedBox(width: 16),
-                                Expanded(
-                                  child: Text(
-                                    course.subjectName,
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
+                                const SizedBox(height: 10),
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: Container(
+                                    height: 8,
+                                    color: Colors.white,
+                                    child: Align(
+                                      alignment: Alignment.centerLeft,
+                                      child: FractionallySizedBox(
+                                        widthFactor: progress,
+                                        child: Container(
+                                          color: AppColors.primaryBlue,
+                                        ),
+                                      ),
                                     ),
                                   ),
                                 ),
-                                if (course.cashbackPending == true)
-                                  Image.asset(
-                                    'assets/images/dollar.png',
-                                    width: 20,
-                                    height: 20,
-                                  ),
                               ],
-                            ),
+                            )
                           ),
                         );
                       },

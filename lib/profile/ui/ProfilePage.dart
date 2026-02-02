@@ -1,4 +1,4 @@
-import 'dart:io';
+
 
 import 'package:brand_online/core/app_colors.dart';
 import 'package:brand_online/core/text_styles.dart';
@@ -10,7 +10,6 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:brand_online/profile/service/profile_service.dart';
 import 'package:brand_online/profile/ui/BalanceScreen.dart';
-import 'package:brand_online/roadMap/ui/screen/subscription_page.dart';
 
 import 'package:url_launcher/url_launcher.dart';
 
@@ -206,7 +205,7 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
             ) : GestureDetector(
               onTap: (){
-                Platform.isIOS ? Navigator.of(context).push(MaterialPageRoute(builder: (_) =>  SubscriptionPage())) : null;
+                // Platform.isIOS ? Navigator.of(context).push(MaterialPageRoute(builder: (_) =>  SubscriptionPage())) : null;
               },
               child: Container(
                 padding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),

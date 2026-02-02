@@ -1,0 +1,42 @@
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "brand-online-ea59d",
+          "appId": "1:550257165799:android:3e40b4def2df31bbd7a942",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "ios": {
+        "default": {
+          "projectId": "brand-online-ea59d",
+          "appId": "1:550257165799:ios:0259dde53cd2541ed7a942",
+          "uploadDebugSymbols": false,
+          "fileOutput": "ios/Runner/GoogleService-Info.plist"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "brand-online-ea59d",
+          "configurations": {
+            "android": "1:550257165799:android:3e40b4def2df31bbd7a942",
+            "ios": "1:550257165799:ios:0259dde53cd2541ed7a942",
+            "web": "1:550257165799:web:60335c7638c2da54d7a942"
+          }
+        }
+      }
+    }
+  },
+  "hosting": {
+    "public": "build/web",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      { "source": "**", "destination": "/index.html" }
+    ]
+  }
+}

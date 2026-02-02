@@ -170,6 +170,11 @@ flutter:
     - assets/icons/upup.svg
     - assets/icons/increase.svg
     - assets/icons/star.svg
+    - assets/images/B1.png
+    - assets/images/B2.png
+    - assets/images/B3.png
+    - assets/images/B4.png
+    - assets/images/B5.png
 
 
 

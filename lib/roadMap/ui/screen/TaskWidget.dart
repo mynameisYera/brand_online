@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:brand_online/core/app_colors.dart';
+import 'package:brand_online/core/service/display_chacker.dart';
 import 'package:brand_online/core/text_styles.dart';
 import 'package:brand_online/core/widgets/app_button_widget.dart';
 import 'package:brand_online/roadMap/ui/screen/answer_video_popup.dart';
@@ -128,7 +129,7 @@ class _TaskWidgetState extends State<TaskWidget>
     super.initState();
     buttonColor = (widget.isRepeat) ? Colors.orange : Colors.blue;
     _generateColors();
-    disableScreenshot();
+    // disableScreenshot();
 
     _shakeController = AnimationController(
       vsync: this,
@@ -138,9 +139,9 @@ class _TaskWidgetState extends State<TaskWidget>
         .chain(CurveTween(curve: Curves.elasticIn))
         .animate(_shakeController);
 
-    if (Platform.isAndroid) {
-      _androidAudioPlayer = ja.AudioPlayer();
-    }
+    // if (Platform.isAndroid) {
+    //   _androidAudioPlayer = ja.AudioPlayer();
+    // }
   }
 
   @override
@@ -171,26 +172,26 @@ class _TaskWidgetState extends State<TaskWidget>
     }
 
   // --- small helpers ---
-  Future<void> _playErrorSound() async =>
-      _playSound('sounds/wrong-answer2.mp3');
-  Future<void> _playSuccessSound() async =>
-      _playSound('sounds/success.mp3');
+  // Future<void> _playErrorSound() async =>
+  //     _playSound('sounds/wrong-answer2.mp3');
+  // Future<void> _playSuccessSound() async =>
+  //     _playSound('sounds/success.mp3');
 
-  Future<void> _playSound(String assetPath) async {
-    if (Platform.isIOS) {
-      await _iosAudioPlayer.play(ap.AssetSource(assetPath));
-      return;
-    }
-    if (Platform.isAndroid && _androidAudioPlayer != null) {
-      try {
-        await _androidAudioPlayer!.setAsset('assets/$assetPath');
-        await _androidAudioPlayer!.seek(Duration.zero);
-        await _androidAudioPlayer!.play();
-      } catch (e, stackTrace) {
-        debugPrint('Failed to play $assetPath on Android: $e\n$stackTrace');
-      }
-    }
-  }
+  // Future<void> _playSound(String assetPath) async {
+  //   if (Platform.isIOS) {
+  //     await _iosAudioPlayer.play(ap.AssetSource(assetPath));
+  //     return;
+  //   }
+  //   if (Platform.isAndroid && _androidAudioPlayer != null) {
+  //     try {
+  //       await _androidAudioPlayer!.setAsset('assets/$assetPath');
+  //       await _androidAudioPlayer!.seek(Duration.zero);
+  //       await _androidAudioPlayer!.play();
+  //     } catch (e, stackTrace) {
+  //       debugPrint('Failed to play $assetPath on Android: $e\n$stackTrace');
+  //     }
+  //   }
+  // }
 
   void _onErrorUI(String message) {
     if (!mounted) return;
@@ -230,11 +231,11 @@ class _TaskWidgetState extends State<TaskWidget>
   }
 
   Future<void> _handleAnswerUI(int cashback, bool answer) async {
-    if (answer) {
-      await _playSuccessSound();
-    } else {
-      await _playErrorSound();
-    }
+    // if (answer) {
+    //   await _playSuccessSound();
+    // } else {
+    //   await _playErrorSound();
+    // }
 
     if (widget.cashbackActive && cashback > 0) {
       setState(() {
@@ -332,52 +333,57 @@ class _TaskWidgetState extends State<TaskWidget>
 
     return Column(
       children: [
-        Expanded(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Center(
-                  child: Html(
-                    data: widget.task.content,
-                    shrinkWrap: true,
-                    style: {"*": Style(fontSize: FontSize(22), color: AppColors.black, fontFamily: 'Manrope', fontWeight: FontWeight.bold, textAlign: TextAlign.center)},
-                    extensions: [_mathExtension()],
+        Container(
+          width: DisplayChacker.isDisplay(context) ? double.infinity : 600,
+          child: Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Center(
+                    child: Html(
+                      data: widget.task.content,
+                      shrinkWrap: true,
+                      style: {"*": Style(fontSize: FontSize(22), color: AppColors.black, fontFamily: 'Manrope', fontWeight: FontWeight.bold, textAlign: TextAlign.center)},
+                      extensions: [_mathExtension()],
+                    ),
                   ),
-                ),
-                const SizedBox(height: 10),
-                widget.task.taskType == "fill-in-the-blank" ? const SizedBox.shrink() : const Divider(thickness: 1, color: Colors.black),
-                const SizedBox(height: 10),
+                  const SizedBox(height: 10),
+                  widget.task.taskType == "fill-in-the-blank" ? const SizedBox.shrink() : const Divider(thickness: 1, color: Colors.black),
+                  const SizedBox(height: 10),
 
-                // TASK TYPES ------------------------------------------------------------
+                  // TASK TYPES ------------------------------------------------------------
 
-                if (widget.task.taskType == "fill-in-the-blank")
-                  _buildFillInTheBlank(disabled),
+                  if (widget.task.taskType == "fill-in-the-blank")
+                    _buildFillInTheBlank(disabled),
 
-                if (widget.task.taskType == "multiple-choice")
-                  _buildMultipleChoice(disabled),
+                  if (widget.task.taskType == "multiple-choice")
+                    _buildMultipleChoice(disabled),
 
-                if (widget.task.taskType == "matching-pairs")
-                  _buildMatchingPairs(disabled),
+                  if (widget.task.taskType == "matching-pairs")
+                    _buildMatchingPairs(disabled),
 
-                if (widget.task.taskType == "anagram")
-                  AnagramSegmentsInput(
-                    segments: widget.task.anagramSegments,
-                    requiredCount: widget.task.anagramRequiredCount ?? widget.task.anagramSegments.length,
-                    disabled: (buttonText == 'ЖАЛҒАСТЫРУ' || isSubmitting),
-                    isRepeat: widget.isRepeat,
-                    controller: _anagramCtrl,
-                  ),
+                  if (widget.task.taskType == "anagram")
+                    AnagramSegmentsInput(
+                      segments: widget.task.anagramSegments,
+                      requiredCount: widget.task.anagramRequiredCount ?? widget.task.anagramSegments.length,
+                      disabled: (buttonText == 'ЖАЛҒАСТЫРУ' || isSubmitting),
+                      isRepeat: widget.isRepeat,
+                      controller: _anagramCtrl,
+                    ),
 
-                const SizedBox(height: 20),
-              ],
+                  const SizedBox(height: 20),
+                ],
+              ),
             ),
           ),
         ),
 
         // bottom button
-        Padding(
+        Container(
+          width: DisplayChacker.isDisplay(context) ? double.infinity : 600,
+          child: Padding(
           padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom + 20),
           child: Column(
             children: [
@@ -405,6 +411,7 @@ class _TaskWidgetState extends State<TaskWidget>
               ),
             ],
           ),
+        ),
         ),
 
         // hints

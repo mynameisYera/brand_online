@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:brand_online/core/app_colors.dart';
+import 'package:brand_online/core/service/display_chacker.dart';
 import 'package:brand_online/core/text_styles.dart';
 import 'package:brand_online/news/ui/NotificationsPage.dart';
 import 'package:flutter/material.dart';
@@ -137,7 +138,7 @@ class _CustomAppBarState extends State<CustomAppBar> {
   Widget build(BuildContext context) {
     return Container(
       color: Colors.white,
-      width: double.infinity,
+      width: DisplayChacker.isDisplay(context) ? double.infinity : 600,
       padding: const EdgeInsets.symmetric(vertical: 10),
       child: Column(
         children: [

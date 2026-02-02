@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:brand_online/core/service/display_chacker.dart';
+import 'package:brand_online/core/widgets/nav_for_display.dart';
 import '../../../authorization/entity/ProfileResponse.dart';
 import '../../../authorization/service/auth_service.dart';
 import '../../../news/ui/NewsListPage.dart';
@@ -131,25 +133,41 @@ class _RoadMapState extends State<RoadMap> {
 
   @override
   Widget build(BuildContext context) {
+    final content = _selectedIndex == 0
+        // ? NoSubPageIos(whatsappUrl: "whatsappUrl")
+        ? RoadMainPage(
+            initialScrollOffset: widget.initialScrollOffset,
+            state: widget.state,
+          )
+        : _selectedIndex == 1
+            ? RepeatPage()
+            : _selectedIndex == 2
+                ? NewsListPage()
+                : _selectedIndex == 3
+                    ? LeaderboardPage()
+                    : ProfilePage();
+
+    final isDisplay = !DisplayChacker.isDisplay(context);
+
     return Scaffold(
       backgroundColor: Colors.white,
-      body: _selectedIndex == 0
-        // ? NoSubPageIos(whatsappUrl: "whatsappUrl")
-          ? RoadMainPage(
-              initialScrollOffset: widget.initialScrollOffset,
-              state: widget.state,
+      body: isDisplay
+          ? Row(
+              children: [
+                NavForDisplay(
+                  currentIndex: _selectedIndex,
+                  onTap: _onItemTapped,
+                ),
+                Expanded(child: content),
+              ],
             )
-          : _selectedIndex == 1
-              ? RepeatPage()
-              : _selectedIndex == 2
-                  ? NewsListPage()
-                  : _selectedIndex == 3
-                      ? LeaderboardPage()
-                      : ProfilePage(),
-      bottomNavigationBar: CustomBottomNavBar(
-        currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
-      ),
+          : content,
+      bottomNavigationBar: isDisplay
+          ? null
+          : CustomBottomNavBar(
+              currentIndex: _selectedIndex,
+              onTap: _onItemTapped,
+            ),
     );
   }
 }

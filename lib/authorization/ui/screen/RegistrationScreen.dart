@@ -4,6 +4,7 @@ import 'package:brand_online/authorization/ui/screen/LoginScreen.dart';
 import 'package:brand_online/core/app_colors.dart';
 import 'package:brand_online/core/formatters/phone_number_formatter.dart';
 import 'package:brand_online/core/text_styles.dart';
+import 'package:brand_online/core/service/display_chacker.dart';
 import 'package:brand_online/core/widgets/app_button_widget.dart';
 import 'package:brand_online/core/widgets/app_text_field.dart';
 import 'package:flutter/material.dart';
@@ -410,9 +411,12 @@ class _RegistrationPageState extends State<RegistrationPage> {
 
               SizedBox(height: 20),
 
-            AppButton(
-              text: _currentPage == 3 ? "АЯҚТАУ" : "ЖАЛҒАСТЫРУ", 
-              onPressed: _nextPage, isLoading: isLoading
+            Container(
+              width: DisplayChacker.isDisplay(context) ? double.infinity : 500, 
+              child: AppButton(
+                text: _currentPage == 3 ? "АЯҚТАУ" : "ЖАЛҒАСТЫРУ", 
+                onPressed: _nextPage, isLoading: isLoading
+              ),
             ),
             
             SizedBox(height: 20),
@@ -434,7 +438,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
                 style: TextStyle(
                   decoration: TextDecoration.underline,
                   color: AppColors.primaryBlue,
-                  fontSize: MediaQuery.of(context).size.width * 0.04,
+                  fontSize: 24,
                   fontFamily: 'Manrope',
                   fontWeight: FontWeight.w400,
                 ),
@@ -444,27 +448,32 @@ class _RegistrationPageState extends State<RegistrationPage> {
           ],
         ),
       ),
-      body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: PageView(
-                controller: _pageController,
-                onPageChanged: _onPageChanged,
-                physics: NeverScrollableScrollPhysics(),
-                children: [
-                  // Step 1:
-                  _buildStep1(),
-                  // Step 3:
-                  _buildStep3(),
-                  // Step 5:
-                  _buildStep5(),
-                  // Step 6:
-                  _buildStep6(),
-                ],
-              ),
+      body: Center(
+        child: Container(
+          width: DisplayChacker.isDisplay(context) ? double.infinity : 500,
+          child: SafeArea(
+            child: Column(
+              children: [
+                Expanded(
+                  child: PageView(
+                    controller: _pageController,
+                    onPageChanged: _onPageChanged,
+                    physics: NeverScrollableScrollPhysics(),
+                    children: [
+                      // Step 1:
+                      _buildStep1(),
+                      // Step 3:
+                      _buildStep3(),
+                      // Step 5:
+                      _buildStep5(),
+                      // Step 6:
+                      _buildStep6(),
+                    ],
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       )
     ),
@@ -533,7 +542,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
             child: Text("Растау кодын енгізіңіз", 
               style: TextStyles.bold(AppColors.black, fontSize: 28)),
           ),
-          SizedBox(height: MediaQuery.of(context).size.width * 0.3),
+          SizedBox(height: 50),
           Center(
               child: Text(
             textAlign: TextAlign.center,
