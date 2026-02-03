@@ -56,6 +56,20 @@ class _ChaptersDialogState extends State<ChaptersDialog> with TickerProviderStat
 
     return Scaffold(
       backgroundColor: Colors.white,
+      appBar: AppBar(
+        title: Text('Тараулар', style: TextStyles.bold(AppColors.black)),
+        centerTitle: false,
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+        shadowColor: Colors.white,
+        surfaceTintColor: Colors.white,
+        automaticallyImplyLeading: false,
+        elevation: 0,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back_ios),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+      ),
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -208,27 +222,32 @@ class _ChaptersDialogState extends State<ChaptersDialog> with TickerProviderStat
                                           Expanded(
                                             child: Row(
                                               children: [
-                                                Column(
-                                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                                  children: [
-                                                    Text(
-                                                      'Сабақ ${lessonTitles[i].index}',
-                                                      style: TextStyles.medium(
-                                                        AppColors.black,
-                                                        fontSize: 10,
+                                                Expanded(
+                                                  child: Column(
+                                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                                    children: [
+                                                      Text(
+                                                        'Сабақ ${lessonTitles[i].index}',
+                                                        style: TextStyles.medium(
+                                                          AppColors.black,
+                                                          fontSize: 10,
+                                                        ),
                                                       ),
-                                                    ),
-                                                    const SizedBox(height: 4),
-                                                    Text(
-                                                      lessonTitles[i].title.length > 20 ? lessonTitles[i].title.substring(0, 20) + '...' : lessonTitles[i].title,
-                                                      style: TextStyles.medium(
-                                                        AppColors.black,
-                                                        fontSize: 16,
+                                                      const SizedBox(height: 4),
+                                                      Text(
+                                                        lessonTitles[i].title,
+                                                        style: TextStyles.medium(
+                                                          AppColors.black,
+                                                          fontSize: 16,
+                                                        ),
+                                                        softWrap: true,
+                                                        maxLines: 2,
+                                                        overflow: TextOverflow.ellipsis,
                                                       ),
-                                                    ),
-                                                  ],
+                                                    ],
+                                                  ),
                                                 ),
-                                                Spacer(),
+                                                const SizedBox(width: 8),
                                             if (isLessonCompleted && !lessonTitles[i].isCashback)
                                               Container(
                                                 padding: const EdgeInsets.all(3),

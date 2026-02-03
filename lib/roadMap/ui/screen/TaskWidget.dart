@@ -331,9 +331,9 @@ class _TaskWidgetState extends State<TaskWidget>
 
     return Column(
       children: [
-        Container(
-          width: DisplayChacker.isDisplay(context) ? double.infinity : 600,
-          child: Expanded(
+        Expanded(
+          child: Container(
+            width: DisplayChacker.isDisplay(context) ? double.infinity : 600,
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(20),
               child: Column(
