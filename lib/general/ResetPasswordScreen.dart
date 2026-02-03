@@ -1,9 +1,11 @@
 import 'dart:async';
 import 'package:brand_online/core/app_colors.dart';
 import 'package:brand_online/core/formatters/phone_number_formatter.dart';
+import 'package:brand_online/core/service/display_chacker.dart';
 import 'package:brand_online/core/text_styles.dart';
 import 'package:brand_online/core/widgets/app_button_widget.dart';
 import 'package:brand_online/core/widgets/app_text_field.dart';
+import 'package:brand_online/general/SplashScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -11,7 +13,6 @@ import 'package:brand_online/main.dart';
 import '../authorization/service/auth_service.dart';
 import '../authorization/ui/widget/LoginScreenWidget.dart';
 import '../authorization/ui/widget/RegistrationWidget.dart';
-import 'SplashScreenWithoutButtons.dart';
 
 class ResetPasswordScreen extends StatefulWidget {
   const ResetPasswordScreen({super.key});
@@ -287,7 +288,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
           response = '';
           Navigator.pushAndRemoveUntil(
             context,
-            MaterialPageRoute(builder: (_) => SplashScreenWithoutButtons()),
+            MaterialPageRoute(builder: (_) => SplashScreen(navigator: true)),
                 (route) => false,
           );
 
@@ -334,76 +335,95 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
         backgroundColor: Colors.white,
         floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
         floatingActionButton: Container(
-          padding: EdgeInsets.symmetric(horizontal: 20.0),
           alignment: Alignment.center,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 30.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: List.generate(3, (index) {
-                    return Container(
-                      margin: EdgeInsets.symmetric(horizontal: 5),
-                      width: 40,
-                      height: 3,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.rectangle,
-                        color: _currentPage >= index
-                            ? AppColors.primaryBlue
-                            : AppColors.grey,
-                      ),
-                    );
-                  }),
-                ),
-              ),
-              AppButton(
-                      onPressed: _nextPage,
-                      text: _currentPage == 2 ? "АЯҚТАУ" : "ЖАЛҒАСТЫРУ",
-                      isLoading: isLoading,
+          child: SizedBox(
+            width: DisplayChacker.isDisplay(context) ? double.infinity : 500,
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20.0,
+                      vertical: 30.0,
                     ),
-              SizedBox(height: 10),
-              TextButton(
-                onPressed: () {
-                  _currentPage > 0
-                      ? _previousPage()
-                      : (
-                          Navigator.pushAndRemoveUntil(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => Application(),
-                            ),
-                            (Route<dynamic> route) => false,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: List.generate(3, (index) {
+                        return Container(
+                          margin: EdgeInsets.symmetric(horizontal: 5),
+                          width: 40,
+                          height: 3,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.rectangle,
+                            color: _currentPage >= index
+                                ? AppColors.primaryBlue
+                                : AppColors.grey,
                           ),
                         );
-                },
-                child: Text("Қайту", style: TextStyles.bold(AppColors.primaryBlue, fontSize: 16), textAlign: TextAlign.center),
-              ),
-            ],
-          ),
-        ),
-        body: Column(
-          children: [
-            SizedBox(
-              height: 50,
-            ),
-            Expanded(
-              child: PageView(
-                controller: _pageController,
-                onPageChanged: _onPageChanged,
-                physics: NeverScrollableScrollPhysics(),
-                children: [
-                  // Step 2:
-                  _buildStep1(),
-                  // Step 3:
-                  _buildStep2(),
-                  // Step 6:
-                  _buildStep3(),
+                      }),
+                    ),
+                  ),
+                  AppButton(
+                    onPressed: _nextPage,
+                    text: _currentPage == 2 ? "АЯҚТАУ" : "ЖАЛҒАСТЫРУ",
+                    isLoading: isLoading,
+                  ),
+                  SizedBox(height: 10),
+                  TextButton(
+                    onPressed: () {
+                      _currentPage > 0
+                          ? _previousPage()
+                          : (
+                              Navigator.pushAndRemoveUntil(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => Application(),
+                                ),
+                                (Route<dynamic> route) => false,
+                              ),
+                            );
+                    },
+                    child: Text(
+                      "Қайту",
+                      style: TextStyles.bold(AppColors.primaryBlue, fontSize: 16),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
                 ],
               ),
             ),
-          ],
+          ),
+        ),
+        body: Center(
+          child: Container(
+            width: DisplayChacker.isDisplay(context) ? double.infinity : 500,
+            child: SafeArea(
+              child: Column(
+                children: [
+                  SizedBox(
+                    height: 50,
+                  ),
+                  Expanded(
+                    child: PageView(
+                      controller: _pageController,
+                      onPageChanged: _onPageChanged,
+                      physics: NeverScrollableScrollPhysics(),
+                      children: [
+                        // Step 2:
+                        _buildStep1(),
+                        // Step 3:
+                        _buildStep2(),
+                        // Step 6:
+                        _buildStep3(),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ),
       ),
     );

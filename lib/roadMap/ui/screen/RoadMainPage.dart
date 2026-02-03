@@ -1448,10 +1448,7 @@ class _RoadMainPageState extends State<RoadMainPage>
             child: Center(
               child: LoadingAnimationWidget.progressiveDots(
                 color: GeneralUtil.mainColor,
-                size: MediaQuery
-                    .of(context)
-                    .size
-                    .width * 0.2,
+                size: 100,
               ),
             ),
           ));
@@ -1464,10 +1461,7 @@ class _RoadMainPageState extends State<RoadMainPage>
             child: Center(
               child: LoadingAnimationWidget.progressiveDots(
                 color: GeneralUtil.mainColor,
-                size: MediaQuery
-                    .of(context)
-                    .size
-                    .width * 0.2,
+                size: 100,
               ),
             )))
         : Scaffold(
@@ -1488,7 +1482,27 @@ class _RoadMainPageState extends State<RoadMainPage>
                   ? CrossAxisAlignment.center
                   : CrossAxisAlignment.start,
               children: [
-                CustomAppBar(),
+                DisplayChacker.isDisplay(context) ? CustomAppBar() : Row(
+                  children: [
+                    Container(
+                      width: 40,
+                      height: 40,
+                      padding: EdgeInsets.all(7),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [Color(0xFF0082FF), Color(0xFF104CAA)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(100),
+                      ),
+                      child: SvgPicture.asset('assets/icons/logo_e.svg', width: 10, color: Colors.white),
+                    ),
+                    Spacer(),
+                    CustomAppBar(),
+                    SizedBox(width: 20),
+                  ],
+                ),
                 const SizedBox(height: 10),
                 Container(
                   width: DisplayChacker.isDisplay(context) ? screenWidth : 600,

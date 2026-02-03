@@ -67,7 +67,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
         backgroundColor: Colors.white,
         resizeToAvoidBottomInset: true,
         body: Center(
-          child: Container(
+          child: SizedBox(
           width: DisplayChacker.isDisplay(context) ? double.infinity : 500,
             child: Padding(
               padding: EdgeInsets.symmetric(horizontal: 20),
@@ -75,7 +75,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      const SizedBox(height: 20),
+                      DisplayChacker.isDisplay(context) ? const SizedBox(height: 20) : const Spacer(),
                       AnimatedBuilder(
                         animation: _rotationController,
                         builder: (context, child) {
@@ -166,7 +166,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                           ),
                         ],
                       ),
-                      Expanded(child: SizedBox()),
+                      DisplayChacker.isDisplay(context) ? const Spacer() : const SizedBox(),
 
                       AppButton(
                         text: 'ЖАЛҒАСТЫРУ',
@@ -197,7 +197,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                           )
                         ],
                       ),
-                      const SizedBox(height: 20),
+                      DisplayChacker.isDisplay(context) ? const SizedBox(height: 20) : const Spacer(),
                     ],
                   ),
               ),

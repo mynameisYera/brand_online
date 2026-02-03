@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:brand_online/core/app_colors.dart';
 import 'package:brand_online/core/service/display_chacker.dart';
 import 'package:brand_online/core/text_styles.dart';

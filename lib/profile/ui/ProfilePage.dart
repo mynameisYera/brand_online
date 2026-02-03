@@ -1,8 +1,8 @@
 
-
 import 'package:brand_online/core/app_colors.dart';
 import 'package:brand_online/core/text_styles.dart';
 import 'package:brand_online/core/widgets/button_widget.dart';
+import 'package:brand_online/general/SplashScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_svg/svg.dart';
@@ -73,7 +73,7 @@ class _ProfilePageState extends State<ProfilePage> {
           child: Center(
             child: LoadingAnimationWidget.progressiveDots(
               color: GeneralUtil.mainColor,
-              size: MediaQuery.of(context).size.width * 0.2,
+              size: 100,
             ),
           ),
         )
@@ -421,7 +421,11 @@ void showLogoutConfirmationSheet(BuildContext context) {
               onPressed: () async {
                 Navigator.pop(context);
                 await logoutUser();
-                Navigator.pushNamedAndRemoveUntil(context, "/auth", (route) => false);
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (_) => SplashScreen(navigator: false)),
+                  (route) => false,
+                );
               },
               borderColor: AppColors.errorRed
             ),
@@ -480,7 +484,11 @@ void showDeleteConfirmationSheet(BuildContext context) {
                 Navigator.pop(context);
                 await logoutUser();
                 ProfileService().deleteProfile();
-                Navigator.pushNamedAndRemoveUntil(context, "/auth", (route) => false);
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (_) => SplashScreen(navigator: false)),
+                  (route) => false,
+                );
               },
               borderColor: AppColors.errorRed
             ),

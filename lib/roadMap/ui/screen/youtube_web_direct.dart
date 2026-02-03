@@ -1,4 +1,5 @@
 // ignore_for_file: unused_field, unnecessary_null_comparison
+import 'package:brand_online/general/GeneralUtil.dart';
 import 'package:flutter/material.dart';
 import 'dart:html' as html;
 import 'dart:ui_web' as ui_web;
@@ -7,6 +8,7 @@ import 'dart:convert';
 import '../../../../core/loggers/l.dart';
 import '../../../authorization/entity/RoadMapResponse.dart';
 import '../../service/youtube_service.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 
 class YoutubeWebDirect extends StatefulWidget {
   final Lesson lesson;
@@ -448,13 +450,12 @@ class _YoutubeWebDirectState extends State<YoutubeWebDirect> {
                         ? Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              const SizedBox(
+                              SizedBox(
                                 width: 20,
                                 height: 20,
-                                child: CircularProgressIndicator(
-                                  color: Colors.blue,
-                                  strokeWidth: 2,
-                                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                child: LoadingAnimationWidget.progressiveDots(
+                                  color: GeneralUtil.mainColor,
+                                  size: 100,
                                 ),
                               ),
                               const SizedBox(width: 12),

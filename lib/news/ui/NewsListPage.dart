@@ -62,7 +62,7 @@ class _NewsListPageState extends State<NewsListPage> {
               child: Center(
                 child: LoadingAnimationWidget.progressiveDots(
                   color: GeneralUtil.mainColor,
-                  size: MediaQuery.of(context).size.width * 0.2,
+                  size: 100,
                 ),
               ),
             )

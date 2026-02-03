@@ -2,10 +2,12 @@
 import 'package:brand_online/core/app_colors.dart';
 import 'package:brand_online/core/text_styles.dart';
 import 'package:brand_online/core/widgets/app_button_widget.dart';
+import 'package:brand_online/general/SplashScreen.dart';
+import 'package:brand_online/general/GeneralUtil.dart';
 import 'package:flutter/material.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:brand_online/pursache/subscription_bloc.dart';
-import 'package:brand_online/general/SplashScreenWithoutButtons.dart';
 
 class SubscriptionPage extends StatefulWidget {
   const SubscriptionPage({super.key});
@@ -41,7 +43,7 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
                             Navigator.pushAndRemoveUntil(
                               context,
                               MaterialPageRoute(
-                                builder: (_) => const SplashScreenWithoutButtons(),
+                                builder: (_) => const SplashScreen(navigator: true),
                               ),
                               (route) => false,
                             );
@@ -106,9 +108,10 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
                               ),
                               SizedBox(height: 24),
                               if (state.isPurchasing)
-                                const Center(
-                                  child: CircularProgressIndicator.adaptive(
-                                    backgroundColor: Colors.blue,
+                                Center(
+                                  child: LoadingAnimationWidget.progressiveDots(
+                                    color: GeneralUtil.mainColor,
+                                    size: 100,
                                   ),
                                 )
                               else

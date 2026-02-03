@@ -1,12 +1,14 @@
 import 'package:brand_online/core/app_colors.dart';
 import 'package:brand_online/core/text_styles.dart';
 import 'package:brand_online/core/widgets/button_widget.dart';
+import 'package:brand_online/general/GeneralUtil.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import 'package:brand_online/profile/ui/BalanceWithdrawalPage.dart';
 import '../entity/WalletTransaction.dart';
 import '../service/profile_service.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 
 class BalanceScreen extends StatefulWidget {
   final int currentBalance;
@@ -166,7 +168,10 @@ class _BalanceScreenState extends State<BalanceScreen> {
         ],
       ),
       body: isLoading
-          ? const Center(child: CircularProgressIndicator(color: Colors.blue,))
+          ? Center(child: LoadingAnimationWidget.progressiveDots(
+            color: GeneralUtil.mainColor,
+            size: 100,
+          ))
           : Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
             child: Column(

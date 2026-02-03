@@ -1,6 +1,7 @@
 
 import 'package:brand_online/authorization/ui/screen/LoginScreen.dart';
 import 'package:brand_online/core/app_colors.dart';
+import 'package:brand_online/general/GeneralUtil.dart';
 import 'package:brand_online/roadMap/ui/screen/RoadMap.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -9,6 +10,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:brand_online/core/notification/firebase_utils.dart';
 import 'package:brand_online/firebase_options.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -89,8 +91,10 @@ class _ApplicationState extends State<Application> {
       },
       home:
       isTokenValid == null
-          ? const Scaffold(backgroundColor: AppColors.primaryBlue, body: Center(child: CircularProgressIndicator(
-            color: Colors.white,
+          ? Scaffold(backgroundColor: AppColors.primaryBlue, body: Center(
+            child: LoadingAnimationWidget.progressiveDots(
+            color: GeneralUtil.mainColor,
+            size: 100,
           )))
           : isTokenValid == true
           ? const RoadMap(selectedIndx: 0, state: 0)

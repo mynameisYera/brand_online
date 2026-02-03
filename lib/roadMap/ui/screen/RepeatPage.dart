@@ -5,6 +5,7 @@ import 'package:brand_online/core/text_styles.dart';
 import 'package:brand_online/roadMap/ui/widget/repeat_cart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:brand_online/authorization/entity/RoadMapResponse.dart';
 import 'package:brand_online/roadMap/entity/daily_entity.dart';
 import 'package:brand_online/roadMap/ui/screen/NoTaskPage.dart';
@@ -128,9 +129,12 @@ class _RepeatPageState extends State<RepeatPage> {
   @override
   Widget build(BuildContext context) {
     if (_loading) {
-      return const Scaffold(
+      return Scaffold(
         backgroundColor: Colors.white,
-        body: Center(child: CircularProgressIndicator(color: Colors.blue,)),
+        body: Center(child: LoadingAnimationWidget.progressiveDots(
+          color: GeneralUtil.mainColor,
+          size: 100,
+        )),
       );
     }
 

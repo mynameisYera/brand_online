@@ -1,10 +1,12 @@
 import 'package:brand_online/core/app_colors.dart';
 import 'package:brand_online/core/text_styles.dart';
 import 'package:brand_online/core/widgets/app_button_widget.dart';
+import 'package:brand_online/general/GeneralUtil.dart';
 import 'package:flutter/material.dart';
 import 'package:no_screenshot/no_screenshot.dart';
 import 'RoadMap.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 
 class ResultScreen extends StatefulWidget {
   final int score;
@@ -187,13 +189,9 @@ class _ResultScreenState extends State<ResultScreen> {
                     SizedBox(
                       width: 180,
                       height: 180,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 10,
-                        value: value,
-                        backgroundColor: AppColors.white.withOpacity(0.4),
-                        valueColor: const AlwaysStoppedAnimation<Color>(
-                          Colors.white,
-                        ),
+                      child: LoadingAnimationWidget.progressiveDots(
+                        color: GeneralUtil.mainColor,
+                        size: 100,
                       ),
                     ),
                     Column(
