@@ -2,6 +2,7 @@ import 'package:brand_online/core/app_colors.dart';
 import 'package:brand_online/core/service/display_chacker.dart';
 import 'package:brand_online/core/text_styles.dart';
 import 'package:brand_online/core/widgets/app_button_widget.dart';
+import 'package:brand_online/core/widgets/error_shower_widget.dart';
 import 'package:brand_online/roadMap/ui/screen/answer_video_popup.dart';
 import 'package:brand_online/roadMap/ui/widget/correct_answer_popup.dart';
 import 'package:brand_online/roadMap/ui/widget/incorrect_answer_popup.dart';
@@ -444,7 +445,17 @@ class _TaskWidgetState extends State<TaskWidget>
     // ====== FILL-IN-THE-BLANK ======
     if (widget.task.taskType == "fill-in-the-blank") {
       if (userAnswer.trim().isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Жауап жазыңыз")));
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            const SnackBar(
+              behavior: SnackBarBehavior.floating,
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              margin: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              content: ErrorShowerWidget(message: "Жауап жазыңыз"),
+            ),
+          );
         return;
       }
       FocusManager.instance.primaryFocus?.unfocus();
@@ -475,7 +486,17 @@ class _TaskWidgetState extends State<TaskWidget>
     // ====== MULTIPLE-CHOICE ======
     if (widget.task.taskType == "multiple-choice") {
       if (selectedChoice == null) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Вариант таңдаңыз")));
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            const SnackBar(
+              behavior: SnackBarBehavior.floating,
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              margin: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              content: ErrorShowerWidget(message: "Вариант таңдаңыз"),
+            ),
+          );
         return;
       }
 
@@ -506,7 +527,17 @@ class _TaskWidgetState extends State<TaskWidget>
     if (widget.task.taskType == "matching-pairs") {
       final totalPairs = widget.task.matchingPairs?.leftItems.length ?? 0;
       if (selectedPairsWithIds.length < totalPairs) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Барлық жұпты таңдаңыз")));
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            const SnackBar(
+              behavior: SnackBarBehavior.floating,
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              margin: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              content: ErrorShowerWidget(message: "Барлық жұпты таңдаңыз"),
+            ),
+          );
         return;
       }
 
@@ -537,9 +568,17 @@ class _TaskWidgetState extends State<TaskWidget>
     if (widget.task.taskType == "anagram") {
       final req = widget.task.anagramRequiredCount ?? widget.task.anagramSegments.length;
       if (!_anagramCtrl.isComplete) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Барлық сегментті орналастырыңыз ($req)")),
-        );
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            SnackBar(
+              behavior: SnackBarBehavior.floating,
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              margin: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              content: ErrorShowerWidget(message: "Барлық сегментті орналастырыңыз ($req)"),
+            ),
+          );
         return;
       }
 
@@ -827,9 +866,17 @@ class _TaskWidgetState extends State<TaskWidget>
             child: GestureDetector(
               onTap: () async {
                 if (widget.task.videoSolutionUrl == null || widget.task.videoSolutionUrl!.isEmpty) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Видео сілтемесі жоқ")),
-                  );
+                  ScaffoldMessenger.of(context)
+                    ..hideCurrentSnackBar()
+                    ..showSnackBar(
+                      SnackBar(
+                        behavior: SnackBarBehavior.floating,
+                        backgroundColor: Colors.transparent,
+                        elevation: 0,
+                        margin: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        content: ErrorShowerWidget(message: "Видео сілтемесі жоқ"),
+                      ),
+                    );
                   return;
                 }
                 final result = await showModalBottomSheet(

@@ -207,7 +207,7 @@ SPEC CHECKSUMS:
   ScreenProtectorKit: 83a6281b02c7a5902ee6eac4f5045f674e902ae4
   shared_preferences_foundation: 9e1978ff2562383bd5676f64ec4e9aa8fa06a6f7
   url_launcher_ios: 694010445543906933d732453a59da0a173ae33d
-  webview_flutter_wkwebview: 1821ceac936eba6f7984d89a9f3bcb4dea99ebb2
+  webview_flutter_wkwebview: 8ebf4fded22593026f7dbff1fbff31ea98573c8d
 
 PODFILE CHECKSUM: efd43c12b0d50fe0ebc6ec0718d186c90c94e0f2
 
