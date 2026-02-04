@@ -19,7 +19,7 @@ class RoadWidget {
           clipBehavior: Clip.none,
           children: [
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 24, 20, 60), // оставляем место под кнопку
+              padding: const EdgeInsets.fromLTRB(20, 24, 20, 60),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -27,11 +27,11 @@ class RoadWidget {
                   const Text(
                     'Ескерту!',
                     style: TextStyle(
-                      fontWeight: FontWeight.w500, // соответствует 500
+                      fontWeight: FontWeight.w500,
                       fontSize: 24,
-                      height: 1.0, // 100% line height
+                      height: 1.0,
                       letterSpacing: 0.0,
-                      color: GeneralUtil.orangeColor, // или Colors.black87
+                      color: GeneralUtil.orangeColor,
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -39,11 +39,11 @@ class RoadWidget {
                     'Алдымен видеосабақ көру қажет',
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      fontWeight: FontWeight.w400, // соответствует 500
+                      fontWeight: FontWeight.w400,
                       fontSize: 20,
-                      height: 1.0, // 100% line height
+                      height: 1.0,
                       letterSpacing: 0.0,
-                      color: GeneralUtil.blackColor, // или Colors.black87
+                      color: GeneralUtil.blackColor,
                     ),
                   ),
                   const SizedBox(height: 50),
