@@ -1,6 +1,7 @@
 // ignore_for_file: unused_element
 
 import 'package:brand_online/core/app_colors.dart';
+import 'package:brand_online/core/service/display_chacker.dart';
 import 'package:brand_online/core/text_styles.dart';
 import 'package:brand_online/roadMap/ui/widget/repeat_cart.dart';
 import 'package:flutter/material.dart';
@@ -76,10 +77,10 @@ class _RepeatPageState extends State<RepeatPage> {
             !session.isCompleted && 
             (session.remainingTasks > 0 || session.completedTasks > 0)
           );
-      
+
       // Проверяем активный daily review (открыт и не завершен)
       final hasActiveDailyReview = dr?.isOpen == true && dr?.isCompleted == false;
-      
+
       int count = 0;
       if (hasActiveDailyReview) {
         count++;
@@ -103,7 +104,6 @@ class _RepeatPageState extends State<RepeatPage> {
         lessons     = ls;
         controlExam = exam;
         dailyReview = dr;
-        // _hasAny должен быть true если есть хотя бы один активный элемент
         _hasAny = ls.isNotEmpty || 
                   (exam?.isOpen ?? false) || 
                   hasActiveDailyReview || 
@@ -151,7 +151,9 @@ class _RepeatPageState extends State<RepeatPage> {
     final body = RefreshIndicator(
       color: GeneralUtil.blueColor,
       onRefresh: fetchLessons,
-      child: CustomScrollView(
+      child: Container(
+        width: DisplayChacker.isDisplay(context) ? double.infinity : 770,
+        child: CustomScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         slivers: [
           SliverToBoxAdapter(
@@ -323,6 +325,7 @@ class _RepeatPageState extends State<RepeatPage> {
           ),
         ],
       ),
+      )
     );
 
     return Scaffold(

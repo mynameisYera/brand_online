@@ -5,6 +5,7 @@ import 'package:brand_online/core/widgets/app_button_widget.dart';
 import 'package:brand_online/roadMap/ui/screen/Math1Screen.dart';
 import 'package:brand_online/roadMap/ui/screen/web_view_page.dart';
 import 'package:brand_online/roadMap/ui/widget/materials_widget.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:no_screenshot/no_screenshot.dart';
@@ -25,17 +26,22 @@ class _YoutubeScreenState extends State<YoutubeScreen> with WidgetsBindingObserv
   YoutubePlayerController? _controller;
   StreamSubscription<YoutubePlayerValue>? _controllerSubscription;
   bool _markedWatched = false;
+  bool _initAttempted = false;
+  bool _invalidVideoId = false;
+  bool _initTimedOut = false;
   final _noScreenshot = NoScreenshot.instance;
   static const List<double> _playbackRates = [1.0, 1.25, 1.5, 1.75, 2.0];
   final ValueNotifier<bool> _isMuted = ValueNotifier(false);
 
   // screenshot
   void disableScreenshot() async {
+    if (kIsWeb) return;
     bool result = await _noScreenshot.screenshotOff();
     debugPrint('Screenshot Off: $result');
   }
 
   void enableScreenshot() async {
+    if (kIsWeb) return;
     bool result = await _noScreenshot.screenshotOn();
     debugPrint('Enable Screenshot: $result');
   }
@@ -43,14 +49,54 @@ class _YoutubeScreenState extends State<YoutubeScreen> with WidgetsBindingObserv
   @override
   void initState() {
     super.initState();
-    disableScreenshot();
     WidgetsBinding.instance.addObserver(this);
+    if (!kIsWeb) {
+      disableScreenshot();
+    }
 
+    _startInit();
+  }
+
+  void _startInit() {
+    _initAttempted = false;
+    _invalidVideoId = false;
+    _initTimedOut = false;
+    _scheduleInitTimeout();
+
+    if (kIsWeb) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _initController());
+    } else {
+      _initController();
+    }
+  }
+
+  void _scheduleInitTimeout() {
+    Future.delayed(const Duration(seconds: 8), () {
+      if (!mounted) return;
+      if (_controller == null && !_invalidVideoId) {
+        _initTimedOut = true;
+        _initAttempted = true;
+        setState(() {});
+      }
+    });
+  }
+
+  void _retryInit() {
+    _startInit();
+    setState(() {});
+  }
+
+  void _initController() {
+    if (!mounted) return;
     final videoId = _extractVideoId(widget.lesson.videoUrl);
     debugPrint('Extracted Video ID: $videoId');
 
     if (videoId.isEmpty) {
       debugPrint('Unable to extract YouTube video ID from URL: ${widget.lesson.videoUrl}');
+      _controller = null;
+      _invalidVideoId = true;
+      _initAttempted = true;
+      if (mounted) setState(() {});
       return;
     }
 
@@ -69,7 +115,10 @@ class _YoutubeScreenState extends State<YoutubeScreen> with WidgetsBindingObserv
       ),
     );
 
-    _controllerSubscription = _controller!.listen(_onPlayerStateChanged);
+    _controllerSubscription = _controller?.listen(_onPlayerStateChanged);
+    _invalidVideoId = false;
+    _initAttempted = true;
+    if (mounted) setState(() {});
   }
 
   @override
@@ -82,19 +131,36 @@ class _YoutubeScreenState extends State<YoutubeScreen> with WidgetsBindingObserv
   }
 
   String _extractVideoId(String url) {
-  debugPrint('Original URL: $url');
-  
-  final cleanUrl = url.split('?').first;
-  debugPrint('Clean URL: $cleanUrl');
-  
-  final regExp = RegExp(r'(?:v=|\/|embed\/|youtu\.be\/)([A-Za-z0-9_-]{11})');
-  final match = regExp.firstMatch(cleanUrl);
-  
-  final videoId = match?.group(1) ?? '';
-  debugPrint('Extracted Video ID: $videoId');
-  
-  return videoId;
-}
+    debugPrint('Original URL: $url');
+
+    final trimmed = url.trim();
+    final uri = Uri.tryParse(trimmed);
+
+    String videoId = '';
+    if (uri != null) {
+      if (uri.host.contains('youtu.be')) {
+        if (uri.pathSegments.isNotEmpty) {
+          videoId = uri.pathSegments.last;
+        }
+      } else if (uri.queryParameters['v'] != null) {
+        videoId = uri.queryParameters['v'] ?? '';
+      } else {
+        final embedIndex = uri.pathSegments.indexOf('embed');
+        if (embedIndex != -1 && embedIndex + 1 < uri.pathSegments.length) {
+          videoId = uri.pathSegments[embedIndex + 1];
+        }
+      }
+    }
+
+    if (videoId.length != 11) {
+      final regExp = RegExp(r'(?:v=|\/|embed\/|youtu\.be\/)([A-Za-z0-9_-]{11})');
+      final match = regExp.firstMatch(trimmed);
+      videoId = match?.group(1) ?? '';
+    }
+
+    debugPrint('Extracted Video ID: $videoId');
+    return videoId;
+  }
 
   void _onPlayerStateChanged(YoutubePlayerValue value) {
     if (!_markedWatched && value.playerState == PlayerState.ended) {
@@ -110,7 +176,7 @@ class _YoutubeScreenState extends State<YoutubeScreen> with WidgetsBindingObserv
     );
     if (!mounted) return;
     setState(() {});
-    controller.playVideo();
+    _controller?.playVideo();
   }
 
   void _markVideoAsWatched({bool shouldPopOnSuccess = true}) async {
@@ -132,7 +198,18 @@ class _YoutubeScreenState extends State<YoutubeScreen> with WidgetsBindingObserv
     final controller = _controller;
     final isWide = MediaQuery.of(context).size.width > 600;
 
-    if (controller == null) {
+    if (controller == null && (!_initAttempted || (!_initTimedOut && !_invalidVideoId))) {
+      return const Scaffold(
+        backgroundColor: Color(0xFFF6F7FB),
+        body: SafeArea(
+          child: Center(
+            child: CircularProgressIndicator(),
+          ),
+        ),
+      );
+    }
+
+    if (controller == null && (_invalidVideoId || _initTimedOut)) {
       return Scaffold(
         backgroundColor: const Color(0xFFF6F7FB),
         body: SafeArea(
@@ -159,15 +236,21 @@ class _YoutubeScreenState extends State<YoutubeScreen> with WidgetsBindingObserv
                     const Icon(Icons.error_outline,
                         color: Colors.redAccent, size: 48),
                     const SizedBox(height: 16),
-                    const Text(
-                      'Видео недоступно',
+                    Text(
+                      _invalidVideoId
+                          ? 'Видео недоступно'
+                          : 'Видео не загрузилось',
                       textAlign: TextAlign.center,
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Не удалось определить ссылку на ролик. Попробуйте позже или обратитесь в поддержку.',
+                      _invalidVideoId
+                          ? 'Не удалось определить ссылку на ролик. Попробуйте позже или обратитесь в поддержку.'
+                          : 'Проверьте соединение и попробуйте ещё раз.',
                       textAlign: TextAlign.center,
                       style: TextStyle(color: Colors.grey.shade700),
                     ),
@@ -175,7 +258,9 @@ class _YoutubeScreenState extends State<YoutubeScreen> with WidgetsBindingObserv
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: () => Navigator.of(context).maybePop(),
+                        onPressed: _invalidVideoId
+                            ? () => Navigator.of(context).maybePop()
+                            : _retryInit,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.blue,
                           padding: const EdgeInsets.symmetric(vertical: 12),
@@ -184,11 +269,24 @@ class _YoutubeScreenState extends State<YoutubeScreen> with WidgetsBindingObserv
                           ),
                         ),
                         child: const Text(
-                          'Артқа қайту',
+                          'Қайта көру',
                           style: TextStyle(fontSize: 16, color: Colors.white),
                         ),
                       ),
                     ),
+                    if (_invalidVideoId) ...[
+                      const SizedBox(height: 10),
+                      TextButton(
+                        onPressed: () => Navigator.of(context).maybePop(),
+                        child: Text(
+                          'Артқа қайту',
+                          style: TextStyle(
+                            color: Colors.grey.shade700,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -201,7 +299,7 @@ class _YoutubeScreenState extends State<YoutubeScreen> with WidgetsBindingObserv
     final aspectRatio = isWide ? 16 / 6 : 16 / 9;
 
     return YoutubePlayerScaffold(
-      controller: controller,
+      controller: controller!,
       aspectRatio: aspectRatio,
       builder: (context, player) => Scaffold(
         backgroundColor: const Color(0xFFF6F7FB),
@@ -354,7 +452,9 @@ class _YoutubeScreenState extends State<YoutubeScreen> with WidgetsBindingObserv
                       text: "Тестке өту",
                       onPressed: () {
                             _markVideoAsWatched(shouldPopOnSuccess: false);
+                          if (!kIsWeb) {
                             enableScreenshot();
+                          }
                             Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -379,7 +479,9 @@ class _YoutubeScreenState extends State<YoutubeScreen> with WidgetsBindingObserv
                       onPressed: () {
                           _markVideoAsWatched();
                           Navigator.of(context).pop(true);
-                          enableScreenshot();
+                          if (!kIsWeb) {
+                            enableScreenshot();
+                          }
                         },
                     ),
                   ),

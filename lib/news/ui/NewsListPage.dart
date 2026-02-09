@@ -1,4 +1,5 @@
 import 'package:brand_online/core/app_colors.dart';
+import 'package:brand_online/core/service/display_chacker.dart';
 import 'package:brand_online/core/text_styles.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -66,7 +67,9 @@ class _NewsListPageState extends State<NewsListPage> {
                 ),
               ),
             )
-          : ListView.builder(
+          : Center(child: Container(
+            width: DisplayChacker.isDisplay(context) ? double.infinity : 770,
+            child: ListView.builder(
               itemCount: newsList.length,
               itemBuilder: (context, index) {
                 final news = newsList[index];
@@ -125,6 +128,7 @@ class _NewsListPageState extends State<NewsListPage> {
                 );
               },
             ),
-    );
+          )
+    ));
   }
 }

@@ -99,8 +99,9 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
           ));
     }
     return Scaffold(
-      backgroundColor: Colors.white,
-      body: SafeArea(child: Column(
+      backgroundColor: const Color.fromRGBO(255, 255, 255, 1),
+      body: SafeArea(
+        child: Column(
         children: [
           SizedBox(
             height: 50,
