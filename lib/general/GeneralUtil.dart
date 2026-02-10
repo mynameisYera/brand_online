@@ -8,7 +8,7 @@ class GeneralUtil {
   static const accessToken = 'accessToken';
 
   // URL
-  static const BASE_URL = "https://dev.restartonline.kz";
+  static const BASE_URL = "https://restart.brand-online.kz";
 
   // static const BASE_URL = "http://94.131.80.201:8000";
 
