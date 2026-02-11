@@ -225,6 +225,8 @@ class DailyTask {
 // Главная модель для ежедневных заданий
 class DailyEntity {
   final DailyProfile profile;
+  /// Сессия приходит с бэкенда только в части эндпоинтов; при отсутствии
+  /// подставляется сессия из [profile.selectedGrade] для совместимости UI.
   final DailySession session;
   final List<Task> tasks;
 
@@ -235,12 +237,36 @@ class DailyEntity {
   });
 
   factory DailyEntity.fromJson(Map<String, dynamic> json) {
+    final profile = DailyProfile.fromJson(json['profile'] ?? {});
+    final sessionJson = json['session'];
+    final DailySession session = sessionJson != null && sessionJson is Map<String, dynamic> && sessionJson.isNotEmpty
+        ? DailySession.fromJson(sessionJson)
+        : _sessionFromProfile(profile);
     return DailyEntity(
-      profile: DailyProfile.fromJson(json['profile'] ?? {}),
-      session: DailySession.fromJson(json['session'] ?? {}),
+      profile: profile,
+      session: session,
       tasks: (json['tasks'] as List? ?? [])
           .map((task) => Task.fromJson(task))
           .toList(),
+    );
+  }
+
+  static DailySession _sessionFromProfile(DailyProfile profile) {
+    final sg = profile.selectedGrade;
+    return DailySession(
+      date: '',
+      gradeId: sg.id,
+      gradeName: sg.name,
+      subjectName: sg.subjectName,
+      targetCount: 0,
+      questionsCompleted: 0,
+      remainingTasks: 0,
+      totalShown: 0,
+      correctFirstTry: 0,
+      points: 0,
+      isCompleted: false,
+      totalTasks: 0,
+      completedTasks: 0,
     );
   }
 }

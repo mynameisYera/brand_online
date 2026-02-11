@@ -15,10 +15,9 @@ class Materials {
 
   factory Materials.fromJson(Map<String, dynamic> json) {
     return Materials(
-      id: json['id'],
-      name: json['name'],
-      url: json['url'],
-
+      id: json['id'] ?? 0,
+      name: (json['name'] ?? '') as String,
+      url: (json['url'] ?? '') as String,
     );
   }
 
@@ -30,6 +29,11 @@ class Materials {
     };
   }
 }
+
+/// Порядок шагов на карточке урока (видео и группы заданий).
+/// Бэкенд может вернуть, например: ["video", "group_1", "group_2", "group_3"]
+/// или ["group_1", "video", "group_2", "group_3"].
+const List<String> _defaultStepOrder = ['video', 'group_1', 'group_2', 'group_3'];
 
 class Lesson {
   final int lessonId;
@@ -43,6 +47,8 @@ class Lesson {
   final bool isPublished;
   final bool cashbackActive;
   final List<Materials> materials;
+  /// Порядок кнопок на карточке: "video", "group_1", "group_2", "group_3".
+  final List<String>? stepOrder;
 
   Lesson({
     required this.lessonId,
@@ -56,24 +62,60 @@ class Lesson {
     required this.cashbackActive,
     required this.isPublished,
     required this.materials,
-
+    this.stepOrder,
   });
 
+  /// Фактический порядок шагов: из бэкенда или по умолчанию [видео, группа1, группа2, группа3].
+  List<String> get effectiveStepOrder =>
+      (stepOrder != null && stepOrder!.isNotEmpty) ? stepOrder! : _defaultStepOrder;
+
+  /// Выполнен ли шаг (видео или группа заданий).
+  bool isStepCompleted(String stepType) {
+    switch (stepType) {
+      case 'video':
+        return videoWatched;
+      case 'group_1':
+        return group1Completed;
+      case 'group_2':
+        return group2Completed;
+      case 'group_3':
+        return group3Completed;
+      default:
+        return false;
+    }
+  }
+
+  /// Выполнены ли все шаги до [currentIndex] (не включая).
+  bool arePreviousStepsCompleted(int currentIndex) {
+    final order = effectiveStepOrder;
+    for (int i = 0; i < currentIndex && i < order.length; i++) {
+      if (!isStepCompleted(order[i])) return false;
+    }
+    return true;
+  }
+
   factory Lesson.fromJson(Map<String, dynamic> json) {
+    final stepOrderRaw = json['step_order'];
+    List<String>? stepOrder;
+    if (stepOrderRaw is List) {
+      stepOrder = stepOrderRaw.map((e) => e.toString()).toList();
+      if (stepOrder.isEmpty) stepOrder = null;
+    }
     return Lesson(
-      lessonId: json['lesson_id'],
-      lessonTitle: json['lesson_title'],
-      lessonNumber: json['lesson_number'],
-      videoUrl: json['video_url'],
-      videoWatched: json['video_watched'],
-      group1Completed: json['group1_completed'],
-      group2Completed: json['group2_completed'],
-      group3Completed: json['group3_completed'],
-      cashbackActive: json['cashback_active'] ?? false,
-      isPublished: json['is_published'],
-      materials: (json['materials'] as List<dynamic>)
-      .map((e) => Materials.fromJson(e))
-      .toList(),
+      lessonId: (json['lesson_id'] ?? 0) as int,
+      lessonTitle: (json['lesson_title'] ?? '') as String,
+      lessonNumber: (json['lesson_number'] ?? 0) as int,
+      videoUrl: (json['video_url'] ?? '') as String,
+      videoWatched: json['video_watched'] == true,
+      group1Completed: json['group1_completed'] == true,
+      group2Completed: json['group2_completed'] == true,
+      group3Completed: json['group3_completed'] == true,
+      cashbackActive: json['cashback_active'] == true,
+      isPublished: json['is_published'] == true,
+      materials: ((json['materials'] as List<dynamic>?) ?? [])
+          .map((e) => Materials.fromJson(Map<String, dynamic>.from(e as Map)))
+          .toList(),
+      stepOrder: stepOrder,
     );
   }
 
@@ -90,6 +132,7 @@ class Lesson {
       'group3_completed': group3Completed,
       'is_published': isPublished,
       'materials': materials,
+      if (stepOrder != null) 'step_order': stepOrder,
     };
   }
 }
@@ -109,10 +152,12 @@ class Chapter {
 
   factory Chapter.fromJson(Map<String, dynamic> json) {
     return Chapter(
-      chapterId: json['chapter_id'],
-      chapterName: json['chapter_name'],
-      chapterNumber: json['chapter_number'],
-      lessons: (json['lessons'] as List).map((e) => Lesson.fromJson(e)).toList(),
+      chapterId: (json['chapter_id'] ?? 0) as int,
+      chapterName: (json['chapter_name'] ?? '') as String,
+      chapterNumber: (json['chapter_number'] ?? 0) as int,
+      lessons: ((json['lessons'] as List<dynamic>?) ?? [])
+          .map((e) => Lesson.fromJson(Map<String, dynamic>.from(e as Map)))
+          .toList(),
     );
   }
 
@@ -148,8 +193,8 @@ class LessonResponse {
   /// Обычный fromJson (если 200)
   factory LessonResponse.fromJson(Map<String, dynamic> json) {
     return LessonResponse(
-      chapters: (json['chapters'] as List<dynamic>)
-          .map((e) => Chapter.fromJson(e))
+      chapters: ((json['chapters'] as List<dynamic>?) ?? [])
+          .map((e) => Chapter.fromJson(Map<String, dynamic>.from(e as Map)))
           .toList(),
     );
   }
