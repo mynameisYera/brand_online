@@ -13,8 +13,10 @@ import '../../service/youtube_service.dart';
 
 class YoutubeScreen extends StatefulWidget {
   final Lesson lesson;
+  /// URL видео с бэкенда (урок или action). Если задан, используется вместо lesson.videoUrl.
+  final String? videoUrlOverride;
 
-  const YoutubeScreen({super.key, required this.lesson});
+  const YoutubeScreen({super.key, required this.lesson, this.videoUrlOverride});
 
   @override
   State<YoutubeScreen> createState() => _YoutubeScreenState();
@@ -43,11 +45,10 @@ void initState() {
   disableScreenshot();
   WidgetsBinding.instance.addObserver(this);
   
-  final videoId = _extractVideoId(widget.lesson.videoUrl);
-  debugPrint('Extracted Video ID: $videoId');
-  
+  final videoUrl = widget.videoUrlOverride ?? widget.lesson.videoUrl;
+  final videoId = _extractVideoId(videoUrl);
   if (videoId.isEmpty) {
-    debugPrint('Unable to extract YouTube video ID from URL: ${widget.lesson.videoUrl}');
+    debugPrint('YoutubeScreen: no video ID (video_url: "$videoUrl")');
     return;
   }
 
@@ -72,20 +73,21 @@ void initState() {
     super.dispose();
   }
 
+  /// Извлекает YouTube video ID из URL или возвращает строку как ID, если это уже 11 символов.
   String _extractVideoId(String url) {
-  debugPrint('Original URL: $url');
-  
-  final cleanUrl = url.split('?').first;
-  debugPrint('Clean URL: $cleanUrl');
-  
-  final regExp = RegExp(r'(?:v=|\/|embed\/|youtu\.be\/)([A-Za-z0-9_-]{11})');
-  final match = regExp.firstMatch(cleanUrl);
-  
-  final videoId = match?.group(1) ?? '';
-  debugPrint('Extracted Video ID: $videoId');
-  
-  return videoId;
-}
+    final raw = url.trim();
+    if (raw.isEmpty) return '';
+
+    // Бэкенд может отдавать уже готовый ID (11 символов)
+    if (raw.length == 11 && RegExp(r'^[A-Za-z0-9_-]{11}$').hasMatch(raw)) {
+      return raw;
+    }
+
+    final cleanUrl = raw.split('?').first;
+    final regExp = RegExp(r'(?:v=|\/|embed\/|youtu\.be\/)([A-Za-z0-9_-]{11})');
+    final match = regExp.firstMatch(cleanUrl);
+    return match?.group(1) ?? '';
+  }
 
   void _onPlayerStateChanged() {
     final controller = _controller;
@@ -235,7 +237,7 @@ void initState() {
                       return InkWell(
                         onTap: () async {
                           String privacyUrl = widget.lesson.materials[index].url;
-                          Navigator.push(context, MaterialPageRoute(builder: (_) => WebViewPage(url: privacyUrl,)));
+                          Navigator.push(context, MaterialPageRoute(builder: (_) => WebViewPage(url: privacyUrl, isAction: false, lessonId: 0, actionId: 0)));
                         },
                         child: MaterialsWidget(
                           title: widget.lesson.materials[index].name,

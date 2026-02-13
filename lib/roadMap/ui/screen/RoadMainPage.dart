@@ -25,6 +25,7 @@ import '../../ui/widget/RoadWidget.dart';
 import 'ChaptersDialog.dart';
 import 'CustomAppBar.dart';
 import 'RoadMap.dart';
+import 'web_view_page.dart';
 import 'dart:convert';
 
 class RoadMainPage extends StatefulWidget {
@@ -58,14 +59,9 @@ class _RoadMainPageState extends State<RoadMainPage>
 
   List<SubjectModel> myCourses = [];
   
-  final List<GlobalKey> _buttonKeys =
-  List.generate(100, (index) => GlobalKey());
-  final List<GlobalKey> _buttonMath1 =
-  List.generate(100, (index) => GlobalKey());
-  final List<GlobalKey> _buttonMath2 =
-  List.generate(100, (index) => GlobalKey());
-  final List<GlobalKey> _buttonMath3 =
-  List.generate(100, (index) => GlobalKey());
+  /// Ключи кнопок на карточке: [индекс урока][индекс шага 0..3]. Порядок шагов — из бэкенда (step_order).
+  final List<List<GlobalKey>> _stepButtonKeys =
+      List.generate(100, (_) => List.generate(4, (_) => GlobalKey()));
 
   final List<String> barysImagePaths = [
     'assets/images/A1.png',
@@ -340,10 +336,9 @@ class _RoadMainPageState extends State<RoadMainPage>
         ? 'assets/images/moneyadm.png'
         : barysImagePaths[index % 5];
 
-    bool allCompleted = lesson.videoWatched &&
-        lesson.group1Completed &&
-        lesson.group2Completed &&
-        lesson.group3Completed;
+    final bool allCompleted = lesson.hasActions
+        ? lesson.actions.every((a) => a.isCompleted)
+        : lesson.effectiveStepOrder.every((s) => lesson.isStepCompleted(s));
 
     return Container(
       margin: EdgeInsets.only(bottom: 20),
@@ -375,281 +370,294 @@ class _RoadMainPageState extends State<RoadMainPage>
               Spacer(),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  _buildCardButton(
-                    context: context,
-                    lesson: lesson,
-                    index: index,
-                    buttonKey: _buttonKeys[index],
-                    isActive: lesson.videoWatched,
-                    iconPath: 'assets/icons/play.svg',
-                    onTap: () async {
-                      if (lesson.isPublished == false) {
-                        // RoadWidget().showUndefinedDialog(context);
-                        showModalBottomSheet(
-                          context: context,
-                          builder: (context) => LetsgoPopup(
-                            title: 'Кеттік!',
-                            subtitle: 'Кеттік!',
-                            onContinue: () => Navigator.pop(context),
-                          ),
-                        );
-                        
-                      } else {
-                        showModalBottomSheet(
-                          context: context,
-                          builder: (context) => LetsgoPopup(
-                            title: 'Видеосабақты көру',
-                            subtitle: 'Сабақты бастауға дайынсыз ба?',
-                            onContinue: () async {
-                            await Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => YoutubeScreen(lesson: lesson),
-                              ),
-                            );
-                            await Navigator.pushAndRemoveUntil(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => RoadMap(initialScrollOffset: _scrollController.offset, selectedIndx: 0,state: 0,),
-                                ),
-                                    (route) => false,
-                              );
-                          },
-                          ),
-                        );
-                        // await RoadWidget().playDialogScreen(
-                        //   context,
-                        //   index,
-                        //   _buttonKeys[index],
-                        //   lesson,
-                        //   scrollOffset: _scrollController.offset,
-                        // ).then((value) {
-                        //   if (value == true) {
-                        //     getRoadMap();
-                        //   }
-                        // });
-                      }
-                    },
-                  ),
-                  
-                  _buildCardButton(
-                    context: context,
-                    lesson: lesson,
-                    index: index,
-                    buttonKey: _buttonMath1[index],
-                    isActive: lesson.group1Completed,
-                    iconPath: 'assets/icons/problems.svg',
-                    showCashback: lesson.cashbackActive && !lesson.group1Completed,
-                    onTap: () async {
-                      if (lesson.isPublished == false) {
-                        // RoadWidget().showUndefinedDialog(context);
-                        showModalBottomSheet(
-                          context: context,
-                          builder: (context) => LetsgoPopup(
-                            title: 'Кеттік!',
-                            subtitle: 'Кеттік!',
-                            onContinue: () => Navigator.pop(context),
-                          ),
-                        );
-                        
-                      } else if (!lesson.videoWatched) {
-                        // RoadWidget().showWatchVideoDialog(context);
-                        showModalBottomSheet(
-                          context: context,
-                          builder: (context) => LetsgoPopup(
-                            title: 'Видеосабақты көру',
-                            subtitle: 'Сабақты бастауға дайынсыз ба?',
-                            onContinue: () => Navigator.pop(context),
-                          ),
-                        );
-                        
-                      } else {
-                        showModalBottomSheet(
-                          context: context,
-                          builder: (context) => LetsgoPopup(
-                            title: lesson.lessonTitle,
-                            subtitle: 'Сабақты бастауға дайынсыз ба?',
-                            onContinue: () async {
-                            await Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => Math1Screen(
-                                  initialScrollOffset: _scrollController.offset,  
-                                  lessonId: lesson.lessonId,
-                                  groupId: 1,
-                                  cashbackActive: lesson.cashbackActive,
-                                  isCash: false,
-                                  lesson: lesson,
-                                ),
-                              ),
-                            ) ?? false;
-
-                              Navigator.pushAndRemoveUntil(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => RoadMap(initialScrollOffset: _scrollController.offset, selectedIndx: 0,state: 0,),
-                                ),
-                                    (route) => false,
-                              );
-                          },
-                          ),
-                        );
-                        // await RoadWidget().math1(
-                        //   context,
-                        //   index,
-                        //   _buttonMath1[index],
-                        //   lesson,
-                        //   1,
-                        //   false,
-                        //   scrollOffset: _scrollController.offset,
-                        // ).then((value) {
-                        //   if (value == true) {
-                        //     getRoadMap();
-                        //   }
-                        // });
-                      }
-                    },
-                  ),
-                  
-                  _buildCardButton(
-                    context: context,
-                    lesson: lesson,
-                    index: index,
-                    buttonKey: _buttonMath2[index],
-                    isActive: lesson.group2Completed,
-                    iconPath: 'assets/icons/problems.svg',
-                    showCashback: lesson.cashbackActive && !lesson.group2Completed,
-                    onTap: () async {
-                      if (lesson.isPublished == false) {
-                        RoadWidget().showUndefinedDialog(context);
-                        
-                      } else if (!lesson.videoWatched) {
-                        RoadWidget().showWatchVideoDialog(context);
-                        
-                      } else if (!lesson.group1Completed) {
-                        RoadWidget().showTaskDoneDialog(context);
-                        
-                      } else {
-                        showModalBottomSheet(
-                          context: context,
-                          builder: (context) => LetsgoPopup(
-                            title: lesson.lessonTitle,
-                            subtitle: 'Сабақты бастауға дайынсыз ба?',
-                            onContinue: () async {
-                            await Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => Math1Screen(
-                                  initialScrollOffset: _scrollController.offset,  
-                                  lessonId: lesson.lessonId,
-                                  groupId: 2,
-                                  cashbackActive: lesson.cashbackActive,
-                                  isCash: false,
-                                  lesson: lesson,
-                                ),
-                              ),
-                            ) ?? false;
-
-                              Navigator.pushAndRemoveUntil(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => RoadMap(initialScrollOffset: _scrollController.offset, selectedIndx: 0,state: 0,),
-                                ),
-                                    (route) => false,
-                              );
-                          },
-                          ),
-                        );
-                        // await RoadWidget().math1(
-                        //   context,
-                        //   index,
-                        //   _buttonMath2[index],
-                        //   lesson,
-                        //   2,
-                        //   false,
-                        //   scrollOffset: _scrollController.offset,
-                        // ).then((value) {
-                        //   if (value == true) {
-                        //     getRoadMap();
-                        //   }
-                        // });
-                      }
-                    },
-                  ),
-                  
-                  _buildCardButton(
-                    context: context,
-                    lesson: lesson,
-                    index: index,
-                    buttonKey: _buttonMath3[index],
-                    isActive: lesson.group3Completed,
-                    iconPath: 'assets/icons/problems.svg',
-                    showCashback: lesson.cashbackActive && !lesson.group3Completed,
-                    onTap: () async {
-                      if (lesson.isPublished == false) {
-                        RoadWidget().showUndefinedDialog(context);
-                        
-                      } else if (!lesson.videoWatched) {
-                        RoadWidget().showWatchVideoDialog(context);
-                        
-                      } else if (!lesson.group1Completed || !lesson.group2Completed) {
-                        RoadWidget().showTaskDoneDialog(context);
-                        
-                      } else {
-
-                        showModalBottomSheet(
-                          context: context,
-                          builder: (context) => LetsgoPopup(
-                            title: lesson.lessonTitle,
-                            subtitle: 'Сабақты бастауға дайынсыз ба?',
-                            onContinue: () async {
-                            await Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => Math1Screen(
-                                  initialScrollOffset: _scrollController.offset,  
-                                  lessonId: lesson.lessonId,
-                                  groupId: 3,
-                                  cashbackActive: lesson.cashbackActive,
-                                  isCash: false,
-                                  lesson: lesson,
-                                ),
-                              ),
-                            ) ?? false;
-
-                              Navigator.pushAndRemoveUntil(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => RoadMap(initialScrollOffset: _scrollController.offset, selectedIndx: 0,state: 0,),
-                                ),
-                                    (route) => false,
-                              );
-                          },
-                          ),
-                        );
-                        // await RoadWidget().math1(
-                        //   context,
-                        //   index,
-                        //   _buttonMath3[index],
-                        //   lesson,
-                        //   3,
-                        //   false,
-                        //   scrollOffset: _scrollController.offset,
-                        // ).then((value) {
-                        //   if (value == true) {
-                        //     getRoadMap();
-                        //   }
-                        // });
-                      }
-                    },
-                  ),
-                ],
+                children: lesson.hasActions
+                    ? _buildActionButtons(context, lesson, index)
+                    : _buildStepButtons(context, lesson, index, lesson.effectiveStepOrder),
               ),
               SizedBox(height: 20),
             ],
           ),
         ],
+      ),
+    );
+  }
+
+  /// До 4 кнопок по actions: video → YoutubeScreen, materials → WebViewPage/MaterialsPage, task_group → тест.
+  List<Widget> _buildActionButtons(BuildContext context, Lesson lesson, int index) {
+    final ordered = List<LessonAction>.from(lesson.actions)
+      ..sort((a, b) => a.order.compareTo(b.order));
+    final list = <Widget>[];
+    for (int i = 0; i < ordered.length && i < 4; i++) {
+      final action = ordered[i];
+      final key = index < _stepButtonKeys.length && i < _stepButtonKeys[index].length
+          ? _stepButtonKeys[index][i]
+          : GlobalKey();
+      final isActive = action.isCompleted;
+      final previousDone = ordered.take(i).every((a) => a.isCompleted);
+      final iconPath = _iconPathForActionType(action.actionType);
+      final showCashback = lesson.cashbackActive && !action.isCompleted && action.actionType == 'task_group';
+      list.add(_buildCardButton(
+        context: context,
+        lesson: lesson,
+        index: index,
+        buttonKey: key,
+        isActive: isActive,
+        iconPath: iconPath,
+        showCashback: showCashback,
+        onTap: () => _onActionTap(context, lesson, index, action, previousDone),
+      ));
+    }
+    return list;
+  }
+
+  String _iconPathForActionType(String actionType) {
+    switch (actionType) {
+      case 'video':
+        return 'assets/icons/play.svg';
+      case 'materials':
+        return 'assets/icons/problems.svg';
+      case 'task_group':
+        return 'assets/icons/problems.svg';
+      default:
+        return 'assets/icons/play.svg';
+    }
+  }
+
+  void _onActionTap(BuildContext context, Lesson lesson, int cardIndex, LessonAction action, bool previousDone) {
+    if (lesson.isPublished == false) {
+      showModalBottomSheet(
+        context: context,
+        builder: (ctx) => LetsgoPopup(
+          title: 'Кеттік!',
+          subtitle: 'Кеттік!',
+          onContinue: () => Navigator.pop(ctx),
+        ),
+      );
+      return;
+    }
+    if (!previousDone) {
+      RoadWidget().showTaskDoneDialog(context);
+      return;
+    }
+    switch (action.actionType) {
+      case 'video':
+        _openActionVideo(context, lesson, action);
+        break;
+      case 'materials':
+        _openActionMaterials(context, lesson, action);
+        break;
+      case 'task_group':
+        _openActionTaskGroup(context, lesson, action);
+        break;
+      default:
+        break;
+    }
+  }
+
+  void _openActionVideo(BuildContext context, Lesson lesson, LessonAction action) {
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) => LetsgoPopup(
+        title: 'Видеосабақты көру',
+        subtitle: 'Сабақты бастауға дайынсыз ба?',
+        onContinue: () async {
+          await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (c) => YoutubeScreen(
+                lesson: lesson,
+                videoUrlOverride: action.videoUrl,
+              ),
+            ),
+          );
+          if (!context.mounted) return;
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(
+              builder: (_) => RoadMap(initialScrollOffset: _scrollController.offset, selectedIndx: 0, state: 0),
+            ),
+            (route) => false,
+          );
+        },
+      ),
+    );
+  }
+
+  void _openActionMaterials(BuildContext context, Lesson lesson, LessonAction action) {
+    if (action.materials.isEmpty) return;
+    if (action.materials.length == 1) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => WebViewPage(url: action.materials.first.url, isAction: true, lessonId: lesson.lessonId, actionId: action.actionId),
+        ),
+      );
+      return;
+    }
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => WebViewPage(url: action.materials.first.url, isAction: true, lessonId: lesson.lessonId, actionId: action.actionId),
+      ),
+    );
+  }
+
+  void _openActionTaskGroup(BuildContext context, Lesson lesson, LessonAction action) {
+    if (action.taskGroup == null) return;
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) => LetsgoPopup(
+        title: lesson.lessonTitle,
+        subtitle: 'Сабақты бастауға дайынсыз ба?',
+        onContinue: () async {
+          await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (c) => Math1Screen(
+                initialScrollOffset: _scrollController.offset,
+                lessonId: lesson.lessonId,
+                groupId: action.taskGroup!,
+                cashbackActive: lesson.cashbackActive,
+                isCash: false,
+                lesson: lesson,
+              ),
+            ),
+          );
+          if (!context.mounted) return;
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(
+              builder: (_) => RoadMap(initialScrollOffset: _scrollController.offset, selectedIndx: 0, state: 0),
+            ),
+            (route) => false,
+          );
+        },
+      ),
+    );
+  }
+
+  /// Строит кнопки по порядку из бэкенда (step_order): видео и group_1..group_3.
+  List<Widget> _buildStepButtons(
+    BuildContext context,
+    Lesson lesson,
+    int index,
+    List<String> stepOrder,
+  ) {
+    final list = <Widget>[];
+    for (int stepIndex = 0; stepIndex < stepOrder.length && stepIndex < 4; stepIndex++) {
+      final stepType = stepOrder[stepIndex];
+      final key = index < _stepButtonKeys.length && stepIndex < _stepButtonKeys[index].length
+          ? _stepButtonKeys[index][stepIndex]
+          : GlobalKey();
+      final isActive = lesson.isStepCompleted(stepType);
+      final previousDone = lesson.arePreviousStepsCompleted(stepIndex);
+
+      if (stepType == 'video') {
+        list.add(_buildCardButton(
+          context: context,
+          lesson: lesson,
+          index: index,
+          buttonKey: key,
+          isActive: isActive,
+          iconPath: 'assets/icons/play.svg',
+          onTap: () => _onVideoStepTap(context, lesson),
+        ));
+      } else {
+        final groupId = stepType == 'group_1' ? 1 : stepType == 'group_2' ? 2 : 3;
+        final groupCompleted = lesson.isStepCompleted(stepType);
+        list.add(_buildCardButton(
+          context: context,
+          lesson: lesson,
+          index: index,
+          buttonKey: key,
+          isActive: groupCompleted,
+          iconPath: 'assets/icons/problems.svg',
+          showCashback: lesson.cashbackActive && !groupCompleted,
+          onTap: () => _onGroupStepTap(context, lesson, groupId, previousDone),
+        ));
+      }
+    }
+    return list;
+  }
+
+  void _onVideoStepTap(BuildContext context, Lesson lesson) {
+    if (lesson.isPublished == false) {
+      showModalBottomSheet(
+        context: context,
+        builder: (ctx) => LetsgoPopup(
+          title: 'Кеттік!',
+          subtitle: 'Кеттік!',
+          onContinue: () => Navigator.pop(ctx),
+        ),
+      );
+      return;
+    }
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) => LetsgoPopup(
+        title: 'Видеосабақты көру',
+        subtitle: 'Сабақты бастауға дайынсыз ба?',
+        onContinue: () async {
+          await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (c) => YoutubeScreen(lesson: lesson),
+            ),
+          );
+          if (!context.mounted) return;
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(
+              builder: (_) => RoadMap(initialScrollOffset: _scrollController.offset, selectedIndx: 0, state: 0),
+            ),
+            (route) => false,
+          );
+        },
+      ),
+    );
+  }
+
+  void _onGroupStepTap(BuildContext context, Lesson lesson, int groupId, bool previousDone) {
+    if (lesson.isPublished == false) {
+      RoadWidget().showUndefinedDialog(context);
+      return;
+    }
+    if (!previousDone) {
+      if (!lesson.videoWatched) {
+        RoadWidget().showWatchVideoDialog(context);
+      } else {
+        RoadWidget().showTaskDoneDialog(context);
+      }
+      return;
+    }
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) => LetsgoPopup(
+        title: lesson.lessonTitle,
+        subtitle: 'Сабақты бастауға дайынсыз ба?',
+        onContinue: () async {
+          await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (c) => Math1Screen(
+                initialScrollOffset: _scrollController.offset,
+                lessonId: lesson.lessonId,
+                groupId: groupId,
+                cashbackActive: lesson.cashbackActive,
+                isCash: false,
+                lesson: lesson,
+              ),
+            ),
+          );
+          if (!context.mounted) return;
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(
+              builder: (_) => RoadMap(initialScrollOffset: _scrollController.offset, selectedIndx: 0, state: 0),
+            ),
+            (route) => false,
+          );
+        },
       ),
     );
   }
@@ -769,7 +777,7 @@ class _RoadMainPageState extends State<RoadMainPage>
                           .size
                           .width * 0.3),
                   child: GestureDetector(
-                    key: _buttonMath3[index],
+                    key: _stepButtonKeys[index][3],
                     onTap: () async {
                       (lesson.isPublished == false)
                           ? RoadWidget().showUndefinedDialog(context)
@@ -779,7 +787,7 @@ class _RoadMainPageState extends State<RoadMainPage>
                           lesson.group2Completed)
                           ? await RoadWidget()
                           .math1(context, index,
-                          _buttonMath3[index], lesson, 3,
+                          _stepButtonKeys[index][3], lesson, 3,
                           scrollOffset:
                           _scrollController.offset, false)
                           .then(
@@ -842,7 +850,7 @@ class _RoadMainPageState extends State<RoadMainPage>
                 ),
                 SizedBox(height: 40),
                 GestureDetector(
-                  key: _buttonMath2[index],
+                  key: _stepButtonKeys[index][2],
                   onTap: () async {
                     (lesson.isPublished == false)
                         ? RoadWidget().showUndefinedDialog(context)
@@ -854,7 +862,7 @@ class _RoadMainPageState extends State<RoadMainPage>
                         .math1(
                       context,
                       index,
-                      _buttonMath2[index],
+                      _stepButtonKeys[index][2],
                       lesson,
                       2, false,
                       scrollOffset: _scrollController.offset,
@@ -919,7 +927,7 @@ class _RoadMainPageState extends State<RoadMainPage>
                 ),
                 SizedBox(height: 40),
                 GestureDetector(
-                  key: _buttonMath1[index],
+                  key: _stepButtonKeys[index][1],
                   onTap: () async {
                     (lesson.isPublished == false)
                         ? RoadWidget().showUndefinedDialog(context)
@@ -928,7 +936,7 @@ class _RoadMainPageState extends State<RoadMainPage>
                         .math1(
                       context,
                       index,
-                      _buttonMath1[index],
+                      _stepButtonKeys[index][1],
                       lesson,
                       1, false,
                       scrollOffset: _scrollController.offset,
@@ -1000,7 +1008,7 @@ class _RoadMainPageState extends State<RoadMainPage>
                           .size
                           .width * 0.3),
                   child: GestureDetector(
-                    key: _buttonKeys[index],
+                    key: _stepButtonKeys[index][0],
                     onTap: () async {
                       (lesson.isPublished == false)
                           ? RoadWidget().showUndefinedDialog(context)
@@ -1008,7 +1016,7 @@ class _RoadMainPageState extends State<RoadMainPage>
                           .playDialogScreen(
                         context,
                         index,
-                        _buttonKeys[index],
+                        _stepButtonKeys[index][0],
                         lesson,
                         scrollOffset: _scrollController.offset,
                       )
@@ -1079,7 +1087,7 @@ class _RoadMainPageState extends State<RoadMainPage>
                         .size
                         .width * 0.3),
                 child: GestureDetector(
-                  key: _buttonMath3[index],
+                  key: _stepButtonKeys[index][3],
                   onTap: () async {
                     (lesson.isPublished == false)
                         ? RoadWidget().showUndefinedDialog(context)
@@ -1090,7 +1098,7 @@ class _RoadMainPageState extends State<RoadMainPage>
                         .math1(
                       context,
                       index,
-                      _buttonMath3[index],
+                      _stepButtonKeys[index][3],
                       lesson,
                       3, true,
                       scrollOffset: _scrollController.offset,
@@ -1160,7 +1168,7 @@ class _RoadMainPageState extends State<RoadMainPage>
               SizedBox(height: 40),
               // Math 2
               GestureDetector(
-                key: _buttonMath2[index],
+                key: _stepButtonKeys[index][2],
                 onTap: () async {
                   (lesson.isPublished == false)
                       ? RoadWidget().showUndefinedDialog(context)
@@ -1172,7 +1180,7 @@ class _RoadMainPageState extends State<RoadMainPage>
                       .math1(
                     context,
                     index,
-                    _buttonMath2[index],
+                    _stepButtonKeys[index][2],
                     lesson,
                     2, true,
                     scrollOffset: _scrollController.offset,
@@ -1238,7 +1246,7 @@ class _RoadMainPageState extends State<RoadMainPage>
               SizedBox(height: 40),
               // Math 3
               GestureDetector(
-                key: _buttonMath1[index],
+                key: _stepButtonKeys[index][1],
                 onTap: () async {
                   (lesson.isPublished == false)
                       ? RoadWidget().showUndefinedDialog(context)
@@ -1247,7 +1255,7 @@ class _RoadMainPageState extends State<RoadMainPage>
                       .math1(
                     context,
                     index,
-                    _buttonMath1[index],
+                    _stepButtonKeys[index][1],
                     lesson,
                     1, true,
                     scrollOffset: _scrollController.offset,
@@ -1318,7 +1326,7 @@ class _RoadMainPageState extends State<RoadMainPage>
                     left: MediaQuery.of(context).size.width * 0.3
                   ),
                 child: GestureDetector(
-                  key: _buttonKeys[index],
+                  key: _stepButtonKeys[index][0],
                   onTap: () async {
                     (lesson.isPublished == false)
                         ? RoadWidget().showUndefinedDialog(context)
@@ -1326,7 +1334,7 @@ class _RoadMainPageState extends State<RoadMainPage>
                         .playDialogScreen(
                       context,
                       index,
-                      _buttonKeys[index],
+                      _stepButtonKeys[index][0],
                       lesson,
                       scrollOffset: _scrollController.offset,
                     )

@@ -43,6 +43,38 @@ class YoutubeService {
     }
   }
 
+  Future<VerificationCodeResponse?> materialsWatched(int lessonId, int actionId) async {
+    final storage = FlutterSecureStorage(
+      aOptions: const AndroidOptions(encryptedSharedPreferences: true),
+    );
+    String? token = await storage.read(key: 'auth_token');
+
+    final Dio _dio = Dio(
+      BaseOptions(baseUrl: GeneralUtil.BASE_URL),
+    );
+    var response;
+    ErrorResponse? errorResponse = null;
+    try {
+      response = await _dio.post(
+        '/edu/lesson/$lessonId/action/$actionId/complete/',
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $token',
+            'Content-Type': 'application/json',
+          },
+        ),
+      );
+    } on DioError catch (e) {
+      errorResponse = ErrorResponse.fromJsonPassword(e.response?.data);
+    }
+    print(response);
+    if (response == null) {
+      return VerificationCodeResponse(errorResponse!.message.toString(), null, null);
+    } else {
+      return VerificationCodeResponse.fromJson(response.data);
+    }
+  }
+
   Future<DataModel?> getTasks(int lessonId, int groupId) async {
     final storage = FlutterSecureStorage(
       aOptions: const AndroidOptions(encryptedSharedPreferences: true),
