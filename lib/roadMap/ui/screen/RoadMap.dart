@@ -5,6 +5,7 @@ import '../../../authorization/service/auth_service.dart';
 import '../../../news/ui/NewsListPage.dart';
 import '../../../profile/ui/ProfilePage.dart';
 import '../../../leaderboard/ui/LeaderboardPage.dart';
+import '../../../synaq/page/synaq_page.dart';
 import '../../../core/widgets/custom_bottom_navbar.dart';
 import '../../entity/ProfileController.dart';
 import '../../service/task_service.dart';
@@ -145,7 +146,9 @@ class _RoadMapState extends State<RoadMap> {
                   ? NewsListPage()
                   : _selectedIndex == 3
                       ? LeaderboardPage()
-                      : ProfilePage(),
+                      : _selectedIndex == 4
+                          ? ProfilePage()
+                          : SynaqPage(),
       bottomNavigationBar: CustomBottomNavBar(
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,

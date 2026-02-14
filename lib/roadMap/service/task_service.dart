@@ -733,6 +733,36 @@ class TaskService {
     }
   }
 
+  /// GET /edu/mock-exams/:id/tasks — задания mock exam.
+  Future<MockExamTasksResponse?> getMockExamTasks(
+    int examId, {
+    CancelToken? cancelToken,
+  }) async {
+    final storage = FlutterSecureStorage(
+      aOptions: const AndroidOptions(encryptedSharedPreferences: true),
+    );
+    final String? token = await storage.read(key: 'auth_token');
+    if (token == null) return null;
+
+    try {
+      final response = await _dio.get(
+        '/edu/mock-exams/$examId/tasks/',
+        options: Options(headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        }),
+        cancelToken: cancelToken,
+      );
+
+      if (response.statusCode == 200 && response.data is Map) {
+        return MockExamTasksResponse.fromJson(response.data);
+      }
+      return null;
+    } catch (e) {
+      print("Ошибка при получении заданий mock exam: $e");
+      return null;
+    }
+  }
 
   Future<String> sendReport({
     String? taskId,

@@ -177,6 +177,28 @@ class CustomBottomNavBar extends StatelessWidget {
           ),
           label: '',
         ),
+        // Синэк (Synaq)
+        BottomNavigationBarItem(
+          icon: Column(
+            children: [
+              SvgPicture.asset(
+                currentIndex == 5
+                    ? 'assets/icons/archive_active.svg'
+                    : 'assets/icons/archive.svg',
+                width: 24,
+                height: 24,
+              ),
+              const SizedBox(height: 5),
+              if (currentIndex == 5)
+                Container(
+                  height: 3,
+                  width: 20,
+                  color: Colors.blue,
+                )
+            ],
+          ),
+          label: '',
+        ),
       ],
     ),
           ),
