@@ -30,6 +30,54 @@ class Materials {
   }
 }
 
+/// Один шаг урока из бэкенда: video, materials или task_group.
+class LessonAction {
+  final String key;
+  final int actionId;
+  final int order;
+  final String actionType; // "video" | "materials" | "task_group"
+  final String title;
+  final bool isRequired;
+  final bool isCompleted;
+  final String? videoUrl;
+  final int? taskGroup;
+  final List<Materials> materials;
+
+  LessonAction({
+    required this.key,
+    required this.actionId,
+    required this.order,
+    required this.actionType,
+    required this.title,
+    required this.isRequired,
+    required this.isCompleted,
+    this.videoUrl,
+    this.taskGroup,
+    this.materials = const [],
+  });
+
+  factory LessonAction.fromJson(Map<String, dynamic> json) {
+    final materialsRaw = json['materials'];
+    final materialsList = materialsRaw is List
+        ? (materialsRaw)
+            .map((e) => Materials.fromJson(Map<String, dynamic>.from(e as Map)))
+            .toList()
+        : <Materials>[];
+    return LessonAction(
+      key: (json['key'] ?? '') as String,
+      actionId: (json['action_id'] ?? 0) as int,
+      order: (json['order'] ?? 0) as int,
+      actionType: (json['action_type'] ?? '') as String,
+      title: (json['title'] ?? '') as String,
+      isRequired: json['is_required'] == true,
+      isCompleted: json['is_completed'] == true,
+      videoUrl: (json['video_url'] as String?),
+      taskGroup: (json['task_group'] as int?),
+      materials: materialsList,
+    );
+  }
+}
+
 /// Порядок шагов на карточке урока (видео и группы заданий).
 /// Бэкенд может вернуть, например: ["video", "group_1", "group_2", "group_3"]
 /// или ["group_1", "video", "group_2", "group_3"].
@@ -49,6 +97,8 @@ class Lesson {
   final List<Materials> materials;
   /// Порядок кнопок на карточке: "video", "group_1", "group_2", "group_3".
   final List<String>? stepOrder;
+  /// Шаги урока с бэкенда (video, materials, task_group) — если есть, показываем по порядку.
+  final List<LessonAction> actions;
 
   Lesson({
     required this.lessonId,
@@ -63,7 +113,11 @@ class Lesson {
     required this.isPublished,
     required this.materials,
     this.stepOrder,
+    this.actions = const [],
   });
+
+  /// Есть ли у урока блок действий (новый формат).
+  bool get hasActions => actions.isNotEmpty;
 
   /// Фактический порядок шагов: из бэкенда или по умолчанию [видео, группа1, группа2, группа3].
   List<String> get effectiveStepOrder =>
@@ -101,11 +155,17 @@ class Lesson {
       stepOrder = stepOrderRaw.map((e) => e.toString()).toList();
       if (stepOrder.isEmpty) stepOrder = null;
     }
+    final actionsRaw = json['actions'];
+    final actionsList = actionsRaw is List
+        ? (actionsRaw)
+            .map((e) => LessonAction.fromJson(Map<String, dynamic>.from(e as Map)))
+            .toList()
+        : <LessonAction>[];
     return Lesson(
       lessonId: (json['lesson_id'] ?? 0) as int,
       lessonTitle: (json['lesson_title'] ?? '') as String,
       lessonNumber: (json['lesson_number'] ?? 0) as int,
-      videoUrl: (json['video_url'] ?? '') as String,
+      videoUrl: json['video_url']?.toString() ?? '',
       videoWatched: json['video_watched'] == true,
       group1Completed: json['group1_completed'] == true,
       group2Completed: json['group2_completed'] == true,
@@ -116,6 +176,7 @@ class Lesson {
           .map((e) => Materials.fromJson(Map<String, dynamic>.from(e as Map)))
           .toList(),
       stepOrder: stepOrder,
+      actions: actionsList,
     );
   }
 
@@ -227,5 +288,4 @@ class LessonResponse {
     };
   }
 }
-
 

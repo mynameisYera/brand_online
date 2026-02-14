@@ -174,7 +174,7 @@ class _YoutubeUrlScreenState extends State<YoutubeUrlScreen> {
                       return InkWell(
                         onTap: () async {
                           String privacyUrl = widget.lesson.materials[index].url;
-                          Navigator.push(context, MaterialPageRoute(builder: (_) => WebViewPage(url: privacyUrl,)));
+                          Navigator.push(context, MaterialPageRoute(builder: (_) => WebViewPage(url: privacyUrl, isAction: false, lessonId: widget.lesson.lessonId, actionId: 0)));
                         },
                         child: MaterialsWidget(
                           title: widget.lesson.materials[index].name,

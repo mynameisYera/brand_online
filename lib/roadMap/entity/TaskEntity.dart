@@ -97,8 +97,8 @@ class Task {
       videoSolutionUrl: json['video_solution_url'] as String?,
       audioUrl: json['audio_url'] as String?,
       state: json['state'],
-      choices: (json['choices'] as List)
-          .map((choice) => Choice.fromJson(choice))
+      choices: ((json['choices'] as List?) ?? [])
+          .map((choice) => Choice.fromJson(Map<String, dynamic>.from(choice as Map)))
           .toList(),
       matchingPairs: (json['matching_pairs'] is Map<String, dynamic>)
           ? MatchingPairs.fromJson(json['matching_pairs'])

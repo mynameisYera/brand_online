@@ -10,28 +10,18 @@ class SubjectModel {
     required this.name,
     required this.subjectName,
     required this.cashbackPending,
-    required this.percentage,
+    this.percentage = 0,
   });
 
   factory SubjectModel.fromJson(Map<String, dynamic> json) {
     final rawPercentage =
         json['percentage'] ?? json['progress'] ?? json['completion'] ?? json['percent'];
     return SubjectModel(
-      id: json['id'],
-      name: json['name'],
-      subjectName: json['subject_name'],
-      cashbackPending: json['cashback_pending'] ?? false,
-      percentage: _normalizePercentage(rawPercentage),
+      id: (json['id'] ?? 0) as int,
+      name: (json['name'] ?? '') as String,
+      subjectName: (json['subject_name'] ?? '') as String,
+      cashbackPending: json['cashback_pending'] == true,
+      percentage: int.tryParse((json['percentage'] ?? 0).toString()) ?? 0,
     );
-  }
-
-  static int _normalizePercentage(dynamic raw) {
-    if (raw == null) return 0;
-    final double value =
-        (raw is num) ? raw.toDouble() : double.tryParse(raw.toString()) ?? 0;
-    if (value <= 1) {
-      return (value * 100).round();
-    }
-    return value.round();
   }
 }

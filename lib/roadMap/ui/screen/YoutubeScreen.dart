@@ -15,8 +15,10 @@ import '../../service/youtube_service.dart';
 
 class YoutubeScreen extends StatefulWidget {
   final Lesson lesson;
+  /// URL видео с бэкенда (урок или action). Если задан, используется вместо lesson.videoUrl.
+  final String? videoUrlOverride;
 
-  const YoutubeScreen({super.key, required this.lesson});
+  const YoutubeScreen({super.key, required this.lesson, this.videoUrlOverride});
 
   @override
   State<YoutubeScreen> createState() => _YoutubeScreenState();
@@ -29,8 +31,8 @@ class _YoutubeScreenState extends State<YoutubeScreen> with WidgetsBindingObserv
   bool _initAttempted = false;
   bool _invalidVideoId = false;
   bool _initTimedOut = false;
+  bool _navigatedToTest = false;
   final _noScreenshot = NoScreenshot.instance;
-  static const List<double> _playbackRates = [1.0, 1.25, 1.5, 1.75, 2.0];
   final ValueNotifier<bool> _isMuted = ValueNotifier(false);
 
   // screenshot
@@ -49,57 +51,24 @@ class _YoutubeScreenState extends State<YoutubeScreen> with WidgetsBindingObserv
   @override
   void initState() {
     super.initState();
+    disableScreenshot();
     WidgetsBinding.instance.addObserver(this);
-    if (!kIsWeb) {
-      disableScreenshot();
-    }
-
-    _startInit();
-  }
-
-  void _startInit() {
-    _initAttempted = false;
-    _invalidVideoId = false;
-    _initTimedOut = false;
-    _scheduleInitTimeout();
-
-    if (kIsWeb) {
-      WidgetsBinding.instance.addPostFrameCallback((_) => _initController());
-    } else {
-      _initController();
-    }
-  }
-
-  void _scheduleInitTimeout() {
-    Future.delayed(const Duration(seconds: 8), () {
-      if (!mounted) return;
-      if (_controller == null && !_invalidVideoId) {
-        _initTimedOut = true;
-        _initAttempted = true;
-        setState(() {});
-      }
-    });
-  }
-
-  void _retryInit() {
-    _startInit();
-    setState(() {});
+    _initController();
   }
 
   void _initController() {
-    if (!mounted) return;
-    final videoId = _extractVideoId(widget.lesson.videoUrl);
-    debugPrint('Extracted Video ID: $videoId');
-
+    final videoUrl = widget.videoUrlOverride ?? widget.lesson.videoUrl;
+    final videoId = _extractVideoId(videoUrl);
     if (videoId.isEmpty) {
-      debugPrint('Unable to extract YouTube video ID from URL: ${widget.lesson.videoUrl}');
-      _controller = null;
+      debugPrint('YoutubeScreen: no video ID (video_url: "$videoUrl")');
       _invalidVideoId = true;
       _initAttempted = true;
       if (mounted) setState(() {});
       return;
     }
 
+    _controllerSubscription?.cancel();
+    _controller?.close();
     _controller = YoutubePlayerController.fromVideoId(
       videoId: videoId,
       autoPlay: true,
@@ -114,11 +83,21 @@ class _YoutubeScreenState extends State<YoutubeScreen> with WidgetsBindingObserv
         pointerEvents: PointerEvents.none,
       ),
     );
-
     _controllerSubscription = _controller?.listen(_onPlayerStateChanged);
     _invalidVideoId = false;
+    _initTimedOut = false;
     _initAttempted = true;
     if (mounted) setState(() {});
+  }
+
+  void _retryInit() {
+    setState(() {
+      _initAttempted = false;
+      _initTimedOut = false;
+      _invalidVideoId = false;
+      _controller = null;
+    });
+    _initController();
   }
 
   @override
@@ -130,53 +109,26 @@ class _YoutubeScreenState extends State<YoutubeScreen> with WidgetsBindingObserv
     super.dispose();
   }
 
+  /// Извлекает YouTube video ID из URL или возвращает строку как ID, если это уже 11 символов.
   String _extractVideoId(String url) {
-    debugPrint('Original URL: $url');
-
-    final trimmed = url.trim();
-    final uri = Uri.tryParse(trimmed);
-
-    String videoId = '';
-    if (uri != null) {
-      if (uri.host.contains('youtu.be')) {
-        if (uri.pathSegments.isNotEmpty) {
-          videoId = uri.pathSegments.last;
-        }
-      } else if (uri.queryParameters['v'] != null) {
-        videoId = uri.queryParameters['v'] ?? '';
-      } else {
-        final embedIndex = uri.pathSegments.indexOf('embed');
-        if (embedIndex != -1 && embedIndex + 1 < uri.pathSegments.length) {
-          videoId = uri.pathSegments[embedIndex + 1];
-        }
-      }
-    }
-
-    if (videoId.length != 11) {
-      final regExp = RegExp(r'(?:v=|\/|embed\/|youtu\.be\/)([A-Za-z0-9_-]{11})');
-      final match = regExp.firstMatch(trimmed);
-      videoId = match?.group(1) ?? '';
-    }
-
-    debugPrint('Extracted Video ID: $videoId');
-    return videoId;
-  }
+  debugPrint('Original URL: $url');
+  
+  final cleanUrl = url.split('?').first;
+  debugPrint('Clean URL: $cleanUrl');
+  
+  final regExp = RegExp(r'(?:v=|\/|embed\/|youtu\.be\/)([A-Za-z0-9_-]{11})');
+  final match = regExp.firstMatch(cleanUrl);
+  
+  final videoId = match?.group(1) ?? '';
+  debugPrint('Extracted Video ID: $videoId');
+  
+  return videoId;
+}
 
   void _onPlayerStateChanged(YoutubePlayerValue value) {
     if (!_markedWatched && value.playerState == PlayerState.ended) {
       _markVideoAsWatched();
     }
-  }
-
-  Future<void> _openFullPage(YoutubePlayerController controller) async {
-    await Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => _YoutubeFullPage(controller: controller),
-      ),
-    );
-    if (!mounted) return;
-    setState(() {});
-    _controller?.playVideo();
   }
 
   void _markVideoAsWatched({bool shouldPopOnSuccess = true}) async {
@@ -193,10 +145,55 @@ class _YoutubeScreenState extends State<YoutubeScreen> with WidgetsBindingObserv
     });
   }
 
+  Widget _buildBackOnlyScaffold() {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF6F7FB),
+      body: SafeArea(
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  widget.lesson.lessonTitle,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    color: Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop(true);
+                    if (!kIsWeb) enableScreenshot();
+                  },
+                  child: Text(
+                    'Артқа қайту',
+                    style: TextStyle(
+                      color: AppColors.primaryBlue,
+                      fontSize: 18,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final controller = _controller;
     final isWide = MediaQuery.of(context).size.width > 600;
+
+    if (controller == null && _navigatedToTest) {
+      return _buildBackOnlyScaffold();
+    }
 
     if (controller == null && (!_initAttempted || (!_initTimedOut && !_invalidVideoId))) {
       return const Scaffold(
@@ -304,158 +301,82 @@ class _YoutubeScreenState extends State<YoutubeScreen> with WidgetsBindingObserv
       builder: (context, player) => Scaffold(
         backgroundColor: const Color(0xFFF6F7FB),
         body: SafeArea(
-          child: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.only(bottom: 24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Padding(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                    child: Text(
-                      widget.lesson.lessonTitle,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
-                        color: Colors.black87,
-                      ),
-                    ),
+          child: Column(
+            children: [
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: Text(
+                  widget.lesson.lessonTitle,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    color: Colors.black87,
                   ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(16),
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(
-                          color: Colors.black,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.12),
-                              blurRadius: 14,
-                              offset: const Offset(0, 8),
-                            ),
-                          ],
-                        ),
-                        child: Stack(
-                          children: [
-                            player,
-                            Positioned(
-                              top: 0,
-                              left: 0,
-                              right: 0,
-                              height: 48,
-                              child: IgnorePointer(
-                                child: Container(color: Colors.transparent),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
+                ),
+              ),
+              Container(
+                clipBehavior: Clip.hardEdge,
+                margin: EdgeInsets.symmetric(horizontal: 5),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(40),
+                ),
+                child: AspectRatio(
+                  aspectRatio: MediaQuery.of(context).size.width > 600 ? 16 / 4 : 16 / 12,
+                  child: player,
+                ),
+              ),
+              SizedBox(height: 20,),
+              // widget.lesson.materials.length == 0 ? SizedBox() : Row(children: [ Padding(padding: EdgeInsets.only(left: 15), child: Text("Сабақтың материалдары", style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),),) ],),
+              // SizedBox(height: 10,),
+              Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: 15
+                ),
+                child: Container(
+                  height: 150,
+                  width: double.infinity,
+                  child: ListView.separated(
+                    separatorBuilder: (context, index) => SizedBox(width: 10,),
+                    scrollDirection: Axis.horizontal,
+                    itemCount: widget.lesson.materials.length,
+                    itemBuilder: (context, index){
+                      return InkWell(
+                        onTap: () async {
+                          String privacyUrl = widget.lesson.materials[index].url;
+                          Navigator.push(context, MaterialPageRoute(builder: (_) => WebViewPage(url: privacyUrl, isAction: false, lessonId: widget.lesson.lessonId, actionId: 0)));
+                        },
+                        child: MaterialsWidget(
+                          title: widget.lesson.materials[index].name,
+                          url:  widget.lesson.materials[index].url,
+                        )
+                      );
+                    }
                   ),
-                  const SizedBox(height: 12),
-                  _buildPlayerControls(controller),
-                  const SizedBox(height: 20),
-                  if (widget.lesson.materials.isNotEmpty) ...[
-                    const Padding(
-                      padding: EdgeInsets.only(left: 20),
-                      child: Text(
-                        "Сабақтың материалдары",
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: SizedBox(
-                        height: 160,
-                        width: double.infinity,
-                        child: ListView.separated(
-                          separatorBuilder: (context, index) =>
-                              const SizedBox(width: 12),
-                          scrollDirection: Axis.horizontal,
-                          itemCount: widget.lesson.materials.length,
-                          itemBuilder: (context, index) {
-                            return InkWell(
-                              onTap: () async {
-                                String privacyUrl =
-                                    widget.lesson.materials[index].url;
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => WebViewPage(
-                                      url: privacyUrl,
-                                    ),
-                                  ),
-                                );
-                              },
-                              child: MaterialsWidget(
-                                title: widget.lesson.materials[index].name,
-                                url: widget.lesson.materials[index].url,
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                    ),
-                  ],
-                  const SizedBox(height: 24),
-                  // Padding(
-                  //   padding:
-                  //       const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
-                  //   child: SizedBox(
-                  //     width: double.infinity,
-                  //     height: 52,
-                  //     child: ElevatedButton(
-                  //       style: ElevatedButton.styleFrom(
-                  //         backgroundColor: Colors.lightBlue,
-                  //         shape: RoundedRectangleBorder(
-                  //           borderRadius: BorderRadius.circular(14),
-                  //         ),
-                  //       ),
-                  //       onPressed: () {
-                  //         _markVideoAsWatched(shouldPopOnSuccess: false);
-                  //         enableScreenshot();
-                  //         Navigator.push(
-                  //           context,
-                  //           MaterialPageRoute(
-                  //             builder: (context) => Math1Screen(
-                  //               initialScrollOffset: 20,
-                  //               lessonId: widget.lesson.lessonId,
-                  //               groupId: 1,
-                  //               cashbackActive: widget.lesson.cashbackActive,
-                  //               isCash: false,
-                  //               lesson: widget.lesson,
-                  //             ),
-                  //           ),
-                  //         );
-                  //       },
-                  //       child: const Text(
-                  //         "Тестке өту",
-                  //         style: TextStyle(
-                  //           color: Colors.white,
-                  //           fontSize: 18,
-                  //           fontWeight: FontWeight.bold,
-                  //         ),
-                  //       ),
-                  //     ),
-                  //   ),
-                  // ),
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16),
-                    child: AppButton(
-                      text: "Тестке өту",
-                      onPressed: () {
-                            _markVideoAsWatched(shouldPopOnSuccess: false);
-                          if (!kIsWeb) {
-                            enableScreenshot();
-                          }
-                            Navigator.push(
+                )
+              ),
+              const Spacer(),
+              SizedBox(
+                height: 20,
+              ),
+              
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 0),
+                child: AppButton(
+                text: "Тестке өту",
+                onPressed: () {
+                      _markVideoAsWatched(shouldPopOnSuccess: false);
+                      _controllerSubscription?.cancel();
+                      _controller?.close();
+                      if (mounted) {
+                        setState(() {
+                          _controller = null;
+                          _navigatedToTest = true;
+                        });
+                      }
+                      enableScreenshot();
+                      Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (context) => Math1Screen(
@@ -518,231 +439,7 @@ class _YoutubeScreenState extends State<YoutubeScreen> with WidgetsBindingObserv
               ),
             ),
           ),
-        ),
-      ),
     );
-  }
-
-  /// External controls: progress, time, play/pause, mute, speed.
-  Widget _buildPlayerControls(YoutubePlayerController controller) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-        decoration: BoxDecoration(
-          color: Colors.grey.shade100,
-          borderRadius: BorderRadius.circular(10),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 5,
-              offset: const Offset(0, 1),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            _buildPositionSlider(controller),
-            const SizedBox(height: 4),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                // Play / pause
-                YoutubeValueBuilder(
-                  controller: controller,
-                  builder: (context, value) {
-                    final isPlaying = value.playerState == PlayerState.playing;
-                    return IconButton(
-                      iconSize: 24,
-                      icon: Icon(
-                        isPlaying ? Icons.pause_circle_filled : Icons.play_circle_fill,
-                        color: Colors.blueAccent,
-                      ),
-                      onPressed: () {
-                        isPlaying
-                            ? controller.pauseVideo()
-                            : controller.playVideo();
-                      },
-                    );
-                  },
-                ),
-                // Mute / unmute
-                ValueListenableBuilder<bool>(
-                  valueListenable: _isMuted,
-                  builder: (context, isMuted, _) {
-                    return IconButton(
-                      iconSize: 22,
-                      icon: Icon(
-                        isMuted ? Icons.volume_off : Icons.volume_up,
-                        color: Colors.blueGrey.shade700,
-                      ),
-                      onPressed: () {
-                        _isMuted.value = !isMuted;
-                        if (isMuted) {
-                          controller.unMute();
-                        } else {
-                          controller.mute();
-                        }
-                      },
-                    );
-                  },
-                ),
-                // Speed selector
-                _buildPlaybackSpeedButton(controller),
-                // Fullscreen toggle
-                YoutubeValueBuilder(
-                  controller: controller,
-                  buildWhen: (oldValue, newValue) =>
-                      oldValue.fullScreenOption != newValue.fullScreenOption,
-                  builder: (context, value) {
-                    return IconButton(
-                      iconSize: 22,
-                      icon: Icon(
-                        Icons.fullscreen,
-                        color: Colors.blueGrey.shade700,
-                      ),
-                      onPressed: () {
-                        _openFullPage(controller);
-                      },
-                    );
-                  },
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPlaybackSpeedButton(YoutubePlayerController controller) {
-    return YoutubeValueBuilder(
-      controller: controller,
-      builder: (context, value) {
-        final currentRate = value.playbackRate;
-        String formatRate(double rate) {
-          final isInt = rate.truncateToDouble() == rate;
-          return isInt ? rate.toStringAsFixed(0) : rate.toStringAsFixed(2).replaceFirst(RegExp(r'0+$'), '');
-        }
-
-        return PopupMenuButton<double>(
-          tooltip: 'Playback speed',
-          onSelected: (rate) {
-            if (rate != currentRate) {
-              controller.setPlaybackRate(rate);
-            }
-          },
-          itemBuilder: (context) => _playbackRates
-              .map(
-                (rate) => PopupMenuItem<double>(
-                  value: rate,
-                  child: Text(
-                    'x${formatRate(rate)}',
-                    style: TextStyle(
-                      fontWeight: rate == currentRate ? FontWeight.w600 : FontWeight.normal,
-                      color: rate == currentRate ? Colors.blueAccent : Colors.black87,
-                    ),
-                  ),
-                ),
-              )
-              .toList(),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-            decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.6),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Row(
-              children: [
-                const Icon(Icons.speed, color: Colors.white, size: 18),
-                const SizedBox(width: 4),
-                Text(
-                  'x${formatRate(currentRate)}',
-                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildPositionSlider(YoutubePlayerController controller) {
-    double sliderValue = 0.0;
-
-    return StreamBuilder<YoutubeVideoState>(
-      stream: controller.videoStateStream,
-      initialData: const YoutubeVideoState(),
-      builder: (context, snapshot) {
-        final position = snapshot.data?.position ?? Duration.zero;
-        final duration = controller.metadata.duration;
-        final totalSeconds = duration.inSeconds;
-
-        sliderValue = totalSeconds == 0
-            ? 0.0
-            : (position.inSeconds / totalSeconds).clamp(0.0, 1.0);
-
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            StatefulBuilder(
-              builder: (context, setState) {
-                return Slider(
-                  thumbColor: AppColors.primaryBlue,
-                  activeColor: AppColors.primaryBlue,
-                  inactiveColor: Colors.grey.shade300,
-                  value: sliderValue,
-                  min: 0,
-                  max: 1,
-                  onChanged: totalSeconds == 0
-                      ? null
-                      : (value) {
-                          sliderValue = value;
-                          setState(() {});
-                          controller.seekTo(
-                            seconds: (sliderValue * totalSeconds).toDouble(),
-                            allowSeekAhead: true,
-                          );
-                        },
-                );
-              },
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  _formatDuration(position),
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: Colors.black54,
-                  ),
-                ),
-                Text(
-                  _formatDuration(duration),
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: Colors.black54,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  String _formatDuration(Duration d) {
-    if (d == Duration.zero) return "00:00";
-    final minutes = d.inMinutes.remainder(60).toString().padLeft(2, '0');
-    final seconds = d.inSeconds.remainder(60).toString().padLeft(2, '0');
-    final hours = d.inHours;
-    if (hours > 0) {
-      return "$hours:$minutes:$seconds";
-    }
-    return "$minutes:$seconds";
   }
 }
 

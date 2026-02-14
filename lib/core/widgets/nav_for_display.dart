@@ -70,6 +70,13 @@ class NavForDisplay extends StatelessWidget {
                   icon: 'assets/icons/profile.svg',
                   activeIcon: 'assets/icons/profile_active.svg',
                 ),
+                const SizedBox(height: 10),
+                _navItem(
+                  index: 5,
+                  label: 'Сынақ',
+                  icon: 'assets/icons/archive.svg',
+                  activeIcon: 'assets/icons/archive_active.svg',
+                ),
               ],
             ),
           ),

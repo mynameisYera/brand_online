@@ -7,6 +7,7 @@ import '../../../authorization/service/auth_service.dart';
 import '../../../news/ui/NewsListPage.dart';
 import '../../../profile/ui/ProfilePage.dart';
 import '../../../leaderboard/ui/LeaderboardPage.dart';
+import '../../../synaq/page/synaq_page.dart';
 import '../../../core/widgets/custom_bottom_navbar.dart';
 import '../../entity/ProfileController.dart';
 import '../../service/task_service.dart';
@@ -145,13 +146,15 @@ class _RoadMapState extends State<RoadMap> {
                 ? NewsListPage()
                 : _selectedIndex == 3
                     ? LeaderboardPage()
-                    : ProfilePage();
+                    : _selectedIndex == 4
+                        ? ProfilePage()
+                        : SynaqPage();
 
-    final isDisplay = !DisplayChacker.isDisplay(context);
+    final useSidebar = !DisplayChacker.isDisplay(context);
 
     return Scaffold(
       backgroundColor: Colors.white,
-      body: isDisplay
+      body: useSidebar
           ? Row(
               children: [
                 NavForDisplay(
@@ -162,7 +165,7 @@ class _RoadMapState extends State<RoadMap> {
               ],
             )
           : content,
-      bottomNavigationBar: isDisplay
+      bottomNavigationBar: useSidebar
           ? null
           : CustomBottomNavBar(
               currentIndex: _selectedIndex,
