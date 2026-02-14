@@ -24,30 +24,47 @@ class _WebViewPageState extends State<WebViewPage> {
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..loadRequest(Uri.parse(widget.url));
   }
-  void _markWatched() {
+  Future<void> _markWatched() async {
     try {
-      YoutubeService().materialsWatched(widget.lessonId, widget.actionId);
+      await YoutubeService().materialsWatched(widget.lessonId, widget.actionId);
+      // if (!mounted) return;
       Navigator.of(context).pop(true);
+      print('marked watched');
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Что-то пошло не так')));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Что-то пошло не так')),
+        );
+      }
     }
+  }
+
+  void _goBack() {
+    if (!mounted) return;
+    Navigator.of(context).pop(true);
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-      ),
-      body: WebViewWidget(controller: _controller),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: AppColors.primaryBlue,
-        onPressed: () {
-          _markWatched();
-        },
-        child: Icon(Icons.check, color: Colors.white,),
+    return PopScope(
+      canPop: true,
+      child: Scaffold(
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: _goBack,
+          ),
+        ),
+        body: WebViewWidget(controller: _controller),
+        floatingActionButton: widget.isAction
+            ? FloatingActionButton(
+                backgroundColor: AppColors.primaryBlue,
+                onPressed: _markWatched,
+                child: const Icon(Icons.check, color: Colors.white),
+              )
+            : const SizedBox.shrink(),
       ),
     );
-    
   }
 }

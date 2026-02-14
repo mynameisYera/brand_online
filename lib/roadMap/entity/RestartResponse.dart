@@ -14,7 +14,7 @@ class RestartResponse {
   factory RestartResponse.fromJson(Map<String, dynamic> json) {
     return RestartResponse(
       lessons: (json['lessons'] as List)
-          .map((e) => RestartLesson.fromJson(e))
+          .map((e) => RestartLesson.fromJson(Map<String, dynamic>.from(e as Map)))
           .toList(),
       controlExam: ControlExam.fromJson(json['control_exam']),
     );

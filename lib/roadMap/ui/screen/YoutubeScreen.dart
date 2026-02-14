@@ -9,6 +9,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:no_screenshot/no_screenshot.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 import '../../../authorization/entity/RoadMapResponse.dart';
 import '../../service/youtube_service.dart';
@@ -53,7 +54,8 @@ class _YoutubeScreenState extends State<YoutubeScreen> with WidgetsBindingObserv
     super.initState();
     disableScreenshot();
     WidgetsBinding.instance.addObserver(this);
-    _initController();
+    // На веб не используем YoutubePlayerController — iframe часто не работает после деплоя.
+    if (!kIsWeb) _initController();
   }
 
   void _initController() {
@@ -67,26 +69,34 @@ class _YoutubeScreenState extends State<YoutubeScreen> with WidgetsBindingObserv
       return;
     }
 
-    _controllerSubscription?.cancel();
-    _controller?.close();
-    _controller = YoutubePlayerController.fromVideoId(
-      videoId: videoId,
-      autoPlay: true,
-      params: const YoutubePlayerParams(
-        mute: false,
-        loop: false,
-        showControls: false,
-        showFullscreenButton: false,
-        enableCaption: false,
-        showVideoAnnotations: false,
-        strictRelatedVideos: true,
-        pointerEvents: PointerEvents.none,
-      ),
-    );
-    _controllerSubscription = _controller?.listen(_onPlayerStateChanged);
-    _invalidVideoId = false;
-    _initTimedOut = false;
-    _initAttempted = true;
+    try {
+      _controllerSubscription?.cancel();
+      _controller?.close();
+      _controller = YoutubePlayerController.fromVideoId(
+        videoId: videoId,
+        autoPlay: true,
+        params: const YoutubePlayerParams(
+          mute: false,
+          loop: false,
+          showControls: false,
+          showFullscreenButton: false,
+          enableCaption: false,
+          showVideoAnnotations: false,
+          strictRelatedVideos: true,
+          pointerEvents: PointerEvents.none,
+        ),
+      );
+      _controllerSubscription = _controller?.listen(_onPlayerStateChanged);
+      _invalidVideoId = false;
+      _initTimedOut = false;
+      _initAttempted = true;
+    } catch (e, st) {
+      debugPrint('YoutubeScreen: init failed: $e');
+      debugPrint('$st');
+      _invalidVideoId = true;
+      _initAttempted = true;
+      _controller = null;
+    }
     if (mounted) setState(() {});
   }
 
@@ -111,19 +121,21 @@ class _YoutubeScreenState extends State<YoutubeScreen> with WidgetsBindingObserv
 
   /// Извлекает YouTube video ID из URL или возвращает строку как ID, если это уже 11 символов.
   String _extractVideoId(String url) {
-  debugPrint('Original URL: $url');
-  
-  final cleanUrl = url.split('?').first;
-  debugPrint('Clean URL: $cleanUrl');
-  
-  final regExp = RegExp(r'(?:v=|\/|embed\/|youtu\.be\/)([A-Za-z0-9_-]{11})');
-  final match = regExp.firstMatch(cleanUrl);
-  
-  final videoId = match?.group(1) ?? '';
-  debugPrint('Extracted Video ID: $videoId');
-  
-  return videoId;
-}
+    final raw = url.trim();
+    if (raw.isEmpty) return '';
+    debugPrint('YoutubeScreen original URL: $raw');
+    // Если строка — 11 символов (формат ID), считаем её ID
+    if (raw.length == 11 && RegExp(r'^[A-Za-z0-9_-]{11}$').hasMatch(raw)) {
+      debugPrint('YoutubeScreen using as video ID: $raw');
+      return raw;
+    }
+    // Ищем ID в URL (v=, embed/, youtu.be/ — ищем в полном URL, не обрезая по ?)
+    final regExp = RegExp(r'(?:v=|\/embed\/|youtu\.be\/)([A-Za-z0-9_-]{11})');
+    final match = regExp.firstMatch(raw);
+    final videoId = match?.group(1) ?? '';
+    debugPrint('YoutubeScreen extracted video ID: $videoId');
+    return videoId;
+  }
 
   void _onPlayerStateChanged(YoutubePlayerValue value) {
     if (!_markedWatched && value.playerState == PlayerState.ended) {
@@ -186,6 +198,151 @@ class _YoutubeScreenState extends State<YoutubeScreen> with WidgetsBindingObserv
     );
   }
 
+  /// На веб не используем встроенный плеер — открываем видео во внешней вкладке.
+  Widget _buildWebFallbackScaffold() {
+    final videoUrl = widget.videoUrlOverride ?? widget.lesson.videoUrl;
+    final hasUrl = videoUrl.isNotEmpty;
+    final launchUri = hasUrl
+        ? Uri.tryParse(videoUrl.startsWith('http') ? videoUrl : 'https://www.youtube.com/watch?v=$videoUrl')
+        : null;
+
+    return Scaffold(
+      backgroundColor: const Color(0xFFF6F7FB),
+      body: SafeArea(
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Text(
+                widget.lesson.lessonTitle,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                  color: Colors.black87,
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            if (hasUrl && launchUri != null)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: () async {
+                      try {
+                        final ok = await launchUrl(
+                          launchUri,
+                          mode: LaunchMode.externalApplication,
+                          webOnlyWindowName: '_blank',
+                        );
+                        if (!ok && mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Сілтемені ашу мүмкін болмады: ${launchUri.toString()}')),
+                          );
+                        }
+                      } catch (e) {
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Қате: $e')),
+                          );
+                        }
+                      }
+                    },
+                    icon: const Icon(Icons.play_circle_filled, size: 28),
+                    label: const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 12),
+                      child: Text('Видеоны көру (жаңа қойындыда)', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primaryBlue,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                  ),
+                ),
+              )
+            else
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Text(
+                  'Видео сілтемесі жоқ.',
+                  style: TextStyle(color: Colors.grey.shade700, fontSize: 14),
+                ),
+              ),
+            const SizedBox(height: 20),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 15),
+              child: Container(
+                height: 150,
+                width: double.infinity,
+                child: ListView.separated(
+                  separatorBuilder: (_, __) => const SizedBox(width: 10),
+                  scrollDirection: Axis.horizontal,
+                  itemCount: widget.lesson.materials.length,
+                  itemBuilder: (context, index) => InkWell(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => WebViewPage(
+                            url: widget.lesson.materials[index].url,
+                            isAction: false,
+                            lessonId: widget.lesson.lessonId,
+                            actionId: 0,
+                          ),
+                        ),
+                      );
+                    },
+                    child: MaterialsWidget(
+                      title: widget.lesson.materials[index].name,
+                      url: widget.lesson.materials[index].url,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const Spacer(),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 15),
+              child: AppButton(
+                text: 'Тестке өту',
+                onPressed: () {
+                  _markVideoAsWatched(shouldPopOnSuccess: false);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => Math1Screen(
+                        initialScrollOffset: 20,
+                        lessonId: widget.lesson.lessonId,
+                        groupId: 1,
+                        cashbackActive: widget.lesson.cashbackActive,
+                        isCash: false,
+                        lesson: widget.lesson,
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 10),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: TextButton(
+                onPressed: () {
+                  _markVideoAsWatched();
+                  Navigator.of(context).pop(true);
+                },
+                child: Text('Артқа қайту', style: TextStyle(color: AppColors.primaryBlue, fontSize: 18)),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final controller = _controller;
@@ -194,6 +351,9 @@ class _YoutubeScreenState extends State<YoutubeScreen> with WidgetsBindingObserv
     if (controller == null && _navigatedToTest) {
       return _buildBackOnlyScaffold();
     }
+
+    // Веб: не используем контроллер, показываем экран с кнопкой «Открыть видео».
+    if (kIsWeb) return _buildWebFallbackScaffold();
 
     if (controller == null && (!_initAttempted || (!_initTimedOut && !_invalidVideoId))) {
       return const Scaffold(
@@ -271,6 +431,27 @@ class _YoutubeScreenState extends State<YoutubeScreen> with WidgetsBindingObserv
                         ),
                       ),
                     ),
+                    if (kIsWeb) ...[
+                      const SizedBox(height: 8),
+                      Builder(
+                        builder: (context) {
+                          final url = widget.videoUrlOverride ?? widget.lesson.videoUrl;
+                          if (url.isEmpty) return const SizedBox.shrink();
+                          return TextButton.icon(
+                            icon: const Icon(Icons.open_in_new, size: 18),
+                            label: const Text('Видеоны жаңа қойындыда ашу'),
+                            onPressed: () async {
+                              final uri = Uri.tryParse(url.startsWith('http') ? url : 'https://www.youtube.com/watch?v=$url');
+                              if (uri != null) {
+                                try {
+                                  await launchUrl(uri, mode: LaunchMode.externalApplication, webOnlyWindowName: '_blank');
+                                } catch (_) {}
+                              }
+                            },
+                          );
+                        },
+                      ),
+                    ],
                     if (_invalidVideoId) ...[
                       const SizedBox(height: 10),
                       TextButton(
@@ -327,6 +508,23 @@ class _YoutubeScreenState extends State<YoutubeScreen> with WidgetsBindingObserv
                   child: player,
                 ),
               ),
+              if (kIsWeb) ...[
+                const SizedBox(height: 8),
+                TextButton.icon(
+                  icon: const Icon(Icons.open_in_new, size: 18),
+                  label: const Text('Видеоны жаңа қойындыда ашу'),
+                  onPressed: () async {
+                    final url = widget.videoUrlOverride ?? widget.lesson.videoUrl;
+                    if (url.isEmpty) return;
+                    final uri = Uri.tryParse(url.startsWith('http') ? url : 'https://www.youtube.com/watch?v=$url');
+                    if (uri != null) {
+                      try {
+                        await launchUrl(uri, mode: LaunchMode.externalApplication, webOnlyWindowName: '_blank');
+                      } catch (_) {}
+                    }
+                  },
+                ),
+              ],
               SizedBox(height: 20,),
               // widget.lesson.materials.length == 0 ? SizedBox() : Row(children: [ Padding(padding: EdgeInsets.only(left: 15), child: Text("Сабақтың материалдары", style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),),) ],),
               // SizedBox(height: 10,),

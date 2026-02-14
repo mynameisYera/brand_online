@@ -550,8 +550,8 @@ class _LessonCard extends StatelessWidget {
                                         context,
                                         MaterialPageRoute(
                                           builder: (context) => YoutubeUrlScreen(
-                                            videoSolutionUrl: lesson.videoUrl,
-                                            lesson: Lesson(lessonId: lesson.lessonId, lessonTitle: lesson.title, lessonNumber: lesson.chapterId, videoUrl: lesson.videoUrl, videoWatched: true, group1Completed: true, group2Completed: true, group3Completed: true, cashbackActive: false, isPublished: false, materials: lesson.materials),
+                                            videoSolutionUrl: lesson.videoUrl ?? '',
+                                            lesson: Lesson(lessonId: lesson.lessonId, lessonTitle: lesson.title, lessonNumber: lesson.chapterId, videoUrl: lesson.videoUrl ?? '', videoWatched: true, group1Completed: true, group2Completed: true, group3Completed: true, cashbackActive: false, isPublished: false, materials: lesson.materials),
                                           ),
                                         ),
                                       );

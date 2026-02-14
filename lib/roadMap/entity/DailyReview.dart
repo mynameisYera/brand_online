@@ -45,7 +45,7 @@ class DailyReview {
     correctWithoutHelp: (j['correct_without_help'] ?? 0) as int,
     incorrectAttempts: (j['incorrect_attempts'] ?? 0) as int,
     points: (j['points'] ?? 0) as int,
-    percentage: (j['percentage'] ?? 0.0) as double,
+    percentage: ((j['percentage'] ?? 0.0) as num).toDouble(),
     isCompleted: (j['is_completed'] ?? false) as bool,
     isOpen: (j['is_open'] ?? false) as bool,
   );
