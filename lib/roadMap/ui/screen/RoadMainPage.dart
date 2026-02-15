@@ -415,7 +415,7 @@ class _RoadMainPageState extends State<RoadMainPage>
       case 'video':
         return 'assets/icons/play.svg';
       case 'materials':
-        return 'assets/icons/problems.svg';
+        return 'assets/icons/materials.svg';
       case 'task_group':
         return 'assets/icons/problems.svg';
       default:

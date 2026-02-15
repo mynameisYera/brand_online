@@ -1,7 +1,7 @@
 name: brand_online
 description: "Study smart online with Brand Online KZ"
 publish_to: 'none' 
-version: 1.0.3+10
+version: 1.0.3+11
 
 environment:
   sdk: ^3.6.0
@@ -172,6 +172,7 @@ flutter:
     - assets/icons/star.svg
     - assets/icons/synaq.svg
     - assets/icons/synaq_active.svg
+    - assets/icons/materials.svg
 
 
 
