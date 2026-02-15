@@ -74,7 +74,7 @@ class NavForDisplay extends StatelessWidget {
                 _navItem(
                   index: 5,
                   label: 'Сынақ',
-                  icon: 'assets/icons/archive.svg',
+                  icon: 'assets/icons/multiplayer.svg',
                   activeIcon: 'assets/icons/archive_active.svg',
                 ),
               ],

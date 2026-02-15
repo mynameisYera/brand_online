@@ -34,7 +34,7 @@ dependencies:
   purchases_flutter: ^9.9.8
   flutter_svg: ^2.0.10+1
   youtube_player_iframe: ^5.2.2
-
+  webview_flutter_web: ^0.2.2+4
 
 dependency_overrides:
   loading_animation_widget:
@@ -54,8 +54,7 @@ dev_dependencies:
   audioplayers: ^6.5.0
   intl: ^0.20.2
   flutter_launcher_icons: ^0.14.4
-  webview_flutter_web: ^0.2.2+4
-  
+
 flutter_launcher_icons:
   android: true
   ios: true
