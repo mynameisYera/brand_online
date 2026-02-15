@@ -21,6 +21,15 @@ class TaskSubmitResult {
   TaskSubmitResult({required this.isCorrect, required this.taskCashback});
 }
 
+/// Берёт процент из ответа: если есть attempt.percentage (общий % по сынақу) — используем его, иначе — верхнеуровневый percentage (по одному заданию).
+double _percentageFromSubmitResponse(Map<String, dynamic> data) {
+  final attempt = data['attempt'];
+  if (attempt != null && attempt is Map && attempt['percentage'] != null) {
+    return (attempt['percentage'] as num).toDouble();
+  }
+  return (data['percentage'] ?? 0).toDouble();
+}
+
 class TaskService {
   final Dio _dio = Dio(
     BaseOptions(
@@ -98,10 +107,12 @@ class TaskService {
         totalTimeout: totalTimeout,
       );
 
+      print('response: ${response.data}');
+
       final Map<String, dynamic> responseData = response.data;
       final bool isCorrect = responseData['result'] == true;
       final int score = response.data["points"] ?? 0;
-      final double percentage = (response.data["percentage"] ?? 0).toDouble();
+      final double percentage = _percentageFromSubmitResponse(responseData);
       final bool isStrike = responseData["strike"] ?? false;
       final taskData = response.data["task"];
       final double factor = (response.data["factor"] ?? 0).toDouble();
@@ -247,7 +258,7 @@ class TaskService {
       final responseData = response.data;
       final bool isCorrect = responseData['result'] == true;
       final int score = response.data["points"] ?? 0;
-      final double percentage = (response.data["percentage"] ?? 0).toDouble();
+      final double percentage = _percentageFromSubmitResponse(responseData);
       final bool isStrike = responseData["strike"] ?? false;
       final taskData = response.data["task"];
       final double factor = (response.data["factor"] ?? 0).toDouble();
@@ -390,7 +401,7 @@ class TaskService {
       final responseData = response.data;
       final bool isCorrect = responseData["result"] == true;
       final int score = response.data["points"] ?? 0;
-      final double percentage = (response.data["percentage"] ?? 0).toDouble();
+      final double percentage = _percentageFromSubmitResponse(responseData);
       final bool isStrike = responseData["strike"] ?? false;
       final taskData = response.data["task"];
       final double factor = (response.data["factor"] ?? 0).toDouble();
@@ -534,7 +545,7 @@ class TaskService {
       final res = response.data;
       final bool isCorrect = res['result'] == true;
       final int score = res["points"] ?? 0;
-      final double percentage = (res["percentage"] ?? 0).toDouble();
+      final double percentage = _percentageFromSubmitResponse(res);
       final bool isStrike = res["strike"] ?? false;
       final taskData = res["task"];
       final double factor = (res["factor"] ?? 0).toDouble();

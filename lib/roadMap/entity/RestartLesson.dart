@@ -19,14 +19,16 @@ class RestartLesson {
 
   factory RestartLesson.fromJson(Map<String, dynamic> json) {
     return RestartLesson(
-      lessonId: json['lesson_id'],
-      title: json['title'],
-      videoUrl: json['video_url'],
-      overallPercentage: json['overall_percentage'],
-      chapterId: json['chapter_number'],
-      materials: (json['materials'] as List<dynamic>)
-      .map((e) => Materials.fromJson(e))
-      .toList(),
+      lessonId: (json['lesson_id'] ?? 0) as int,
+      title: (json['title'] ?? '') as String,
+      videoUrl: json['video_url']?.toString() ?? '',
+      overallPercentage: (json['overall_percentage'] ?? 0.0).toDouble(),
+      chapterId: (json['chapter_number'] ?? 0) as int,
+      materials: (json['materials'] is List<dynamic>
+              ? (json['materials'] as List<dynamic>)
+              : <dynamic>[])
+          .map((e) => Materials.fromJson(Map<String, dynamic>.from(e as Map)))
+          .toList(),
     );
   }
 }

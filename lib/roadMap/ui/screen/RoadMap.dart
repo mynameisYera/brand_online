@@ -143,12 +143,12 @@ class _RoadMapState extends State<RoadMap> {
           : _selectedIndex == 1
               ? RepeatPage()
               : _selectedIndex == 2
-                  ? NewsListPage()
+                  ? SynaqPage()
                   : _selectedIndex == 3
-                      ? LeaderboardPage()
+                      ? NewsListPage()
                       : _selectedIndex == 4
-                          ? ProfilePage()
-                          : SynaqPage(),
+                          ? LeaderboardPage()
+                          : ProfilePage(),
       bottomNavigationBar: CustomBottomNavBar(
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,

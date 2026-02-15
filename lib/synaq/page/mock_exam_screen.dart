@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'package:brand_online/core/widgets/app_button_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:brand_online/authorization/entity/RoadMapResponse.dart';
@@ -30,6 +31,7 @@ class _MockExamScreenState extends State<MockExamScreen>
   int _currentPage = 0;
   List<Task> _tasks = [];
   List<Task> _retryTasks = [];
+  int _correctCount = 0;
   Profile? _profile;
 
   final GlobalKey _actionBtnKey = GlobalKey();
@@ -144,12 +146,18 @@ class _MockExamScreenState extends State<MockExamScreen>
     int taskCashback,
     int totalCashback,
   ) async {
+    // API часто возвращает percentage: 0.0 для сынақа — считаем % по правильным ответам
+    final totalCount = _tasks.length + _retryTasks.length;
+    final displayPercentage = totalCount > 0
+        ? (_correctCount / totalCount * 100).round().clamp(0, 100)
+        : percentage;
+
     await showDialog(
       context: context,
       barrierDismissible: false,
       builder: (context) => ResultScreen(
         score: score,
-        percentage: percentage,
+        percentage: displayPercentage,
         strike: strike,
         temporaryBalance: temporaryBalance,
         factory: factory,
@@ -163,7 +171,7 @@ class _MockExamScreenState extends State<MockExamScreen>
     if (!mounted) return;
     Navigator.of(context).pushAndRemoveUntil(
       MaterialPageRoute(
-        builder: (context) => RoadMap(selectedIndx: 5, state: 0),
+        builder: (context) => RoadMap(selectedIndx: 2, state: 0),
       ),
       (Route<dynamic> route) => false,
     );
@@ -193,25 +201,27 @@ class _MockExamScreenState extends State<MockExamScreen>
             Row(
               children: [
                 Expanded(
-                  child: OutlinedButton(
+                  child: AppButton(
+                    text: 'Жалғастыру',
                     onPressed: () => Navigator.pop(ctx),
-                    child: const Text('Жалғастыру'),
+                    // child: const Text('Жалғастыру'),
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: ElevatedButton(
+                  child: AppButton(
+                    color: AppButtonColor.red,
                     onPressed: () {
                       Navigator.pop(ctx);
                       Navigator.of(context).pushAndRemoveUntil(
                         MaterialPageRoute(
                           builder: (context) =>
-                              RoadMap(selectedIndx: 5, state: 0),
+                              RoadMap(selectedIndx: 2, state: 0),
                         ),
                         (route) => false,
                       );
                     },
-                    child: const Text('Шығу'),
+                    text: 'Шығу',
                   ),
                 ),
               ],
@@ -285,7 +295,7 @@ class _MockExamScreenState extends State<MockExamScreen>
                         icon: const Icon(Icons.close, color: Colors.grey),
                         onPressed: _exitConfirm,
                       ),
-                      Flexible(
+                      Expanded(
                         child: Container(
                           height: 10,
                           decoration: BoxDecoration(
@@ -358,7 +368,10 @@ class _MockExamScreenState extends State<MockExamScreen>
                         isLast: _isLastPage,
                         dailySubjectMode: false,
                         actionButtonKey: _actionBtnKey,
-                        onCorrect: () async => await _playButtonBurst(),
+                        onCorrect: () async {
+                          setState(() => _correctCount++);
+                          await _playButtonBurst();
+                        },
                         onNext: () {
                           if (_currentPage + 1 < totalCount) {
                             _pageController.nextPage(
@@ -371,7 +384,7 @@ class _MockExamScreenState extends State<MockExamScreen>
                           setState(() => _retryTasks.add(incorrectTask));
                         },
                         profile: _profile,
-                        customShowResultScreen: _showResultScreen,
+                        customShowResultScreen: (score, percentage, strike, temporaryBalance, factory, money, isCash, taskCashback, totalCashback) => _showResultScreen(score, percentage, strike, temporaryBalance, factory, money, isCash, taskCashback, totalCashback),
                       );
                     },
                   ),

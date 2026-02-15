@@ -461,7 +461,7 @@ class _TaskWidgetState extends State<TaskWidget>
           onNext: _handleNext,
           onError: _onErrorUI,
           showAnswer: (c, a) async => _handleAnswerUI(c, a),
-          showResultScreen: _showResultScreenAndExit,
+          showResultScreen: widget.customShowResultScreen ?? _showResultScreenAndExit,
         );
       });
       return;
@@ -491,7 +491,7 @@ class _TaskWidgetState extends State<TaskWidget>
           onNext: _handleNext,
           onError: _onErrorUI,
           showAnswer: (c, a) async => _handleAnswerUI(c, a),
-          showResultScreen: _showResultScreenAndExit,
+          showResultScreen: widget.customShowResultScreen ?? _showResultScreenAndExit,
         );
       });
       return;
@@ -522,7 +522,7 @@ class _TaskWidgetState extends State<TaskWidget>
           onNext: _handleNext,
           onError: _onErrorUI,
           showAnswer: (c, a) async => _handleAnswerUI(c, a),
-          showResultScreen: _showResultScreenAndExit,
+          showResultScreen: widget.customShowResultScreen ?? _showResultScreenAndExit,
         );
       });
       return;
@@ -565,7 +565,7 @@ class _TaskWidgetState extends State<TaskWidget>
           onNext: _handleNext,
           onError: _onErrorUI,
           showAnswer: (c, a) async => _handleAnswerUI(c, a),
-          showResultScreen: _showResultScreenAndExit,
+          showResultScreen: widget.customShowResultScreen ?? _showResultScreenAndExit,
         );
       });
       return;

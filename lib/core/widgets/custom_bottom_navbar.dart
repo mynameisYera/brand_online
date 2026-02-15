@@ -31,7 +31,6 @@ class CustomBottomNavBar extends StatelessWidget {
             currentIndex: currentIndex,
             onTap: onTap,
             items: [
-        // Главная (Main)
         BottomNavigationBarItem(
           icon: Column(
             children: [
@@ -53,7 +52,6 @@ class CustomBottomNavBar extends StatelessWidget {
           ),
           label: '',
         ),
-        // Повтор (Tasks)
         BottomNavigationBarItem(
           icon: ValueListenableBuilder<int>(
             valueListenable: ProfileController.repeatLessonsCountNotifier,
@@ -111,14 +109,13 @@ class CustomBottomNavBar extends StatelessWidget {
           ),
           label: '',
         ),
-        // Новости (News)
         BottomNavigationBarItem(
           icon: Column(
             children: [
               SvgPicture.asset(
                 currentIndex == 2
-                    ? 'assets/icons/news_active.svg'
-                    : 'assets/icons/news.svg',
+                    ? 'assets/icons/synaq_active.svg'
+                    : 'assets/icons/synaq.svg',
                 width: 24,
                 height: 24,
               ),
@@ -133,14 +130,14 @@ class CustomBottomNavBar extends StatelessWidget {
           ),
           label: '',
         ),
-        // Лидерборд (archive/Trophy)
+        // Новости (News)
         BottomNavigationBarItem(
           icon: Column(
             children: [
               SvgPicture.asset(
                 currentIndex == 3
-                    ? 'assets/icons/archive_active.svg'
-                    : 'assets/icons/archive.svg',
+                    ? 'assets/icons/news_active.svg'
+                    : 'assets/icons/news.svg',
                 width: 24,
                 height: 24,
               ),
@@ -155,14 +152,14 @@ class CustomBottomNavBar extends StatelessWidget {
           ),
           label: '',
         ),
-        // Профиль (Profile)
+        // Лидерборд (archive/Trophy)
         BottomNavigationBarItem(
           icon: Column(
             children: [
               SvgPicture.asset(
                 currentIndex == 4
-                    ? 'assets/icons/profile_active.svg'
-                    : 'assets/icons/profile.svg',
+                    ? 'assets/icons/archive_active.svg'
+                    : 'assets/icons/archive.svg',
                 width: 24,
                 height: 24,
               ),
@@ -177,14 +174,14 @@ class CustomBottomNavBar extends StatelessWidget {
           ),
           label: '',
         ),
-        // Синэк (Synaq)
+        // Профиль (Profile)
         BottomNavigationBarItem(
           icon: Column(
             children: [
               SvgPicture.asset(
                 currentIndex == 5
-                    ? 'assets/icons/archive_active.svg'
-                    : 'assets/icons/archive.svg',
+                    ? 'assets/icons/profile_active.svg'
+                    : 'assets/icons/profile.svg',
                 width: 24,
                 height: 24,
               ),
