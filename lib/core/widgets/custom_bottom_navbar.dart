@@ -109,13 +109,14 @@ class CustomBottomNavBar extends StatelessWidget {
           ),
           label: '',
         ),
+        // Новости (News)
         BottomNavigationBarItem(
           icon: Column(
             children: [
               SvgPicture.asset(
                 currentIndex == 2
-                    ? 'assets/icons/synaq_active.svg'
-                    : 'assets/icons/synaq.svg',
+                    ? 'assets/icons/news_active.svg'
+                    : 'assets/icons/news.svg',
                 width: 24,
                 height: 24,
               ),
@@ -130,14 +131,14 @@ class CustomBottomNavBar extends StatelessWidget {
           ),
           label: '',
         ),
-        // Новости (News)
+        // Лидерборд (archive/Trophy)
         BottomNavigationBarItem(
           icon: Column(
             children: [
               SvgPicture.asset(
                 currentIndex == 3
-                    ? 'assets/icons/news_active.svg'
-                    : 'assets/icons/news.svg',
+                    ? 'assets/icons/archive_active.svg'
+                    : 'assets/icons/archive.svg',
                 width: 24,
                 height: 24,
               ),
@@ -152,41 +153,19 @@ class CustomBottomNavBar extends StatelessWidget {
           ),
           label: '',
         ),
-        // Лидерборд (archive/Trophy)
-        BottomNavigationBarItem(
-          icon: Column(
-            children: [
-              SvgPicture.asset(
-                currentIndex == 4
-                    ? 'assets/icons/archive_active.svg'
-                    : 'assets/icons/archive.svg',
-                width: 24,
-                height: 24,
-              ),
-              const SizedBox(height: 5),
-              if (currentIndex == 4)
-                Container(
-                  height: 3,
-                  width: 20,
-                  color: Colors.blue,
-                )
-            ],
-          ),
-          label: '',
-        ),
         // Профиль (Profile)
         BottomNavigationBarItem(
           icon: Column(
             children: [
               SvgPicture.asset(
-                currentIndex == 5
+                currentIndex == 4
                     ? 'assets/icons/profile_active.svg'
                     : 'assets/icons/profile.svg',
                 width: 24,
                 height: 24,
               ),
               const SizedBox(height: 5),
-              if (currentIndex == 5)
+              if (currentIndex == 4)
                 Container(
                   height: 3,
                   width: 20,

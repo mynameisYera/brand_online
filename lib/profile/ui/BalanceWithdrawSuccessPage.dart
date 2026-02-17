@@ -49,7 +49,7 @@ class BalanceWithdrawSuccessPage extends StatelessWidget {
               text: "КЕРЕМЕТ", 
               onPressed: () => Navigator.pushReplacement(
                     context,
-                    MaterialPageRoute(builder: (context) => const RoadMap(selectedIndx: 5, state: 0)),
+                    MaterialPageRoute(builder: (context) => const RoadMap(selectedIndx: 4, state: 0)),
                   ),
             ),
             )

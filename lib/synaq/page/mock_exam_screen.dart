@@ -171,7 +171,7 @@ class _MockExamScreenState extends State<MockExamScreen>
     if (!mounted) return;
     Navigator.of(context).pushAndRemoveUntil(
       MaterialPageRoute(
-        builder: (context) => RoadMap(selectedIndx: 2, state: 0),
+        builder: (context) => RoadMap(selectedIndx: 1, state: 0),
       ),
       (Route<dynamic> route) => false,
     );
@@ -216,7 +216,7 @@ class _MockExamScreenState extends State<MockExamScreen>
                       Navigator.of(context).pushAndRemoveUntil(
                         MaterialPageRoute(
                           builder: (context) =>
-                              RoadMap(selectedIndx: 2, state: 0),
+                              RoadMap(selectedIndx: 1, state: 0),
                         ),
                         (route) => false,
                       );

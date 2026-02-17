@@ -19,6 +19,7 @@ import '../../service/task_service.dart';
 import '../../entity/RestartLesson.dart';
 import 'RepeatTaskScreen.dart';
 import 'zhdt_test.dart' show DailyTestScreen;
+import 'package:brand_online/synaq/page/mock_exam_screen.dart';
 
 class RepeatPage extends StatefulWidget {
   const RepeatPage({super.key});
@@ -34,7 +35,7 @@ class _RepeatPageState extends State<RepeatPage> {
   ControlExam? controlExam;
   DailyReview? dailyReview;
   List<DailySession>? dailySubjectTasks;
-
+  MockExam? mockExam;
 
   bool responseNull = false;
   bool controlExamStarted = false;
@@ -67,6 +68,7 @@ class _RepeatPageState extends State<RepeatPage> {
       final exam = result?.controlExam;
       final dr   = result?.dailyReview;
       dailySubjectTasks = result?.dailySubjectTasks;
+      final mock = result?.mockExam;
 
       // Проверяем активные daily subject tasks
       final hasActiveDailySessions = dailySubjectTasks != null && 
@@ -79,7 +81,9 @@ class _RepeatPageState extends State<RepeatPage> {
       // Проверяем активный daily review (открыт и не завершен)
       final hasActiveDailyReview = dr?.isOpen == true && dr?.isCompleted == false;
       
+      final hasMockExam = mock != null && !mock.attempt.isCompleted;
       int count = 0;
+      if (hasMockExam) count++;
       if (hasActiveDailyReview) {
         count++;
       }
@@ -102,8 +106,10 @@ class _RepeatPageState extends State<RepeatPage> {
         lessons     = ls;
         controlExam = exam;
         dailyReview = dr;
+        mockExam    = mock;
         // _hasAny должен быть true если есть хотя бы один активный элемент
-        _hasAny = ls.isNotEmpty || 
+        _hasAny = hasMockExam ||
+                  ls.isNotEmpty || 
                   (exam?.isOpen ?? false) || 
                   hasActiveDailyReview || 
                   hasActiveDailySessions;
@@ -118,11 +124,25 @@ class _RepeatPageState extends State<RepeatPage> {
         lessons = [];
         controlExam = null;
         dailyReview = null;
+        mockExam = null;
         _hasAny = false;
         _loading = false;
         responseNull = true;
       });
     }
+  }
+
+  void _onMockExamStart() async {
+    if (mockExam == null) return;
+    if (mockExam!.attempt.isCompleted) return;
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => MockExamScreen(exam: mockExam!),
+      ),
+    );
+    if (!mounted) return;
+    fetchLessons();
   }
 
   @override
@@ -158,6 +178,9 @@ class _RepeatPageState extends State<RepeatPage> {
                 children: [
                   const SizedBox(height: 8),
                   CustomAppBar(),
+                  const SizedBox(height: 16),
+                  if (mockExam != null) _MockExamCard(mockExam: mockExam!, onStart: _onMockExamStart),
+                  if (mockExam != null) const SizedBox(height: 16),
                   if (controlExam?.isOpen ?? false) RepeatCart(
                     subject: "Кэшбекті еселендір!", 
                     title: "Апталық қорытынды тест", 
@@ -329,6 +352,36 @@ class _RepeatPageState extends State<RepeatPage> {
         backgroundColor: Colors.transparent,
       ),
       body: SafeArea(child: body),
+    );
+  }
+}
+
+class _MockExamCard extends StatelessWidget {
+  const _MockExamCard({
+    required this.mockExam,
+    required this.onStart,
+  });
+
+  final MockExam mockExam;
+  final VoidCallback onStart;
+
+  @override
+  Widget build(BuildContext context) {
+    final attempt = mockExam.attempt;
+    final isCompleted = attempt.isCompleted;
+    final subtitle = attempt.answeredCount > 0
+        ? '${attempt.answeredCount}/${mockExam.taskCount} сұрақ · ${attempt.percentage.toStringAsFixed(0)}%'
+        : '${mockExam.taskCount} сұрақ';
+
+    return RepeatCart(
+      subject: '${mockExam.gradeName} · ${mockExam.subjectName}',
+      title: mockExam.title,
+      subtitle: subtitle,
+      mascotAsset: 'assets/images/SHOQAN.png',
+      iconAsset: 'assets/icons/qortyndy.svg',
+      onStart: onStart,
+      isCompleted: isCompleted,
+      color: AppColors.trueGreen,
     );
   }
 }

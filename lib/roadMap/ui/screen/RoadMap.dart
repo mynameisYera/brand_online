@@ -5,7 +5,6 @@ import '../../../authorization/service/auth_service.dart';
 import '../../../news/ui/NewsListPage.dart';
 import '../../../profile/ui/ProfilePage.dart';
 import '../../../leaderboard/ui/LeaderboardPage.dart';
-import '../../../synaq/page/synaq_page.dart';
 import '../../../core/widgets/custom_bottom_navbar.dart';
 import '../../entity/ProfileController.dart';
 import '../../service/task_service.dart';
@@ -107,6 +106,7 @@ class _RoadMapState extends State<RoadMap> {
       final exam = result?.controlExam;
       final dr = result?.dailyReview;
       final dailySubjectTasks = result?.dailySubjectTasks;
+      final mockExam = result?.mockExam;
 
       final hasActiveDailySessions = dailySubjectTasks != null &&
           dailySubjectTasks.isNotEmpty &&
@@ -117,8 +117,10 @@ class _RoadMapState extends State<RoadMap> {
           );
       final hasActiveDailyReview =
           dr?.isOpen == true && dr?.isCompleted == false;
+      final hasMockExam = mockExam != null && !mockExam.attempt.isCompleted;
 
       int count = 0;
+      if (hasMockExam) count++;
       if (hasActiveDailyReview) count++;
       if (hasActiveDailySessions) count++;
       if (lessons.isNotEmpty) count++;
@@ -143,12 +145,10 @@ class _RoadMapState extends State<RoadMap> {
           : _selectedIndex == 1
               ? RepeatPage()
               : _selectedIndex == 2
-                  ? SynaqPage()
+                  ? NewsListPage()
                   : _selectedIndex == 3
-                      ? NewsListPage()
-                      : _selectedIndex == 4
-                          ? LeaderboardPage()
-                          : ProfilePage(),
+                      ? LeaderboardPage()
+                      : ProfilePage(),
       bottomNavigationBar: CustomBottomNavBar(
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
