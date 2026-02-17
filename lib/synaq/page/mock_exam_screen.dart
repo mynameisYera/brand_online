@@ -104,8 +104,7 @@ class _MockExamScreenState extends State<MockExamScreen>
     super.dispose();
   }
 
-  bool get _isLastPage =>
-      (_tasks.length + _retryTasks.length) == _currentPage + 1;
+  int get _totalCount => _tasks.length + _retryTasks.length;
 
   void _prepareParticles({int count = 18, double maxRadius = 110}) {
     _particles = List.generate(count, (i) {
@@ -276,7 +275,7 @@ class _MockExamScreenState extends State<MockExamScreen>
       );
     }
 
-    final totalCount = _tasks.length + _retryTasks.length;
+    final totalCount = _totalCount;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -306,7 +305,9 @@ class _MockExamScreenState extends State<MockExamScreen>
                             children: [
                               FractionallySizedBox(
                                 alignment: Alignment.centerLeft,
-                                widthFactor: (_currentPage + 1) / totalCount,
+                                widthFactor: totalCount == 0
+                                    ? 0.0
+                                    : (_currentPage + 1) / totalCount,
                                 child: ClipRRect(
                                   borderRadius: BorderRadius.circular(5),
                                   child: Container(color: Colors.blue),
@@ -341,6 +342,8 @@ class _MockExamScreenState extends State<MockExamScreen>
                           ? _tasks[index]
                           : _retryTasks[index - _tasks.length];
                       final hintShow = index >= _tasks.length;
+                      final total = _totalCount;
+                      final isLastPage = total > 0 && (index == total - 1);
 
                       final lesson = Lesson(
                         lessonId: currentTask.lessonId,
@@ -357,7 +360,7 @@ class _MockExamScreenState extends State<MockExamScreen>
                       );
 
                       return TaskWidget(
-                        key: ValueKey(currentTask.id),
+                        key: ValueKey(index),
                         isExamMode: true,
                         mockExamId: widget.exam.id,
                         lesson: lesson,
@@ -366,15 +369,15 @@ class _MockExamScreenState extends State<MockExamScreen>
                         isCash: false,
                         cashbackActive: false,
                         isRepeat: false,
-                        isLast: _isLastPage,
+                        isLast: isLastPage,
                         dailySubjectMode: false,
                         actionButtonKey: _actionBtnKey,
                         onCorrect: () async {
-                          // setState(() => _correctCount++);
                           await _playButtonBurst();
                         },
                         onNext: () {
-                          if (_currentPage + 1 < totalCount) {
+                          if (!mounted) return;
+                          if (_currentPage + 1 < _totalCount) {
                             _pageController.nextPage(
                               duration: const Duration(milliseconds: 300),
                               curve: Curves.easeInOut,
@@ -382,7 +385,6 @@ class _MockExamScreenState extends State<MockExamScreen>
                           }
                         },
                         onAnswerIncorrect: (Task incorrectTask) {
-                          setState(() => _retryTasks.add(incorrectTask));
                         },
                         profile: _profile,
                         customShowResultScreen: (score, percentage, strike, temporaryBalance, factory, money, isCash, taskCashback, totalCashback) => _showResultScreen(score, percentage, strike, temporaryBalance, factory, money, isCash, taskCashback, totalCashback),

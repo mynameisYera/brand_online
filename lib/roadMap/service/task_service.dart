@@ -59,6 +59,7 @@ class TaskService {
     bool dailyReview = false,
     required bool isCash,
     bool dailySubjectMode = false,
+    Task? currentTaskForRetry,
     required Function(
         int score,
         int percentage,
@@ -125,10 +126,14 @@ class TaskService {
       final int totalCashback = response.data["total_cashback"] ?? 0;
       final int temporaryBalance = response.data["temporary_balance"] ?? 0;
 
+      final bool keepLastForExamResult = isExamMode && isLast && !isCorrect;
       if (taskData != null) {
         final Task retryTask = Task.fromJson(taskData);
         updateTask(retryTask);
-        isLast = false;
+        if (!keepLastForExamResult) isLast = false;
+      } else if (isExamMode && !isCorrect && currentTaskForRetry != null) {
+        updateTask(currentTaskForRetry);
+        if (!keepLastForExamResult) isLast = false;
       }
 
       if (responseData.containsKey('profile') &&
@@ -149,6 +154,20 @@ class TaskService {
 
       await showAnswer(taskCashback, isCorrect);
 
+      if (keepLastForExamResult) {
+        await showResultScreen(
+          score,
+          percentage.toInt(),
+          strike,
+          temporaryBalance,
+          factor,
+          money,
+          isCash,
+          taskCashback,
+          totalCashback,
+        );
+        return TaskSubmitResult(isCorrect: isCorrect, taskCashback: taskCashback);
+      }
       if (isCash) {
         if (isLast) {
           await showResultScreen(
@@ -218,6 +237,7 @@ class TaskService {
         int totalCashback,
         ) showResultScreen,
     required Function(int taskCashback, bool answer) showAnswer,
+    Task? currentTaskForRetry,
 
     CancelToken? cancelToken,
     int maxRetries = 3,
@@ -275,10 +295,14 @@ class TaskService {
       final int totalCashback = response.data["total_cashback"] ?? 0;
       final int temporaryBalance = response.data["temporary_balance"] ?? 0;
 
+      final bool keepLastForExamResult = isExamMode && isLast && !isCorrect;
       if (taskData != null) {
         final Task retryTask = Task.fromJson(taskData);
         updateTask(retryTask);
-        isLast = false;
+        if (!keepLastForExamResult) isLast = false;
+      } else if (isExamMode && !isCorrect && currentTaskForRetry != null) {
+        updateTask(currentTaskForRetry);
+        if (!keepLastForExamResult) isLast = false;
       }
 
       if (responseData.containsKey('profile') &&
@@ -299,6 +323,20 @@ class TaskService {
 
       await showAnswer(taskCashback, isCorrect);
 
+      if (keepLastForExamResult) {
+        await showResultScreen(
+          score,
+          percentage.toInt(),
+          strike,
+          temporaryBalance,
+          factor,
+          money,
+          isCash,
+          taskCashback,
+          totalCashback,
+        );
+        return TaskSubmitResult(isCorrect: isCorrect, taskCashback: taskCashback);
+      }
       if (isCash) {
         if (isLast) {
           await showResultScreen(
@@ -368,6 +406,7 @@ class TaskService {
         int totalCashback,
         ) showResultScreen,
     required Function(int taskCashback, bool answer) showAnswer,
+    Task? currentTaskForRetry,
 
     CancelToken? cancelToken,
     int maxRetries = 3,
@@ -422,10 +461,14 @@ class TaskService {
       final int totalCashback = response.data["total_cashback"] ?? 0;
       final int temporaryBalance = response.data["temporary_balance"] ?? 0;
 
+      final bool keepLastForExamResult = isExamMode && isLast && !isCorrect;
       if (taskData != null) {
         final Task retryTask = Task.fromJson(taskData);
         updateTask(retryTask);
-        isLast = false;
+        if (!keepLastForExamResult) isLast = false;
+      } else if (isExamMode && !isCorrect && currentTaskForRetry != null) {
+        updateTask(currentTaskForRetry);
+        if (!keepLastForExamResult) isLast = false;
       }
 
       if (responseData.containsKey('profile') &&
@@ -446,6 +489,20 @@ class TaskService {
 
       await showAnswer(taskCashback, isCorrect);
 
+      if (keepLastForExamResult) {
+        await showResultScreen(
+          score,
+          percentage.toInt(),
+          strike,
+          temporaryBalance,
+          factor,
+          money,
+          isCash,
+          taskCashback,
+          totalCashback,
+        );
+        return TaskSubmitResult(isCorrect: isCorrect, taskCashback: taskCashback);
+      }
       if (isCash) {
         if (isLast) {
           await showResultScreen(
@@ -516,6 +573,7 @@ class TaskService {
         int totalCashback,
         ) showResultScreen,
     required Future<void> Function(int taskCashback, bool answer) showAnswer,
+    Task? currentTaskForRetry,
 
     CancelToken? cancelToken,
     int maxRetries = 3,
@@ -570,10 +628,14 @@ class TaskService {
       final int totalCashback = res["total_cashback"] ?? 0;
       final int temporaryBalance = res["temporary_balance"] ?? 0;
 
+      final bool keepLastForExamResult = isExamMode && isLast && !isCorrect;
       if (taskData != null) {
         final Task retryTask = Task.fromJson(taskData);
         updateTask(retryTask);
-        isLast = false;
+        if (!keepLastForExamResult) isLast = false;
+      } else if (isExamMode && !isCorrect && currentTaskForRetry != null) {
+        updateTask(currentTaskForRetry);
+        if (!keepLastForExamResult) isLast = false;
       }
 
       if (res.containsKey('profile') &&
@@ -594,6 +656,13 @@ class TaskService {
 
       await showAnswer(taskCashback, isCorrect);
 
+      if (keepLastForExamResult) {
+        await showResultScreen(
+          score, percentage.toInt(), strike, temporaryBalance,
+          factor, money, isCash, taskCashback, totalCashback,
+        );
+        return TaskSubmitResult(isCorrect: isCorrect, taskCashback: taskCashback);
+      }
       if (isCash) {
         if (isLast) {
           await showResultScreen(

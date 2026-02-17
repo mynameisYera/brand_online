@@ -462,6 +462,7 @@ class _TaskWidgetState extends State<TaskWidget>
           answer: userAnswer,
           isCash: widget.isCash,
           cancelToken: ct,
+          currentTaskForRetry: widget.isExamMode ? widget.task : null,
           updateMultiplier: (m) { setState(() { widget.profile?.multiplier = m; ProfileController.updateMultiplier(m); }); },
           updateTask: (t) { setState(() { widget.onAnswerIncorrect?.call(t); }); },
           onNext: _handleNext,
@@ -494,6 +495,7 @@ class _TaskWidgetState extends State<TaskWidget>
           dailySubjectMode: widget.dailySubjectMode,
           selectedChoice: selectedChoice,
           cancelToken: ct,
+          currentTaskForRetry: widget.isExamMode ? widget.task : null,
           updateMultiplier: (m) { setState(() { widget.profile?.multiplier = m; ProfileController.updateMultiplier(m); }); },
           updateTask: (t) { setState(() { widget.onAnswerIncorrect?.call(t); }); },
           onNext: _handleNext,
@@ -527,6 +529,7 @@ class _TaskWidgetState extends State<TaskWidget>
           isCash: widget.isCash,
           matches: selectedPairsWithIds,
           cancelToken: ct,
+          currentTaskForRetry: widget.isExamMode ? widget.task : null,
           updateMultiplier: (m) { setState(() { widget.profile?.multiplier = m; ProfileController.updateMultiplier(m); }); },
           updateTask: (t) { setState(() { widget.onAnswerIncorrect?.call(t); }); },
           onNext: _handleNext,
@@ -567,6 +570,7 @@ class _TaskWidgetState extends State<TaskWidget>
           dailySubjectMode: widget.dailySubjectMode,
           isCash: widget.isCash,
           cancelToken: ct,
+          currentTaskForRetry: widget.isExamMode ? widget.task : null,
           updateMultiplier: (m) {
             setState(() {
               widget.profile?.multiplier = m;
