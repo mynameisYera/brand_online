@@ -404,7 +404,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 20),
                 child: Text("Батырма басу арқылы сіз дербес деректерді жинауға және өңдеуге келісім бересіз", 
-                  style: TextStyle(fontSize: 12, color: AppColors.grey, fontFamily: 'Manrope', fontWeight: FontWeight.w400
+                  style: TextStyle(fontSize: 12, color: AppColors.grey, fontFamily: 'Manrope', fontFamilyFallback: ['Roboto'], fontWeight: FontWeight.w400
                 ), textAlign: TextAlign.center,),
               ),
 
@@ -436,6 +436,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
                   color: AppColors.primaryBlue,
                   fontSize: MediaQuery.of(context).size.width * 0.04,
                   fontFamily: 'Manrope',
+                  fontFamilyFallback: ['Roboto'],
                   fontWeight: FontWeight.w400,
                 ),
               ),
@@ -734,7 +735,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
               child: Center(
                 child: Text(
                   _page5Validator,
-                  style: TextStyle(color: Colors.red),
+                  style: TextStyle(color: Colors.red, fontFamily: 'Manrope', fontFamilyFallback: ['Roboto'], fontWeight: FontWeight.w400),
                 ),
               ),
             ),

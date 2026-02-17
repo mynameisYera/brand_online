@@ -220,6 +220,8 @@ class _DailyTestScreenState extends State<DailyTestScreen> with TickerProviderSt
                       );
 
                       return TaskWidget(
+                        isExamMode: false,
+                        mockExamId: 0,
                         lesson: lesson,
                         task: currentTask,
                         hintShow: hintShow,

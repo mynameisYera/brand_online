@@ -3,6 +3,7 @@
 import 'package:brand_online/core/app_colors.dart';
 import 'package:brand_online/core/text_styles.dart';
 import 'package:brand_online/roadMap/ui/widget/repeat_cart.dart';
+import 'package:brand_online/synaq/page/synaq_result_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:brand_online/authorization/entity/RoadMapResponse.dart';
@@ -69,7 +70,6 @@ class _RepeatPageState extends State<RepeatPage> {
       final dr   = result?.dailyReview;
       dailySubjectTasks = result?.dailySubjectTasks;
       final mock = result?.mockExam;
-
       // Проверяем активные daily subject tasks
       final hasActiveDailySessions = dailySubjectTasks != null && 
           dailySubjectTasks!.isNotEmpty &&
@@ -107,8 +107,7 @@ class _RepeatPageState extends State<RepeatPage> {
         controlExam = exam;
         dailyReview = dr;
         mockExam    = mock;
-        // _hasAny должен быть true если есть хотя бы один активный элемент
-        _hasAny = hasMockExam ||
+        _hasAny = (mock != null) ||
                   ls.isNotEmpty || 
                   (exam?.isOpen ?? false) || 
                   hasActiveDailyReview || 
@@ -134,13 +133,26 @@ class _RepeatPageState extends State<RepeatPage> {
 
   void _onMockExamStart() async {
     if (mockExam == null) return;
-    if (mockExam!.attempt.isCompleted) return;
-    await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => MockExamScreen(exam: mockExam!),
-      ),
-    );
+    final exam = mockExam!;
+    if (exam.attempt.isCompleted) {
+      final response = await _taskService.getMockExamTasks(exam.id);
+      if (!mounted) return;
+      if (response != null) {
+        await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => SynaqResultPage(answer: response),
+          ),
+        );
+      }
+    } else {
+      await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => MockExamScreen(exam: exam),
+        ),
+      );
+    }
     if (!mounted) return;
     fetchLessons();
   }
@@ -182,6 +194,7 @@ class _RepeatPageState extends State<RepeatPage> {
                   if (mockExam != null) _MockExamCard(mockExam: mockExam!, onStart: _onMockExamStart),
                   if (mockExam != null) const SizedBox(height: 16),
                   if (controlExam?.isOpen ?? false) RepeatCart(
+                    status: "completed",
                     subject: "Кэшбекті еселендір!", 
                     title: "Апталық қорытынды тест", 
                     mascotAsset: "assets/images/SHOQAN.png", 
@@ -206,7 +219,7 @@ class _RepeatPageState extends State<RepeatPage> {
                   ),
                   SizedBox(height: 16),
                   if (dailyReview?.isOpen == true && dailyReview?.isCompleted == false) RepeatCart(
-                    subject: "Өзіңді сынап көр!", 
+                    subject: "Өзіңді сынап көр!",
                     subtitle: dailyReview!.subjectName,
                     title: "Күнделікті қайталау ", 
                     mascotAsset: "assets/images/ABAI.png", 

@@ -40,13 +40,13 @@ class _WebViewPageState extends State<WebViewPage> {
         backgroundColor: Colors.white,
       ),
       body: WebViewWidget(controller: _controller),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: widget.isAction ? FloatingActionButton(
         backgroundColor: AppColors.primaryBlue,
         onPressed: () {
           _markWatched();
         },
         child: Icon(Icons.check, color: Colors.white,),
-      ),
+      ) : null,
     );
     
   }

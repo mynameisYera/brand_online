@@ -28,6 +28,8 @@ import 'RoadMap.dart';
 class TaskWidget extends StatefulWidget {
   final Task task;
   final bool isRepeat;
+  final bool isExamMode;
+  final int mockExamId;
   final Profile? profile;
   final bool isLast;
   final VoidCallback onNext;
@@ -57,6 +59,8 @@ class TaskWidget extends StatefulWidget {
     super.key,
     required this.task,
     required this.isRepeat,
+    required this.isExamMode,
+    required this.mockExamId,
     required this.onNext,
     required this.isLast,
     this.profile,
@@ -342,7 +346,7 @@ class _TaskWidgetState extends State<TaskWidget>
                   child: Html(
                     data: widget.task.content,
                     shrinkWrap: true,
-                    style: {"*": Style(fontSize: FontSize(22), color: AppColors.black, fontFamily: 'Manrope', fontWeight: FontWeight.bold, textAlign: TextAlign.center)},
+                    style: {"*": Style(fontSize: FontSize(22), color: AppColors.black, fontFamily: 'Manrope', fontFamilyFallback: ['Roboto'], fontWeight: FontWeight.bold, textAlign: TextAlign.center)},
                     extensions: [_mathExtension()],
                   ),
                 ),
@@ -449,6 +453,8 @@ class _TaskWidgetState extends State<TaskWidget>
           lessonId: widget.task.id,
           isLast: widget.isLast,
           isRepeat: widget.isRepeat,
+          isExamMode: widget.isExamMode,
+          mockExamId: widget.mockExamId,
           usedHelp: usedHelp,
           state: widget.task.state,
           dailyReview: widget.dailyReview,
@@ -479,6 +485,8 @@ class _TaskWidgetState extends State<TaskWidget>
           lessonId: widget.task.id,
           isLast: widget.isLast,
           isRepeat: widget.isRepeat,
+          isExamMode: widget.isExamMode,
+          mockExamId: widget.mockExamId,
           usedHelp: usedHelp,
           isCash: widget.isCash,
           state: widget.task.state,
@@ -510,6 +518,8 @@ class _TaskWidgetState extends State<TaskWidget>
           lessonId: widget.task.id,
           isLast: widget.isLast,
           isRepeat: widget.isRepeat,
+          isExamMode: widget.isExamMode,
+          mockExamId: widget.mockExamId,
           state: widget.task.state,
           usedHelp: usedHelp,
           dailyReview: widget.dailyReview,
@@ -549,6 +559,8 @@ class _TaskWidgetState extends State<TaskWidget>
           segments: segments,
           isLast: widget.isLast,
           isRepeat: widget.isRepeat,
+          isExamMode: widget.isExamMode,
+          mockExamId: widget.mockExamId,
           usedHelp: usedHelp,
           state: widget.task.state,
           dailyReview: widget.dailyReview,
@@ -942,9 +954,9 @@ class _TaskWidgetState extends State<TaskWidget>
           child: Center(
             child: Row(
               children: [
-                Html(data: p[0], shrinkWrap: true, style: {"*": Style(color: AppColors.errorRed ,fontSize: FontSize(23), fontFamily: 'Manrope', fontWeight: FontWeight.bold)}, extensions: [_mathExtension2()]),
+                Html(data: p[0], shrinkWrap: true, style: {"*": Style(color: AppColors.errorRed ,fontSize: FontSize(23), fontFamily: 'Manrope', fontFamilyFallback: ['Roboto'], fontWeight: FontWeight.bold)}, extensions: [_mathExtension2()]),
                 Text(' - ', style: TextStyles.medium(Colors.black, fontSize: 32)),
-                Html(data: p[1], shrinkWrap: true, style: {"*": Style(color: AppColors.trueGreen ,fontSize: FontSize(23), fontFamily: 'Manrope', fontWeight: FontWeight.bold)}, extensions: [_mathExtension2()])
+                Html(data: p[1], shrinkWrap: true, style: {"*": Style(color: AppColors.trueGreen ,fontSize: FontSize(23), fontFamily: 'Manrope', fontFamilyFallback: ['Roboto'], fontWeight: FontWeight.bold)}, extensions: [_mathExtension2()])
               ],
             )
           ),

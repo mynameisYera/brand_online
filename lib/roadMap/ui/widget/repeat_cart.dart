@@ -5,15 +5,28 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 
 class RepeatCart extends StatefulWidget {
-  const RepeatCart({super.key, required this.subject, required this.title, required this.mascotAsset, required this.iconAsset, required this.onStart, required this.isCompleted, required this.color, this.subtitle});
+  const RepeatCart({
+    super.key,
+    required this.subject,
+    required this.title,
+    required this.mascotAsset,
+    required this.iconAsset,
+    required this.onStart,
+    required this.isCompleted,
+    required this.color,
+    this.subtitle,
+    this.status,
+  });
+
   final String subject;
   final String title;
   final String? subtitle;
-  final String mascotAsset; 
+  final String mascotAsset;
   final String iconAsset;
   final VoidCallback onStart;
   final bool isCompleted;
   final Color color;
+  final String? status;
 
   @override
   State<RepeatCart> createState() => _RepeatCartState();
@@ -21,6 +34,18 @@ class RepeatCart extends StatefulWidget {
 
 class _RepeatCartState extends State<RepeatCart> {
   bool expanded = false;
+
+  void onViewResult() async {
+    
+    //  await Navigator.push(
+    //   context,
+    //   MaterialPageRoute(
+    //     builder: (context) => SynaqResultPage(
+    //       answer: widget.answer,
+    //     ),
+    //   ),
+    // );
+  }
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -46,10 +71,10 @@ class _RepeatCartState extends State<RepeatCart> {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SizedBox(height: 24),
+                const SizedBox(height: 24),
                 Row(
                   children: [
-                    SizedBox(width: 16),
+                    const SizedBox(width: 16),
                     Container(
                       padding: EdgeInsets.all(7),
                       width: 32,
@@ -60,7 +85,7 @@ class _RepeatCartState extends State<RepeatCart> {
                       ),
                       child: SvgPicture.asset(widget.iconAsset),
                     ),
-                    SizedBox(width: 8),
+                    const SizedBox(width: 8),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -70,21 +95,30 @@ class _RepeatCartState extends State<RepeatCart> {
                     )
                   ],
                 ),
-                SizedBox(height: 8),
+                const SizedBox(height: 8),
                 Row(
                   children: [
-                    SizedBox(width: 16),
+                    const SizedBox(width: 16),
                     Text(widget.subject, style: TextStyles.semibold(AppColors.white, fontSize: 16),),
                   ],
                 ),
-                expanded ? SizedBox(height: 12) : SizedBox.shrink(),
+                expanded ? const SizedBox(height: 12) : const SizedBox.shrink(),
 
-                expanded ? Padding(padding: EdgeInsets.symmetric(horizontal: 16), child: ButtonWidget(
-                  widget: Text("Тапсыру", style: TextStyles.bold(widget.color, fontSize: 16),), 
-                  color: AppColors.white, 
-                  textColor: AppColors.black, 
-                  onPressed: widget.onStart),) : SizedBox.shrink(),
-                SizedBox(height: 16),
+                expanded
+                    ? Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: ButtonWidget(
+                          widget: Text(
+                            widget.isCompleted ? 'Нәтижесін көру' : 'Бастау',
+                            style: TextStyles.bold(widget.color, fontSize: 16),
+                          ),
+                          color: AppColors.white,
+                          textColor: AppColors.black,
+                          onPressed: widget.onStart,
+                        ),
+                      )
+                    : const SizedBox.shrink(),
+                const SizedBox(height: 16),
               ],
             ),
           ],

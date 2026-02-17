@@ -47,6 +47,8 @@ class TaskService {
     required int lessonId,
     required String answer,
     required bool isRepeat,
+    required bool isExamMode,
+    required int mockExamId,
     required Function(String) updateMultiplier,
     required int state,
     required Function(Task) updateTask,
@@ -93,6 +95,8 @@ class TaskService {
             if (dailyReview) "daily_review_mode": true,
             if (usedHelp) "used_help": true,
             if (isRepeat) "repeat_mode": true,
+            if (isExamMode) "mock_exam_mode": true,
+            if (isExamMode) "mock_exam_id": mockExamId,
             "last": isLast,
           },
           options: Options(headers: {
@@ -192,6 +196,8 @@ class TaskService {
     required int? selectedChoice,
     required int state,
     required bool isRepeat,
+    required bool isExamMode,
+    required int mockExamId,
     required Function(String) updateMultiplier,
     required Function(Task) updateTask,
     required bool usedHelp,
@@ -241,6 +247,8 @@ class TaskService {
             if (dailyReview) "daily_review_mode": true,
             if (usedHelp) "used_help": true,
             if (isRepeat) "repeat_mode": true,
+            if (isExamMode) "mock_exam_mode": true,
+            if (isExamMode) "mock_exam_id": mockExamId,
             "last": isLast,
           },
           options: Options(headers: {
@@ -337,6 +345,8 @@ class TaskService {
     required bool isLast,
     required bool isRepeat,
     required List<Map<String, int>> matches,
+    required bool isExamMode,
+    required int mockExamId,
     required Function(String) updateMultiplier,
     required Function(Task) updateTask,
     required VoidCallback onNext,
@@ -378,6 +388,8 @@ class TaskService {
       if (dailyReview) "daily_review_mode": true,
       if (usedHelp) "used_help": true,
       if (isRepeat) "repeat_mode": true,
+      if (isExamMode) "mock_exam_mode": true,
+      if (isExamMode) "mock_exam_id": mockExamId,
       "last": isLast,
     };
 
@@ -486,6 +498,8 @@ class TaskService {
     required bool isCash,
     bool dailyReview = false,
     bool dailySubjectMode = false,
+    required bool isExamMode,
+    required int mockExamId,
     required Function(String) updateMultiplier,
     required Function(Task) updateTask,
     required VoidCallback onNext,
@@ -522,6 +536,8 @@ class TaskService {
       if (dailyReview) "daily_review_mode": true,
       if (usedHelp) "used_help": true,
       if (isRepeat) "repeat_mode": true,
+      if (isExamMode) "mock_exam_mode": true,
+      if (isExamMode) "mock_exam_id": mockExamId,
       "last": isLast,
     };
 

@@ -302,6 +302,8 @@ class _Math1ScreenState extends State<Math1Screen> with TickerProviderStateMixin
                       final hintShow = index >= task!.length;
 
                       return TaskWidget(
+                        isExamMode: false,
+                        mockExamId: 0,
                         task: currentTask,
                         isRepeat: false,
                         cashbackActive: widget.cashbackActive,

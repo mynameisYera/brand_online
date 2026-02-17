@@ -31,7 +31,7 @@ class _MockExamScreenState extends State<MockExamScreen>
   int _currentPage = 0;
   List<Task> _tasks = [];
   List<Task> _retryTasks = [];
-  int _correctCount = 0;
+  // int _correctCount = 0;
   Profile? _profile;
 
   final GlobalKey _actionBtnKey = GlobalKey();
@@ -74,6 +74,7 @@ class _MockExamScreenState extends State<MockExamScreen>
     });
     try {
       final result = await _taskService.getMockExamTasks(widget.exam.id);
+      // result.exam.status == 'completed' ? result.answers : result.tasks;
       if (!mounted) return;
       if (result == null) {
         setState(() {
@@ -147,17 +148,15 @@ class _MockExamScreenState extends State<MockExamScreen>
     int totalCashback,
   ) async {
     // API часто возвращает percentage: 0.0 для сынақа — считаем % по правильным ответам
-    final totalCount = _tasks.length + _retryTasks.length;
-    final displayPercentage = totalCount > 0
-        ? (_correctCount / totalCount * 100).round().clamp(0, 100)
-        : percentage;
+    // final totalCount = _tasks.length + _retryTasks.length;
+    // final displayPercentage = 
 
     await showDialog(
       context: context,
       barrierDismissible: false,
       builder: (context) => ResultScreen(
         score: score,
-        percentage: displayPercentage,
+        percentage: percentage,
         strike: strike,
         temporaryBalance: temporaryBalance,
         factory: factory,
@@ -359,17 +358,19 @@ class _MockExamScreenState extends State<MockExamScreen>
 
                       return TaskWidget(
                         key: ValueKey(currentTask.id),
+                        isExamMode: true,
+                        mockExamId: widget.exam.id,
                         lesson: lesson,
                         task: currentTask,
                         hintShow: hintShow,
                         isCash: false,
                         cashbackActive: false,
-                        isRepeat: true,
+                        isRepeat: false,
                         isLast: _isLastPage,
                         dailySubjectMode: false,
                         actionButtonKey: _actionBtnKey,
                         onCorrect: () async {
-                          setState(() => _correctCount++);
+                          // setState(() => _correctCount++);
                           await _playButtonBurst();
                         },
                         onNext: () {

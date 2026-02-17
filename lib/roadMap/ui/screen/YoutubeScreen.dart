@@ -13,10 +13,11 @@ import '../../service/youtube_service.dart';
 
 class YoutubeScreen extends StatefulWidget {
   final Lesson lesson;
-  /// URL видео с бэкенда (урок или action). Если задан, используется вместо lesson.videoUrl.
   final String? videoUrlOverride;
+  final bool? isAction;
 
-  const YoutubeScreen({super.key, required this.lesson, this.videoUrlOverride});
+
+  const YoutubeScreen({super.key, required this.lesson, this.videoUrlOverride, this.isAction = false});
 
   @override
   State<YoutubeScreen> createState() => _YoutubeScreenState();
@@ -73,12 +74,10 @@ void initState() {
     super.dispose();
   }
 
-  /// Извлекает YouTube video ID из URL или возвращает строку как ID, если это уже 11 символов.
   String _extractVideoId(String url) {
     final raw = url.trim();
     if (raw.isEmpty) return '';
 
-    // Бэкенд может отдавать уже готовый ID (11 символов)
     if (raw.length == 11 && RegExp(r'^[A-Za-z0-9_-]{11}$').hasMatch(raw)) {
       return raw;
     }
@@ -103,9 +102,6 @@ void initState() {
     YoutubeService().videoWatched(widget.lesson.lessonId).then((res) {
       if (res != null && res.message == "Lesson marked as watched.") {
         widget.lesson.videoWatched = true;
-        // if (shouldPopOnSuccess && mounted) {
-        //   Navigator.of(context).pop(true);
-        // }
       }
     });
   }
@@ -249,36 +245,35 @@ void initState() {
                 )
               ),
               const Spacer(),
-              SizedBox(
-                height: 20,
-              ),
-              
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 0),
-                child: AppButton(
-                text: "Тестке өту",
-                onPressed: () {
+              const SizedBox(height: 20),
+              if (widget.isAction != true)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 0),
+                  child: AppButton(
+                    text: "Тестке өту",
+                    onPressed: () {
                       _markVideoAsWatched(shouldPopOnSuccess: false);
                       _controller?.removeListener(_onPlayerStateChanged);
                       _controller?.dispose();
                       _controller = null;
                       enableScreenshot();
                       Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => Math1Screen(
-                                  initialScrollOffset: 20,
-                                  lessonId: widget.lesson.lessonId,
-                                  groupId: 1,
-                                  cashbackActive: widget.lesson.cashbackActive,
-                                  isCash: false,
-                                  lesson: widget.lesson,
-                                ),
-                              ),
-                            );
-                    },),
-              ),
-              SizedBox(height: 10,),
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => Math1Screen(
+                            initialScrollOffset: 20,
+                            lessonId: widget.lesson.lessonId,
+                            groupId: 1,
+                            cashbackActive: widget.lesson.cashbackActive,
+                            isCash: false,
+                            lesson: widget.lesson,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              const SizedBox(height: 10),
               Center(
                 child: TextButton(
                   onPressed: () {

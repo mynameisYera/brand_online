@@ -97,12 +97,51 @@ class MockExam {
   }
 }
 
-/// Ответ API GET /edu/mock-exams/:id/tasks
+/// Один ответ пользователя в сынақе (элемент массива answers).
+class MockExamAnswer {
+  final int taskId;
+  final String taskType;
+  final bool isCorrect;
+  final Map<String, dynamic>? userAnswer;
+  final Map<String, dynamic>? correctAnswer;
+  final String? answeredAt;
+
+  MockExamAnswer({
+    required this.taskId,
+    required this.taskType,
+    required this.isCorrect,
+    this.userAnswer,
+    this.correctAnswer,
+    this.answeredAt,
+  });
+
+  static Map<String, dynamic>? _normalizeAnswer(dynamic raw) {
+    if (raw == null) return null;
+    if (raw is Map<String, dynamic>) return Map<String, dynamic>.from(raw);
+    if (raw is List) {
+      return {'segments': raw.map((e) => e?.toString() ?? '').toList()};
+    }
+    return null;
+  }
+
+  factory MockExamAnswer.fromJson(Map<String, dynamic> json) {
+    return MockExamAnswer(
+      taskId: (json['task_id'] ?? 0) as int,
+      taskType: (json['task_type'] ?? '') as String,
+      isCorrect: json['is_correct'] == true,
+      userAnswer: _normalizeAnswer(json['user_answer']),
+      correctAnswer: _normalizeAnswer(json['correct_answer']),
+      answeredAt: json['answered_at'] as String?,
+    );
+  }
+}
+
+/// Ответ API GET /edu/mock-exams/:id/tasks (задания + ответы при завершённом сынақе).
 class MockExamTasksResponse {
   final MockExam exam;
   final bool isCompleted;
   final List<Task> tasks;
-  final List<dynamic> answers;
+  final List<MockExamAnswer> answers;
 
   MockExamTasksResponse({
     required this.exam,
@@ -119,7 +158,11 @@ class MockExamTasksResponse {
             .toList()
         : <Task>[];
     final answersRaw = json['answers'];
-    final answersList = answersRaw is List ? answersRaw : <dynamic>[];
+    final answersList = answersRaw is List
+        ? (answersRaw)
+            .map((e) => MockExamAnswer.fromJson(Map<String, dynamic>.from(e as Map)))
+            .toList()
+        : <MockExamAnswer>[];
     return MockExamTasksResponse(
       exam: MockExam.fromJson(json['exam'] as Map<String, dynamic>),
       isCompleted: json['is_completed'] == true,

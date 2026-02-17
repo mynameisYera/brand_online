@@ -139,6 +139,7 @@ class _NewsDetailPageState extends State<NewsDetailPage> {
                             style: {
                               "*": Style(
                                 fontSize: FontSize(13), fontFamily: 'Manrope',
+                                fontFamilyFallback: ['Roboto'],
                                 fontWeight: FontWeight.w500,
                                 color: AppColors.grey,
                               ),

@@ -228,6 +228,8 @@ class _RepeatTaskScreenState extends State<RepeatTaskScreen> with TickerProvider
                       final hintShow  = index >= task!.length;
 
                       return TaskWidget(
+                        isExamMode: false,
+                        mockExamId: 0,
                         lesson: widget.lesson,
                         task: currentTask,
                         hintShow: hintShow,

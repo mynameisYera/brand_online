@@ -382,7 +382,6 @@ class _RoadMainPageState extends State<RoadMainPage>
     );
   }
 
-  /// До 4 кнопок по actions: video → YoutubeScreen, materials → WebViewPage/MaterialsPage, task_group → тест.
   List<Widget> _buildActionButtons(BuildContext context, Lesson lesson, int index) {
     final ordered = List<LessonAction>.from(lesson.actions)
       ..sort((a, b) => a.order.compareTo(b.order));
@@ -467,6 +466,7 @@ class _RoadMainPageState extends State<RoadMainPage>
               builder: (c) => YoutubeScreen(
                 lesson: lesson,
                 videoUrlOverride: action.videoUrl,
+                isAction: lesson.actions.isNotEmpty,
               ),
             ),
           );
@@ -601,7 +601,7 @@ class _RoadMainPageState extends State<RoadMainPage>
           await Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (c) => YoutubeScreen(lesson: lesson),
+              builder: (c) => YoutubeScreen(lesson: lesson, isAction: lesson.actions.isNotEmpty),
             ),
           );
           if (!context.mounted) return;
