@@ -2,6 +2,7 @@ import 'dart:math';
 import 'package:brand_online/core/app_colors.dart';
 import 'package:brand_online/core/text_styles.dart';
 import 'package:brand_online/core/widgets/app_button_widget.dart';
+import 'package:brand_online/core/widgets/layout_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:no_screenshot/no_screenshot.dart';
@@ -301,7 +302,7 @@ class _Math1ScreenState extends State<Math1Screen> with TickerProviderStateMixin
                           : retryTasks[index - task!.length];
                       final hintShow = index >= task!.length;
 
-                      return TaskWidget(
+                      return AdaptiveWatermark(phone: "", userId: "", child: TaskWidget(
                         isExamMode: false,
                         mockExamId: 0,
                         task: currentTask,
@@ -335,7 +336,7 @@ class _Math1ScreenState extends State<Math1Screen> with TickerProviderStateMixin
                           });
                         },
                         profile: _profile,
-                      );
+                      ));
                     },
                   ),
                 ),

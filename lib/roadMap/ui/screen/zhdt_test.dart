@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'package:brand_online/core/widgets/layout_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:no_screenshot/no_screenshot.dart';
@@ -219,7 +220,7 @@ class _DailyTestScreenState extends State<DailyTestScreen> with TickerProviderSt
                         materials: [],
                       );
 
-                      return TaskWidget(
+                      return AdaptiveWatermark(phone: "", userId: "", child: TaskWidget(
                         isExamMode: false,
                         mockExamId: 0,
                         lesson: lesson,
@@ -274,7 +275,7 @@ class _DailyTestScreenState extends State<DailyTestScreen> with TickerProviderSt
                             totalCashback,
                           );
                         },
-                      );
+                      ));
                     },
                   ),
                 ),

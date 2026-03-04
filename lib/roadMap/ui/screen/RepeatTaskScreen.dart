@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'package:brand_online/core/widgets/layout_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:no_screenshot/no_screenshot.dart';
@@ -227,7 +228,7 @@ class _RepeatTaskScreenState extends State<RepeatTaskScreen> with TickerProvider
                           : retryTasks[index - task!.length];
                       final hintShow  = index >= task!.length;
 
-                      return TaskWidget(
+                      return AdaptiveWatermark(phone: "", userId: "", child: TaskWidget(
                         isExamMode: false,
                         mockExamId: 0,
                         lesson: widget.lesson,
@@ -262,7 +263,7 @@ class _RepeatTaskScreenState extends State<RepeatTaskScreen> with TickerProvider
                           });
                         },
                         profile: _profile,
-                      );
+                      ));
                     },
                   ),
                 ),

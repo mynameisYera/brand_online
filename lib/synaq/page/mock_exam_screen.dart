@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:brand_online/core/widgets/app_button_widget.dart';
+import 'package:brand_online/core/widgets/layout_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:brand_online/authorization/entity/RoadMapResponse.dart';
@@ -359,7 +360,7 @@ class _MockExamScreenState extends State<MockExamScreen>
                         materials: [],
                       );
 
-                      return TaskWidget(
+                      return AdaptiveWatermark(phone: "", userId: "", child: TaskWidget(
                         key: ValueKey(index),
                         isExamMode: true,
                         mockExamId: widget.exam.id,
@@ -388,7 +389,7 @@ class _MockExamScreenState extends State<MockExamScreen>
                         },
                         profile: _profile,
                         customShowResultScreen: (score, percentage, strike, temporaryBalance, factory, money, isCash, taskCashback, totalCashback) => _showResultScreen(score, percentage, strike, temporaryBalance, factory, money, isCash, taskCashback, totalCashback),
-                      );
+                      ));
                     },
                   ),
                 ),
