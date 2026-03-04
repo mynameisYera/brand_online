@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:brand_online/core/app_colors.dart';
 import 'package:brand_online/core/service/display_chacker.dart';
 import 'package:brand_online/core/text_styles.dart';
+import 'package:brand_online/core/widgets/watermark_layer.dart';
 import 'package:brand_online/roadMap/ui/screen/Math1Screen.dart';
 import 'package:brand_online/roadMap/ui/screen/YoutubeScreen.dart';
 import 'package:brand_online/roadMap/ui/widget/letsgo_popup.dart';
@@ -129,7 +130,7 @@ class _RoadMainPageState extends State<RoadMainPage>
   }
 
   double _cardHeight(BuildContext context) {
-    return DisplayChacker.isDisplay(context) ? 300 : 360;
+    return DisplayChacker.isDisplay(context) ? 350 : 550;
   }
 
   double _cardWidth(BuildContext context) {
@@ -377,6 +378,7 @@ class _RoadMainPageState extends State<RoadMainPage>
         image: DecorationImage(
           image: AssetImage(characterImage),
           fit: BoxFit.cover,
+          alignment: Alignment.topCenter,
         ),
       ),
       child: Stack(
@@ -540,13 +542,14 @@ class _RoadMainPageState extends State<RoadMainPage>
           await Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (c) => Math1Screen(
+              builder: (c) => AdaptiveWatermark(phone: "", userId: "", child: Math1Screen(
                 initialScrollOffset: _scrollController.offset,
                 lessonId: lesson.lessonId,
-                groupId: action.taskGroup!,
-                cashbackActive: lesson.cashbackActive,
-                isCash: false,
-                lesson: lesson,
+                  groupId: action.taskGroup!,
+                  cashbackActive: lesson.cashbackActive,
+                  isCash: false,
+                  lesson: lesson,
+                ),
               ),
             ),
           );
@@ -666,14 +669,14 @@ class _RoadMainPageState extends State<RoadMainPage>
           await Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (c) => Math1Screen(
+              builder: (c) => AdaptiveWatermark(phone: "", userId: "", child: Math1Screen(
                 initialScrollOffset: _scrollController.offset,
                 lessonId: lesson.lessonId,
                 groupId: groupId,
                 cashbackActive: lesson.cashbackActive,
                 isCash: false,
                 lesson: lesson,
-              ),
+              )),
             ),
           );
           if (!context.mounted) return;

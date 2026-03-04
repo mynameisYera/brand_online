@@ -1,3 +1,5 @@
+import 'package:brand_online/core/service/display_chacker.dart';
+import 'package:brand_online/core/widgets/watermark_layer.dart';
 import 'package:flutter/material.dart';
 import 'package:brand_online/core/app_colors.dart';
 import 'package:brand_online/roadMap/entity/ControlExam.dart';
@@ -62,7 +64,9 @@ class _SynaqPageState extends State<SynaqPage> {
     final body = RefreshIndicator(
       color: AppColors.primaryBlue,
       onRefresh: fetchMockExam,
-      child: CustomScrollView(
+      child: Container(
+        width: DisplayChacker.isDisplay(context) ? double.infinity : 770,
+        child: CustomScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         slivers: [
           SliverToBoxAdapter(
@@ -81,7 +85,7 @@ class _SynaqPageState extends State<SynaqPage> {
             ),
           ),
         ],
-      ),
+      ),)
     );
 
     return Scaffold(
@@ -102,7 +106,7 @@ class _SynaqPageState extends State<SynaqPage> {
     await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => MockExamScreen(exam: _mockExam!),
+        builder: (context) => AdaptiveWatermark(phone: "", userId: "", child: MockExamScreen(exam: _mockExam!)),
       ),
     );
     if (!mounted) return;

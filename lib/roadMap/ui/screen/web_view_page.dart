@@ -1,5 +1,6 @@
 import 'package:brand_online/core/app_colors.dart';
 import 'package:brand_online/roadMap/service/youtube_service.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
@@ -20,9 +21,11 @@ class _WebViewPageState extends State<WebViewPage> {
   @override
   void initState() {
     super.initState();
-    _controller = WebViewController()
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..loadRequest(Uri.parse(widget.url));
+    _controller = WebViewController();
+    if (!kIsWeb) {
+      _controller.setJavaScriptMode(JavaScriptMode.unrestricted);
+    }
+    _controller.loadRequest(Uri.parse(widget.url));
   }
   Future<void> _markWatched() async {
     try {

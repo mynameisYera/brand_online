@@ -275,6 +275,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
   Future<void> savePreferences(String accessToken, String refreshToken) async {
     await _storage.write(key: 'auth_token', value: accessToken);
     await _storage.write(key: 'auth_saved_at', value: DateTime.now().toIso8601String());
+    await _storage.write(key: 'phone', value: _username.text);
   }
 
   void navigateToMainPage(BuildContext context) {

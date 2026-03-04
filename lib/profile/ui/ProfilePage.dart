@@ -83,9 +83,8 @@ class _ProfilePageState extends State<ProfilePage> {
     return Scaffold(
       backgroundColor: Colors.white,
       body: SingleChildScrollView(
-        child: Center(child: Container(
+        child: Container(child: Container(
           width: DisplayChacker.isDisplay(context) ? double.infinity : 770,
-          // padding: DisplayChacker.isDisplay(context) ? const EdgeInsets.symmetric(horizontal: 0) : const EdgeInsets.symmetric(horizontal: 100),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

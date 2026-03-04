@@ -3,6 +3,7 @@
 import 'package:brand_online/core/app_colors.dart';
 import 'package:brand_online/core/service/display_chacker.dart';
 import 'package:brand_online/core/text_styles.dart';
+import 'package:brand_online/core/widgets/watermark_layer.dart';
 import 'package:brand_online/roadMap/ui/widget/repeat_cart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
@@ -173,14 +174,14 @@ class _RepeatPageState extends State<RepeatPage> {
                         await Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => Math1Screen(
+                            builder: (context) => AdaptiveWatermark(phone: "", userId: "", child: Math1Screen(
                               initialScrollOffset: 0,
                               lessonId: 0,
                               cashbackActive: false,
                               groupId: 0,
                               isCash: true,
                               lesson: Lesson(lessonId: 0, lessonTitle: "lll", lessonNumber: 0, videoUrl: "lll", videoWatched: true, group1Completed: true, group2Completed: true, group3Completed: true, cashbackActive: false, isPublished: true, materials: [],)
-                            ),
+                            ),),
                           ),
                         );
                       },
@@ -525,10 +526,10 @@ class _LessonCard extends StatelessWidget {
                                       Navigator.push(
                                         context,
                                         MaterialPageRoute(
-                                          builder: (context) => RepeatTaskScreen(
+                                          builder: (context) => AdaptiveWatermark(phone: "", userId: "", child: RepeatTaskScreen(
                                             lessonId: lesson.lessonId,
                                             lesson: Lesson(lessonId: 0, lessonTitle: "lll", lessonNumber: 0, videoUrl: "lll", videoWatched: true, group1Completed: true, group2Completed: true, group3Completed: true, cashbackActive: false, isPublished: true, materials: [],)
-                                          ),
+                                          ),),
                                         ),
                                       );
                                     },
@@ -956,7 +957,7 @@ class _ExpandableDailyTasksSection extends StatelessWidget {
                                 context,
                                 MaterialPageRoute(
                                   builder: (context) =>
-                                      DailyTestScreen(dailyEntity: dailyEntity),
+                                      AdaptiveWatermark(phone: "", userId: "", child: DailyTestScreen(dailyEntity: dailyEntity)),
                                 ),
                               );
                             }

@@ -52,7 +52,7 @@ class _NewsListPageState extends State<NewsListPage> {
         shadowColor: Colors.white,
         surfaceTintColor: Colors.white,
         elevation: 0,
-        centerTitle: true,
+        centerTitle: false,
         title: Text(
           "Жаңалықтар",
           style: TextStyles.bold(AppColors.black, fontSize: 28),
@@ -67,7 +67,7 @@ class _NewsListPageState extends State<NewsListPage> {
                 ),
               ),
             )
-          : Center(child: Container(
+          : Container(child: Container(
             width: DisplayChacker.isDisplay(context) ? double.infinity : 770,
             child: ListView.builder(
               itemCount: newsList.length,
