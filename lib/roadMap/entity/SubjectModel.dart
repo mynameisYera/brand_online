@@ -14,6 +14,7 @@ class SubjectModel {
   });
 
   factory SubjectModel.fromJson(Map<String, dynamic> json) {
+    // ignore: unused_local_variable
     final rawPercentage =
         json['percentage'] ?? json['progress'] ?? json['completion'] ?? json['percent'];
     return SubjectModel(
