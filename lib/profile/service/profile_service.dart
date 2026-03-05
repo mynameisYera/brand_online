@@ -32,6 +32,7 @@ class ProfileService {
       );
 
       if (response.statusCode == 200 && response.data != null) {
+        await FlutterSecureStorage().write(key: 'phone', value: StudentProfile.fromJson(response.data).username);
         L.info('Profile', 'Профиль студента успешно получен');
         L.jsonPretty('Student Profile Response', response.data);
         return StudentProfile.fromJson(response.data);

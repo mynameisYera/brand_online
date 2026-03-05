@@ -93,7 +93,7 @@ class _AdaptiveWatermarkState extends State<AdaptiveWatermark> {
         final rows = (height / 100).ceil();
 
         final displayPhone = _phone.isNotEmpty ? _phone : widget.phone;
-        final text = "$displayPhone\n https://restart.brand-online.kz";
+        final text = "$displayPhone\n @brand-online.kz";
 
         return Stack(
           children: [

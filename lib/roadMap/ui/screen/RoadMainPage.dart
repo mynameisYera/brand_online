@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:brand_online/core/app_colors.dart';
 import 'package:brand_online/core/text_styles.dart';
+import 'package:brand_online/profile/service/profile_service.dart';
 import 'package:brand_online/roadMap/ui/screen/Math1Screen.dart';
 import 'package:brand_online/roadMap/ui/screen/YoutubeScreen.dart';
 import 'package:brand_online/roadMap/ui/widget/letsgo_popup.dart';
@@ -111,6 +112,7 @@ class _RoadMainPageState extends State<RoadMainPage>
   void initState() {
     super.initState();
     FirebaseUtil().initialize();
+    
     chapterTitle = '';
     mainTitle = '';
     _scrollController.addListener(_onScroll);
@@ -161,6 +163,7 @@ class _RoadMainPageState extends State<RoadMainPage>
       aOptions: const AndroidOptions(encryptedSharedPreferences: true),
     );
     String? token = await storage.read(key: 'auth_token');
+    await ProfileService().getStudentProfile();
 
     if (token == null) {
       print("Token is null — getProfile() отменён");
