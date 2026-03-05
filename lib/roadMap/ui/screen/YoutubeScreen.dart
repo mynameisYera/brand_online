@@ -277,11 +277,11 @@ void initState() {
               Center(
                 child: TextButton(
                   onPressed: () {
-                      _markVideoAsWatched();
-                      Navigator.of(context).pop(true);
+                      _markVideoAsWatched(shouldPopOnSuccess: false);
                       enableScreenshot();
+                      Navigator.of(context).pop(true);
                     },
-                  child: Text("Артқа қайту", style: TextStyles.medium(AppColors.primaryBlue),)),
+                  child: Text("Артқа қайfту", style: TextStyles.medium(AppColors.primaryBlue),)),
               )
             ],
           ),

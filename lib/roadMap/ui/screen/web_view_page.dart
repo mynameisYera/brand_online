@@ -1,4 +1,5 @@
 import 'package:brand_online/core/app_colors.dart';
+import 'package:brand_online/core/widgets/layout_widget.dart';
 import 'package:brand_online/roadMap/service/youtube_service.dart';
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
@@ -35,19 +36,23 @@ class _WebViewPageState extends State<WebViewPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.white,
+    return AdaptiveWatermark(
+      phone: "",
+      userId: "",
+      child: Scaffold(
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+        ),
+        body: WebViewWidget(controller: _controller),
+        floatingActionButton: widget.isAction ? FloatingActionButton(
+          backgroundColor: AppColors.primaryBlue,
+          onPressed: () {
+            _markWatched();
+          },
+          child: Icon(Icons.check, color: Colors.white,),
+        ) : null,
       ),
-      body: WebViewWidget(controller: _controller),
-      floatingActionButton: widget.isAction ? FloatingActionButton(
-        backgroundColor: AppColors.primaryBlue,
-        onPressed: () {
-          _markWatched();
-        },
-        child: Icon(Icons.check, color: Colors.white,),
-      ) : null,
-    );
-    
+      
+    ); 
   }
 }

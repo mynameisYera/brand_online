@@ -56,6 +56,12 @@ class _ChaptersDialogState extends State<ChaptersDialog> with TickerProviderStat
 
     return Scaffold(
       backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        title: Text("Тараулар", style: TextStyles.semibold(AppColors.black, fontSize: 16),),
+        centerTitle: true,
+        leading: IconButton(onPressed: () => Navigator.of(context).pop(), icon: Icon(Icons.close)),
+      ),
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -208,25 +214,32 @@ class _ChaptersDialogState extends State<ChaptersDialog> with TickerProviderStat
                                           Expanded(
                                             child: Row(
                                               children: [
-                                                Column(
-                                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                                  children: [
-                                                    Text(
-                                                      'Сабақ ${lessonTitles[i].index}',
-                                                      style: TextStyles.medium(
-                                                        AppColors.black,
-                                                        fontSize: 10,
+                                                Expanded(
+                                                  child: Column(
+                                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                                    children: [
+                                                      Text(
+                                                        'Сабақ ${lessonTitles[i].index}',
+                                                        style: TextStyles.medium(
+                                                          AppColors.black,
+                                                          fontSize: 10,
+                                                        ),
                                                       ),
-                                                    ),
-                                                    const SizedBox(height: 4),
-                                                    Text(
-                                                      lessonTitles[i].title.length > 20 ? lessonTitles[i].title.substring(0, 20) + '...' : lessonTitles[i].title,
-                                                      style: TextStyles.medium(
-                                                        AppColors.black,
-                                                        fontSize: 16,
+                                                      const SizedBox(height: 4),
+                                                      Container(
+                                                        width: double.infinity,
+                                                        child: Text(
+                                                        lessonTitles[i].title,
+                                                        style: TextStyles.medium(
+                                                          AppColors.black,
+                                                          fontSize: 16,
+                                                        ),
+                                                        maxLines: 2,
+                                                        overflow: TextOverflow.ellipsis,
                                                       ),
-                                                    ),
-                                                  ],
+                                                      )
+                                                    ],
+                                                  ),
                                                 ),
                                                 Spacer(),
                                             if (isLessonCompleted && !lessonTitles[i].isCashback)
