@@ -1,9 +1,9 @@
-import 'dart:io';
-
 import 'package:brand_online/core/app_colors.dart';
+import 'package:brand_online/core/platform_check.dart' show isAndroid;
 import 'package:brand_online/core/service/display_chacker.dart';
 import 'package:brand_online/core/text_styles.dart';
 import 'package:brand_online/core/widgets/watermark_layer.dart';
+import 'package:brand_online/profile/service/profile_service.dart';
 import 'package:brand_online/roadMap/ui/screen/Math1Screen.dart';
 import 'package:brand_online/roadMap/ui/screen/YoutubeScreen.dart';
 import 'package:brand_online/roadMap/ui/widget/letsgo_popup.dart';
@@ -121,6 +121,7 @@ class _RoadMainPageState extends State<RoadMainPage>
   void initState() {
     super.initState();
     FirebaseUtil().initialize();
+    
     chapterTitle = '';
     mainTitle = '';
     _scrollController.addListener(_onScroll);
@@ -130,11 +131,11 @@ class _RoadMainPageState extends State<RoadMainPage>
   }
 
   double _cardHeight(BuildContext context) {
-    return DisplayChacker.isDisplay(context) ? 350 : 550;
+    return DisplayChacker.isDisplay(context) ? 350 : 500;
   }
 
   double _cardWidth(BuildContext context) {
-    return DisplayChacker.isDisplay(context) ? 700 : double.infinity;
+    return DisplayChacker.isDisplay(context) ? 600 : 600;
   }
 
   double _cardSpacing(BuildContext context) {
@@ -186,6 +187,7 @@ class _RoadMainPageState extends State<RoadMainPage>
     final storage = FlutterSecureStorage(
       aOptions: const AndroidOptions(encryptedSharedPreferences: true),
     );
+    await ProfileService().getStudentProfile();
     String? token = await storage.read(key: 'auth_token');
 
     if (token == null) {
@@ -1430,14 +1432,9 @@ class _RoadMainPageState extends State<RoadMainPage>
         .width * 0.9;
 
     if (hasNoSubscription) {
-      // android 
-      // return SubscriptionForAndroid(
-      //   whatsappUrl: noSubWhatsAppUrl,
-      // );
-      return Platform.isAndroid ?
-       SubscriptionForAndroid(
-        whatsappUrl: noSubWhatsAppUrl,
-      ) : SubscriptionPage();
+      return isAndroid
+          ? SubscriptionForAndroid(whatsappUrl: noSubWhatsAppUrl)
+          : SubscriptionPage();
 
       // return NoSubPageIos(whatsappUrl: noSubWhatsAppUrl);
       //       title: noSubTitle,
@@ -1625,6 +1622,7 @@ class _RoadMainPageState extends State<RoadMainPage>
                       controller: _scrollController,
                       reverse: true,
                       child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: widgetList
                             .map((widget) => SizedBox(child: widget))
                             .toList(),

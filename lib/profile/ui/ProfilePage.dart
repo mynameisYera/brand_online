@@ -1,6 +1,5 @@
 
 import 'package:brand_online/core/app_colors.dart';
-import 'package:brand_online/core/service/display_chacker.dart';
 import 'package:brand_online/core/text_styles.dart';
 import 'package:brand_online/core/widgets/button_widget.dart';
 import 'package:brand_online/general/SplashScreen.dart';
@@ -84,7 +83,7 @@ class _ProfilePageState extends State<ProfilePage> {
       backgroundColor: Colors.white,
       body: SingleChildScrollView(
         child: Container(child: Container(
-          width: DisplayChacker.isDisplay(context) ? double.infinity : 770,
+          // width: DisplayChacker.isDisplay(context) ? double.infinity : 770,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

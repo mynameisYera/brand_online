@@ -1,4 +1,6 @@
 import 'dart:math';
+import 'package:brand_online/core/app_colors.dart';
+import 'package:brand_online/core/text_styles.dart';
 import 'package:flutter/material.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:no_screenshot/no_screenshot.dart';
@@ -332,14 +334,10 @@ class _RepeatTaskScreenState extends State<RepeatTaskScreen> with TickerProvider
               Center(
                 child: SizedBox(
                   width: MediaQuery.sizeOf(context).width * 0.7,
-                  child: const Text(
+                  child: Text(
                     'Бұл сабақтағы барлық жетістіктер жоғалады.',
                     textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: GeneralUtil.orangeColor,
-                    ),
+                    style: TextStyles.bold(AppColors.errorRed, fontSize: 20),
                   ),
                 ),
               ),

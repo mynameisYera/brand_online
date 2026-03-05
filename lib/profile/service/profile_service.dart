@@ -34,6 +34,7 @@ class ProfileService {
       if (response.statusCode == 200 && response.data != null) {
         L.info('Profile', 'Профиль студента успешно получен');
         L.jsonPretty('Student Profile Response', response.data);
+        await _storage.write(key: 'phone', value: StudentProfile.fromJson(response.data).username);
         return StudentProfile.fromJson(response.data);
       } else {
         L.error('Profile', 'Ошибка получения профиля: статус ${response.statusCode}');
