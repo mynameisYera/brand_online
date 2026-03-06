@@ -3,7 +3,6 @@ import 'package:brand_online/core/text_styles.dart';
 import 'package:brand_online/core/widgets/app_button_widget.dart';
 import 'package:brand_online/general/GeneralUtil.dart';
 import 'package:flutter/material.dart';
-import 'package:no_screenshot/no_screenshot.dart';
 import 'RoadMap.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
@@ -40,16 +39,11 @@ class ResultScreen extends StatefulWidget {
 
 class _ResultScreenState extends State<ResultScreen> {
   final AudioPlayer _audioPlayer = AudioPlayer();
-  final _noScreenshot = NoScreenshot.instance;
 
   Future<void> _playSuccessSound() async {
     await _audioPlayer.play(AssetSource('sounds/success1.mp3'));
   }
 
-  void enableScreenshot() async {
-    bool result = await _noScreenshot.screenshotOn();
-    debugPrint('Enable Screenshot: $result');
-  }
 
   @override
   void initState() {
@@ -135,7 +129,6 @@ class _ResultScreenState extends State<ResultScreen> {
                             child: AppButton(
                             text: "Керемет!", 
                               onPressed: () {
-                                  enableScreenshot();
                                   Navigator.pushAndRemoveUntil(
                                     context,
                                     MaterialPageRoute(

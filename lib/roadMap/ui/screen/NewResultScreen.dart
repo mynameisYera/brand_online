@@ -6,7 +6,6 @@ import 'package:brand_online/core/widgets/app_button_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:no_screenshot/no_screenshot.dart';
 import 'package:brand_online/authorization/entity/RoadMapResponse.dart';
 import 'package:brand_online/roadMap/ui/screen/Math1Screen.dart';
 
@@ -46,17 +45,11 @@ class NewResultScreen extends StatefulWidget {
 
 class _NewResultScreenState extends State<NewResultScreen> {
   static const int _maxStages = 3;
-  final _noScreenshot = NoScreenshot.instance;
 
   final AudioPlayer _audioPlayer = AudioPlayer();
 
   Future<void> _playSuccessSound() async {
     await _audioPlayer.play(AssetSource('sounds/success1.mp3'));
-  }
-
-  void enableScreenshot() async {
-    bool result = await _noScreenshot.screenshotOn();
-    debugPrint('Enable Screenshot: $result');
   }
 
   @override
@@ -83,8 +76,7 @@ class _NewResultScreenState extends State<NewResultScreen> {
               children: [
                 IconButton(
                   icon: const Icon(Icons.close, color: Colors.white, size: 24,),
-                  onPressed: () { 
-                    enableScreenshot();
+                  onPressed: () {
                     Navigator.of(context).pop();
                   }
                 ),
@@ -230,8 +222,6 @@ class _NewResultScreenState extends State<NewResultScreen> {
                     widget.stage != 3 ? AppButton(
                       text: "Жалғастыру",
                       onPressed: () async {
-                          enableScreenshot();
-                          
                           Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -350,7 +340,6 @@ class _NewResultScreenState extends State<NewResultScreen> {
                   child: ElevatedButton(
                     onPressed: () {
                       Navigator.pop(context);
-                      enableScreenshot();
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.orange,
@@ -436,7 +425,6 @@ class _NewResultScreenState extends State<NewResultScreen> {
                   child: ElevatedButton(
                     onPressed: () {
                       Navigator.pop(context);
-                      enableScreenshot();
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.orange,

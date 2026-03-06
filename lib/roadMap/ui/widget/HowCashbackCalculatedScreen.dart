@@ -1,6 +1,6 @@
 import 'package:brand_online/core/widgets/app_button_widget.dart';
 import 'package:flutter/material.dart';
-import 'package:youtube_player_flutter/youtube_player_flutter.dart';
+import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 
 class HowCashbackCalculatedScreen extends StatefulWidget {
   final String title;
@@ -25,37 +25,41 @@ class _HowCashbackCalculatedScreenState
   void initState() {
     super.initState();
     final id = _extractVideoId(widget.url);
-    if (id == null) {
+    if (id == null || id.isEmpty) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Видео не найдено')),
-        );
-        Navigator.of(context).maybePop();
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Видео не найдено')),
+          );
+          Navigator.of(context).maybePop();
+        }
       });
       return;
     }
 
-    _controller = YoutubePlayerController(
-      initialVideoId: id,
-      flags: const YoutubePlayerFlags(
-        autoPlay: true,
+    _controller = YoutubePlayerController.fromVideoId(
+      videoId: id,
+      autoPlay: true,
+      params: const YoutubePlayerParams(
         mute: false,
         loop: false,
-        disableDragSeek: false,
+        showControls: true,
+        showFullscreenButton: true,
         enableCaption: false,
+        showVideoAnnotations: false,
+        strictRelatedVideos: true,
       ),
     );
   }
 
   @override
   void dispose() {
-    _controller?.dispose();
+    _controller?.close();
     super.dispose();
   }
 
   String? _extractVideoId(String url) {
-    final regExp =
-    RegExp(r'(?:v=|\/|embed\/|youtu\.be\/)([0-9A-Za-z_-]{11})');
+    final regExp = RegExp(r'(?:v=|\/|embed\/|youtu\.be\/)([0-9A-Za-z_-]{11})');
     final match = regExp.firstMatch(url);
     return match?.group(1);
   }
@@ -63,48 +67,32 @@ class _HowCashbackCalculatedScreenState
   @override
   Widget build(BuildContext context) {
     final controller = _controller;
-    return Scaffold(
-      appBar: AppBar(title: Text(widget.title)),
-      body: controller == null
-          ? const SizedBox.shrink()
-          : SafeArea(
-        child: Column(
-          children: [
-            // сам плеер
-            AspectRatio(
-              aspectRatio: 16 / 9,
-              child: YoutubePlayer(
-                controller: controller,
-                showVideoProgressIndicator: true,
-                  bottomActions: [
-                    const SizedBox(width: 8),
-                    CurrentPosition(),
-                    const SizedBox(width: 10),
-                    ProgressBar(
-                      isExpanded: true,
-                      colors: const ProgressBarColors(
-                        playedColor: Colors.blueAccent,
-                        handleColor: Colors.blue,
-                        bufferedColor: Color(0xFF90CAF9),
-                        backgroundColor: Color(0xFFE3F2FD),
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    RemainingDuration(),
-                    const SizedBox(width: 10),
-                    FullScreenButton(),
-                  ],
+    if (controller == null) {
+      return Scaffold(
+        appBar: AppBar(title: Text(widget.title)),
+        body: const SizedBox.shrink(),
+      );
+    }
+
+    return YoutubePlayerScaffold(
+      controller: controller,
+      aspectRatio: 16 / 9,
+      builder: (context, player) => Scaffold(
+        appBar: AppBar(title: Text(widget.title)),
+        body: SafeArea(
+          child: Column(
+            children: [
+              player,
+              const Spacer(),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                child: AppButton(
+                  text: "ТҮСІНІКТІ",
+                  onPressed: () => Navigator.of(context).maybePop(),
+                ),
               ),
-            ),
-            const Spacer(),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-              child: AppButton(text: "ТҮСІНІКТІ", onPressed: (){
-                Navigator.of(context).maybePop();
-              }),
-            )
-            
-          ],
+            ],
+          ),
         ),
       ),
     );

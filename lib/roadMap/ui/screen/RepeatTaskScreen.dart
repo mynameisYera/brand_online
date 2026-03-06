@@ -3,7 +3,6 @@ import 'package:brand_online/core/app_colors.dart';
 import 'package:brand_online/core/text_styles.dart';
 import 'package:flutter/material.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
-import 'package:no_screenshot/no_screenshot.dart';
 import 'package:brand_online/authorization/entity/RoadMapResponse.dart';
 
 import '../../../general/GeneralUtil.dart';
@@ -126,7 +125,6 @@ class _RepeatTaskScreenState extends State<RepeatTaskScreen> with TickerProvider
     });
     _burstCtrl.forward(from: 0);
   }
-  final _noScreenshot = NoScreenshot.instance;
 
 
     // screenshot
@@ -134,11 +132,6 @@ class _RepeatTaskScreenState extends State<RepeatTaskScreen> with TickerProvider
     //   bool result = await _noScreenshot.screenshotOff();
     //   debugPrint('Screenshot On: $result');
     // }
-
-    void enableScreenshot() async {
-      bool result = await _noScreenshot.screenshotOn();
-      debugPrint('Screenshot OFF: $result');
-    }
 
   bool get _isLastPage => (task?.length ?? 0) + retryTasks.length == _currentPage + 1;
 
@@ -367,8 +360,7 @@ class _RepeatTaskScreenState extends State<RepeatTaskScreen> with TickerProvider
               ),
               const SizedBox(height: 12),
               GestureDetector(
-                onTap: () { 
-                  enableScreenshot();
+                onTap: () {
                   Navigator.pushAndRemoveUntil(
                     context,
                     MaterialPageRoute(

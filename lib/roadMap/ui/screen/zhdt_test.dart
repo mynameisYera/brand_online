@@ -1,7 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
-import 'package:no_screenshot/no_screenshot.dart';
 import 'package:brand_online/authorization/entity/RoadMapResponse.dart';
 
 import '../../../general/GeneralUtil.dart';
@@ -40,7 +39,6 @@ class _DailyTestScreenState extends State<DailyTestScreen> with TickerProviderSt
   List<_Particle> _particles = [];
   Offset _burstOrigin = Offset.zero;
   bool _showBurst = false;
-  final _noScreenshot = NoScreenshot.instance;
 
   @override
   void initState() {
@@ -107,11 +105,6 @@ class _DailyTestScreenState extends State<DailyTestScreen> with TickerProviderSt
       _showBurst = true;
     });
     _burstCtrl.forward(from: 0);
-  }
-
-  void enableScreenshot() async {
-    bool result = await _noScreenshot.screenshotOn();
-    debugPrint('Screenshot OFF: $result');
   }
 
   bool get _isLastPage => (task?.length ?? 0) + retryTasks.length == _currentPage + 1;
@@ -346,7 +339,6 @@ class _DailyTestScreenState extends State<DailyTestScreen> with TickerProviderSt
     );
     if (!mounted) return;
 
-    enableScreenshot();
     Navigator.of(context).pushAndRemoveUntil(
       MaterialPageRoute(
         builder: (context) => RoadMap(selectedIndx: 1, state: 0),
@@ -419,7 +411,6 @@ class _DailyTestScreenState extends State<DailyTestScreen> with TickerProviderSt
               const SizedBox(height: 12),
               GestureDetector(
                 onTap: () { 
-                  enableScreenshot();
                   Navigator.pushAndRemoveUntil(
                     context,
                     MaterialPageRoute(

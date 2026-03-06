@@ -9,7 +9,6 @@ import 'package:brand_online/roadMap/ui/widget/incorrect_answer_popup.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:flutter_math_fork/flutter_math.dart';
-import 'package:no_screenshot/no_screenshot.dart';
 import 'package:brand_online/authorization/entity/RoadMapResponse.dart';
 import 'package:brand_online/roadMap/service/task_service.dart';
 import 'package:brand_online/roadMap/ui/screen/NewResultScreen.dart';
@@ -109,19 +108,7 @@ class _TaskWidgetState extends State<TaskWidget>
   late Animation<double> _offsetAnimation;
   bool isSubmitting = false;
   CancelToken? _inFlightCancel;
-  final _noScreenshot = NoScreenshot.instance;
 
-
-  // screenshot
-  void disableScreenshot() async {
-    bool result = await _noScreenshot.screenshotOff();
-    debugPrint('Screenshot Off: $result');
-  }
-
-  void enableScreenshot() async {
-    bool result = await _noScreenshot.screenshotOn();
-    debugPrint('Enable Screenshot: $result');
-  }
 
   @override
   void initState() {
@@ -203,7 +190,6 @@ class _TaskWidgetState extends State<TaskWidget>
       buttonText = 'ТЕКСЕРУ';
       buttonColor = (widget.isRepeat) ? Colors.orange : Colors.blue;
     });
-    enableScreenshot();
   }
 
   Future<void> _submitGuard(Future<void> Function(CancelToken ct) body) async {
@@ -438,7 +424,6 @@ class _TaskWidgetState extends State<TaskWidget>
           widget.task.anagramRequiredCount ?? widget.task.anagramSegments.length,
         );
       });
-      enableScreenshot();
       return;
     }
 

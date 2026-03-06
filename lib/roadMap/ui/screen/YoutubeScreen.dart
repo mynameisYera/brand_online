@@ -1,11 +1,13 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:brand_online/roadMap/ui/screen/Math1Screen.dart';
 import 'package:brand_online/roadMap/ui/screen/web_view_page.dart';
 import 'package:brand_online/roadMap/ui/widget/materials_widget.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:no_screenshot/no_screenshot.dart';
+import 'package:brand_online/roadMap/ui/widget/youtube_embed_stub.dart'
+    if (dart.library.html) 'package:brand_online/roadMap/ui/widget/youtube_embed_web.dart' as youtube_embed;
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 import '../../../authorization/entity/RoadMapResponse.dart';
 import '../../service/youtube_service.dart';
@@ -23,25 +25,14 @@ class _YoutubeScreenState extends State<YoutubeScreen> with WidgetsBindingObserv
   YoutubePlayerController? _controller;
   StreamSubscription<YoutubePlayerValue>? _controllerSubscription;
   bool _markedWatched = false;
-  final _noScreenshot = NoScreenshot.instance;
+  /// On web: videoId for iframe embed (controller is not used).
+  String? _webVideoId;
   static const List<double> _playbackRates = [1.0, 1.25, 1.5, 1.75, 2.0];
   final ValueNotifier<bool> _isMuted = ValueNotifier(false);
-
-  // screenshot
-  void disableScreenshot() async {
-    bool result = await _noScreenshot.screenshotOff();
-    debugPrint('Screenshot Off: $result');
-  }
-
-  void enableScreenshot() async {
-    bool result = await _noScreenshot.screenshotOn();
-    debugPrint('Enable Screenshot: $result');
-  }
 
   @override
   void initState() {
     super.initState();
-    disableScreenshot();
     WidgetsBinding.instance.addObserver(this);
 
     final videoId = _extractVideoId(widget.lesson.videoUrl);
@@ -49,6 +40,13 @@ class _YoutubeScreenState extends State<YoutubeScreen> with WidgetsBindingObserv
 
     if (videoId.isEmpty) {
       debugPrint('Unable to extract YouTube video ID from URL: ${widget.lesson.videoUrl}');
+      return;
+    }
+
+    // On web, youtube_player_iframe triggers createPlatformNavigationDelegate which is not implemented.
+    // Use native iframe embed instead so video plays on the page.
+    if (kIsWeb) {
+      _webVideoId = videoId;
       return;
     }
 
@@ -75,7 +73,6 @@ class _YoutubeScreenState extends State<YoutubeScreen> with WidgetsBindingObserv
     WidgetsBinding.instance.removeObserver(this);
     _controllerSubscription?.cancel();
     _controller?.close();
-    _isMuted.dispose();
     super.dispose();
   }
 
@@ -116,6 +113,168 @@ class _YoutubeScreenState extends State<YoutubeScreen> with WidgetsBindingObserv
   @override
   Widget build(BuildContext context) {
   final controller = _controller;
+  final webVideoId = _webVideoId;
+
+  // Web: embed YouTube via iframe on the page (no WebView).
+  if (kIsWeb && webVideoId != null) {
+    final width = MediaQuery.of(context).size.width;
+    final aspectRatio = width > 600 ? 16 / 4 : 16 / 12;
+    final playerHeight = width / aspectRatio;
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.only(bottom: 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: Text(
+                    widget.lesson.lessonTitle,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                      color: Colors.black87,
+                    ),
+                  ),
+                ),
+                SizedBox(
+                  width: width,
+                  height: playerHeight,
+                  child: youtube_embed.YoutubeEmbedWeb(
+                    videoId: webVideoId,
+                    aspectRatio: aspectRatio,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                if (widget.lesson.materials.isNotEmpty) ...[
+                  const Padding(
+                    padding: EdgeInsets.only(left: 15),
+                    child: Text(
+                      "Сабақтың материалдары",
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 15),
+                    child: SizedBox(
+                      height: 150,
+                      width: double.infinity,
+                      child: ListView.separated(
+                        separatorBuilder: (context, index) =>
+                            const SizedBox(width: 10),
+                        scrollDirection: Axis.horizontal,
+                        itemCount: widget.lesson.materials.length,
+                        itemBuilder: (context, index) {
+                          return InkWell(
+                            onTap: () async {
+                              final privacyUrl =
+                                  widget.lesson.materials[index].url;
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => WebViewPage(
+                                    url: privacyUrl,
+                                    isAction: false,
+                                    lessonId: 0,
+                                    actionId: 0,
+                                  ),
+                                ),
+                              );
+                            },
+                            child: MaterialsWidget(
+                              title: widget.lesson.materials[index].name,
+                              url: widget.lesson.materials[index].url,
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 24),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 0),
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.lightBlue,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      onPressed: () {
+                        _markVideoAsWatched(shouldPopOnSuccess: false);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => Math1Screen(
+                              initialScrollOffset: 20,
+                              lessonId: widget.lesson.lessonId,
+                              groupId: 1,
+                              cashbackActive: widget.lesson.cashbackActive,
+                              isCash: false,
+                              lesson: widget.lesson,
+                            ),
+                          ),
+                        );
+                      },
+                      child: const Text(
+                        "Тестке өту",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 0),
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      onPressed: () {
+                        _markVideoAsWatched();
+                        Navigator.of(context).pop(true);
+                      },
+                      child: const Text(
+                        "Түсінікті",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   if (controller == null) {
     return Scaffold(
       backgroundColor: Colors.white,
@@ -189,17 +348,13 @@ class _YoutubeScreenState extends State<YoutubeScreen> with WidgetsBindingObserv
                     ),
                   ),
                 ),
-                // Player with protected top area to prevent opening channel.
+                // Вся область плеера под оверлеем — нажатия поглощаются, управление только нашими контролами снизу.
                 Stack(
                   children: [
                     player,
-                    Positioned(
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      height: 48,
-                      child: IgnorePointer(
-                        child: Container(color: Colors.transparent),
+                    Positioned.fill(
+                      child: AbsorbPointer(
+                        child: const SizedBox.expand(),
                       ),
                     ),
                   ],
@@ -272,7 +427,7 @@ class _YoutubeScreenState extends State<YoutubeScreen> with WidgetsBindingObserv
                       ),
                       onPressed: () {
                         _markVideoAsWatched(shouldPopOnSuccess: false);
-                        enableScreenshot();
+                        // enableScreenshot();
                         Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -316,7 +471,7 @@ class _YoutubeScreenState extends State<YoutubeScreen> with WidgetsBindingObserv
                       onPressed: () {
                         _markVideoAsWatched();
                         Navigator.of(context).pop(true);
-                        enableScreenshot();
+                        // enableScreenshot();
                       },
                       child: const Text(
                         "Түсінікті",
@@ -337,7 +492,55 @@ class _YoutubeScreenState extends State<YoutubeScreen> with WidgetsBindingObserv
     ),
   );
   }
-  /// External controls: progress, time, play/pause, mute, speed.
+
+  /// Контролы снизу: ползунок и play/pause. Кнопки самого YouTube отключены (params + оверлей).
+  // Widget _buildPlayerControls(YoutubePlayerController controller) {
+  //   return Padding(
+  //     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+  //     child: Container(
+  //       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+  //       decoration: BoxDecoration(
+  //         color: Colors.grey.shade100,
+  //         borderRadius: BorderRadius.circular(10),
+  //         boxShadow: [
+  //           BoxShadow(
+  //             color: Colors.black.withOpacity(0.05),
+  //             blurRadius: 5,
+  //             offset: const Offset(0, 1),
+  //           ),
+  //         ],
+  //       ),
+  //       child: Column(
+  //         crossAxisAlignment: CrossAxisAlignment.stretch,
+  //         children: [
+  //           _buildPositionSlider(controller),
+  //           const SizedBox(height: 4),
+  //           Center(
+  //             child: YoutubeValueBuilder(
+  //               controller: controller,
+  //               builder: (context, value) {
+  //                 final isPlaying = value.playerState == PlayerState.playing;
+  //                 return IconButton(
+  //                   iconSize: 40,
+  //                   icon: Icon(
+  //                     isPlaying ? Icons.pause_circle_filled : Icons.play_circle_fill,
+  //                     color: Colors.blueAccent,
+  //                   ),
+  //                   onPressed: () {
+  //                     isPlaying
+  //                         ? controller.pauseVideo()
+  //                         : controller.playVideo();
+  //                   },
+  //                 );
+  //               },
+  //             ),
+  //           ),
+  //         ],
+  //       ),
+  //     ),
+  //   );
+  // }
+
   Widget _buildPlayerControls(YoutubePlayerController controller) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
@@ -556,4 +759,5 @@ class _YoutubeScreenState extends State<YoutubeScreen> with WidgetsBindingObserv
     }
     return "$minutes:$seconds";
   }
+  
 }

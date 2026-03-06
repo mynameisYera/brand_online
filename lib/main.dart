@@ -15,7 +15,7 @@ import 'package:loading_animation_widget/loading_animation_widget.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // Register WebView web implementation so youtube_player_iframe works on deployed web (fixes createPlatformNavigationDelegate error).
+  // Must run before any WebView/YouTube usage. Required for web (Chrome) so youtube_player_iframe works.
   web_view_register.registerWebViewForPlatform();
   await initializeDateFormatting('kk_KZ');
   await Firebase.initializeApp(

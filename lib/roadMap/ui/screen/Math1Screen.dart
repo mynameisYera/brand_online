@@ -4,7 +4,6 @@ import 'package:brand_online/core/text_styles.dart';
 import 'package:brand_online/core/widgets/app_button_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
-import 'package:no_screenshot/no_screenshot.dart';
 import 'package:brand_online/authorization/entity/RoadMapResponse.dart';
 import 'package:brand_online/roadMap/ui/widget/JustAudioBar.dart';
 
@@ -57,7 +56,6 @@ class _Math1ScreenState extends State<Math1Screen> with TickerProviderStateMixin
   List<_Particle> _particles = [];
   Offset _burstOrigin = Offset.zero;
   bool _showBurst = false;
-  final _noScreenshot = NoScreenshot.instance;
 
 
     // screenshot
@@ -66,10 +64,6 @@ class _Math1ScreenState extends State<Math1Screen> with TickerProviderStateMixin
     //   debugPrint('Screenshot Off: $result');
     // }
 
-    void enableScreenshot() async {
-      bool result = await _noScreenshot.screenshotOn();
-      debugPrint('Enable Screenshot: $result');
-    }
 
   @override
   void initState() {
@@ -438,7 +432,6 @@ class _Math1ScreenState extends State<Math1Screen> with TickerProviderStateMixin
                   ),
                       (Route<dynamic> route) => false,
                 );
-                enableScreenshot();
                 },
                 child: const Text('ШЫҒУ', style: TextStyle(color: Colors.blue, fontSize: 14, fontWeight: FontWeight.w600)),
               ),

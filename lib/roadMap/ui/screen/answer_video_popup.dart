@@ -1,9 +1,10 @@
+import 'dart:async';
+
 import 'package:brand_online/core/app_colors.dart';
 import 'package:brand_online/core/widgets/app_button_widget.dart';
 import 'package:flutter/material.dart';
-import 'package:no_screenshot/no_screenshot.dart';
 import 'package:brand_online/authorization/entity/RoadMapResponse.dart';
-import 'package:youtube_player_flutter/youtube_player_flutter.dart';
+import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 
 class AnswerVideoPopup extends StatefulWidget {
   final String videoSolutionUrl;
@@ -17,63 +18,52 @@ class AnswerVideoPopup extends StatefulWidget {
 
 class _AnswerVideoPopupState extends State<AnswerVideoPopup> {
   YoutubePlayerController? _controller;
+  StreamSubscription<YoutubePlayerValue>? _controllerSubscription;
   bool _markedWatched = false;
   bool _isValid = false;
-  final _noScreenshot = NoScreenshot.instance;
   static const List<double> _playbackRates = [1.0, 1.5, 2.0];
-
-  // screenshot
-  void disableScreenshot() async {
-    bool result = await _noScreenshot.screenshotOff();
-    debugPrint('Screenshot Off: $result');
-  }
-
-  void enableScreenshot() async {
-    bool result = await _noScreenshot.screenshotOn();
-    debugPrint('Screenshot On: $result');
-  }
 
   @override
   void initState() {
     super.initState();
     final videoId = _extractVideoId(widget.videoSolutionUrl);
-    enableScreenshot();
+    // enableScreenshot();
     if (videoId.isNotEmpty) {
-      _controller = YoutubePlayerController(
-        initialVideoId: videoId,
-        flags: const YoutubePlayerFlags(
-          autoPlay: false,
+      _controller = YoutubePlayerController.fromVideoId(
+        videoId: videoId,
+        autoPlay: false,
+        params: const YoutubePlayerParams(
           mute: false,
           loop: true,
-          disableDragSeek: false,
+          showControls: true,
+          showFullscreenButton: true,
           enableCaption: false,
+          showVideoAnnotations: false,
+          strictRelatedVideos: true,
         ),
-      )..addListener(_listener);
-
-      _controller!.cue(videoId, startAt: 0);
+      );
+      _controllerSubscription = _controller!.listen(_onPlayerStateChanged);
       _isValid = true;
     }
   }
 
-  void _listener() {
-    final controller = _controller;
-    if (controller == null) return;
-    if (controller.value.playerState == PlayerState.ended && !_markedWatched) {
+  void _onPlayerStateChanged(YoutubePlayerValue value) {
+    if (!_markedWatched && value.playerState == PlayerState.ended) {
       _onVideoEnded();
     }
   }
 
   void _onVideoEnded() {
     _markedWatched = true;
-    Navigator.of(context).pop();
+    if (mounted) Navigator.of(context).pop();
   }
 
-  void _markVideoAsWatched({bool shouldPopOnSuccess = true}) async {
+  void _markVideoAsWatched({bool shouldPopOnSuccess = true}) {
     if (_markedWatched) return;
     _markedWatched = true;
     if (shouldPopOnSuccess && mounted) {
-          Navigator.of(context).pop(true);
-        }
+      Navigator.of(context).pop(true);
+    }
   }
 
   String _extractVideoId(String url) {
@@ -84,11 +74,10 @@ class _AnswerVideoPopupState extends State<AnswerVideoPopup> {
     return match != null ? match.group(1)! : '';
   }
 
-
   @override
   void dispose() {
-    _controller?.removeListener(_listener);
-    _controller?.dispose();
+    _controllerSubscription?.cancel();
+    _controller?.close();
     super.dispose();
   }
 
@@ -102,37 +91,15 @@ class _AnswerVideoPopupState extends State<AnswerVideoPopup> {
 
     final controller = _controller!;
 
-    return YoutubePlayerBuilder(
-      player: YoutubePlayer(
-        controller: controller,
-        showVideoProgressIndicator: true,
-        bottomActions: [
-          const SizedBox(width: 8),
-          CurrentPosition(),
-          const SizedBox(width: 10),
-          ProgressBar(
-            isExpanded: true,
-            colors: const ProgressBarColors(
-              playedColor: Colors.blueAccent,
-              handleColor: Colors.blue,
-              bufferedColor: Color(0xFF90CAF9),
-              backgroundColor: Color(0xFFE3F2FD),
-            ),
-          ),
-          const SizedBox(width: 10),
-          RemainingDuration(),
-          const SizedBox(width: 10),
-          _buildPlaybackSpeedButton(controller),
-          const SizedBox(width: 10),
-          FullScreenButton(),
-        ],
-      ),
+    return YoutubePlayerScaffold(
+      controller: controller,
+      aspectRatio: 16 / 9,
       builder: (context, player) => Scaffold(
         backgroundColor: Colors.white,
         body: SafeArea(
           child: Column(
             children: [
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               Container(
                 width: 100,
                 height: 6,
@@ -141,13 +108,13 @@ class _AnswerVideoPopupState extends State<AnswerVideoPopup> {
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 child: Text(
                   widget.lesson.lessonTitle,
                   textAlign: TextAlign.center,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
                     color: Colors.black87,
@@ -159,20 +126,17 @@ class _AnswerVideoPopupState extends State<AnswerVideoPopup> {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(8),
                 ),
-                margin: EdgeInsets.symmetric(horizontal: 16),
-                child: AspectRatio(
-                  aspectRatio: 16 / 9,
-                  child: player,
-                ),
+                margin: const EdgeInsets.symmetric(horizontal: 16),
+                child: player,
               ),
-              SizedBox(height: 20),
+              _buildPlayerControls(controller),
+              const SizedBox(height: 20),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 15),
                 child: AppButton(
                   onPressed: () {
-                      enableScreenshot();
-                      _markVideoAsWatched();
-                    },
+                    _markVideoAsWatched();
+                  },
                   text: "Түсінікті",
                 ),
               ),
@@ -182,10 +146,55 @@ class _AnswerVideoPopupState extends State<AnswerVideoPopup> {
       ),
     );
   }
+
+  Widget _buildPlayerControls(YoutubePlayerController controller) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          YoutubeValueBuilder(
+            controller: controller,
+            builder: (context, value) {
+              final isPlaying = value.playerState == PlayerState.playing;
+              return IconButton(
+                icon: Icon(
+                  isPlaying ? Icons.pause_circle_filled : Icons.play_circle_fill,
+                  color: Colors.blueAccent,
+                  size: 28,
+                ),
+                onPressed: () {
+                  isPlaying ? controller.pauseVideo() : controller.playVideo();
+                },
+              );
+            },
+          ),
+          _buildPlaybackSpeedButton(controller),
+          YoutubeValueBuilder(
+            controller: controller,
+            buildWhen: (oldValue, newValue) =>
+                oldValue.fullScreenOption != newValue.fullScreenOption,
+            builder: (context, value) {
+              final isFull = value.fullScreenOption.enabled;
+              return IconButton(
+                icon: Icon(
+                  isFull ? Icons.fullscreen_exit : Icons.fullscreen,
+                  color: Colors.blueGrey.shade700,
+                  size: 24,
+                ),
+                onPressed: () => controller.toggleFullScreen(lock: false),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildPlaybackSpeedButton(YoutubePlayerController controller) {
-    return ValueListenableBuilder<YoutubePlayerValue>(
-      valueListenable: controller,
-      builder: (context, value, child) {
+    return YoutubeValueBuilder(
+      controller: controller,
+      builder: (context, value) {
         final currentRate = value.playbackRate;
         String formatRate(double rate) {
           final isInt = rate.truncateToDouble() == rate;
@@ -195,9 +204,7 @@ class _AnswerVideoPopupState extends State<AnswerVideoPopup> {
         return PopupMenuButton<double>(
           tooltip: 'Playback speed',
           onSelected: (rate) {
-            if (rate != currentRate) {
-              controller.setPlaybackRate(rate);
-            }
+            if (rate != currentRate) controller.setPlaybackRate(rate);
           },
           itemBuilder: (context) => _playbackRates
               .map(
@@ -220,6 +227,7 @@ class _AnswerVideoPopupState extends State<AnswerVideoPopup> {
               borderRadius: BorderRadius.circular(8),
             ),
             child: Row(
+              mainAxisSize: MainAxisSize.min,
               children: [
                 const Icon(Icons.speed, color: Colors.white, size: 18),
                 const SizedBox(width: 4),
