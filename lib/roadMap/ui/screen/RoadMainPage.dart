@@ -288,9 +288,11 @@ class _RoadMainPageState extends State<RoadMainPage>
             chapters.isNotEmpty &&
             tarau.isNotEmpty &&
             takyryp.isNotEmpty) {
-          chapterTitle = title[0];
-          mainTitle = chapters[0];
-          mainTitleDescription = "Тарау ${tarau[0]}, Сабақ ${takyryp[0]}";
+          // Первая видимая карточка после reverse — последний урок
+          final lastIdx = widgetList.length - 1;
+          chapterTitle = title[lastIdx];
+          mainTitle = chapters[lastIdx];
+          mainTitleDescription = "Тарау ${tarau[lastIdx]}, Сабақ ${takyryp[lastIdx]}";
         } else {
           chapterTitle = '';
           mainTitle = '';
@@ -300,10 +302,12 @@ class _RoadMainPageState extends State<RoadMainPage>
         if (mounted) {
           int greyIndex = findLastGreyIndex();
           int cashbackActiveIndex = findCashbackIndex();
+          final scrollOffsetFor = (int originalIndex) =>
+              (widgetList.length - 1 - originalIndex) * 380.0;
           if (cashbackActiveIndex != -1) {
             Future.delayed(Duration(milliseconds: 300), () {
               _scrollController.animateTo(
-                cashbackActiveIndex * 380,
+                scrollOffsetFor(cashbackActiveIndex),
                 duration: Duration(milliseconds: 600),
                 curve: Curves.easeInOut,
               );
@@ -311,7 +315,7 @@ class _RoadMainPageState extends State<RoadMainPage>
           } else if (greyIndex != -1) {
             Future.delayed(Duration(milliseconds: 300), () {
               _scrollController.animateTo(
-                greyIndex * 380,
+                scrollOffsetFor(greyIndex),
                 duration: Duration(milliseconds: 600),
                 curve: Curves.easeInOut,
               );
@@ -734,19 +738,22 @@ class _RoadMainPageState extends State<RoadMainPage>
   }
 
   void _onScroll() {
-    if (widgetList.isEmpty) return;
+    if (widgetList.isEmpty || title.isEmpty) return;
 
     double offset = _scrollController.position.pixels;
-    int newChapterIndex = ((offset + 350) / 380).floor(); // Обновлено под новую высоту карточки
+    // Индекс видимой карточки в перевёрнутом списке (0 = первая видимая)
+    int newChapterIndex = ((offset + 350) / 380).floor();
+    // widgetList перевёрнут — маппим в исходный индекс и ограничиваем диапазон
+    int realIndex = (widgetList.length - 1 - newChapterIndex).clamp(0, widgetList.length - 1);
 
     if (newChapterIndex != selectedIndex) {
       setState(() {
         selectedIndex = newChapterIndex;
-        chapterTitle = title[selectedIndex];
-        mainTitle = chapters[selectedIndex];
+        chapterTitle = title[realIndex];
+        mainTitle = chapters[realIndex];
         mainTitleDescription =
-        "Тарау ${tarau[selectedIndex]}, Сабақ ${takyryp[selectedIndex]}";
-        currentBoxColor = colors[newChapterIndex % colors.length];
+            "Тарау ${tarau[realIndex]}, Сабақ ${takyryp[realIndex]}";
+        currentBoxColor = colors[realIndex % colors.length];
       });
     }
   }
@@ -1514,10 +1521,11 @@ class _RoadMainPageState extends State<RoadMainPage>
                       final chapter = result['chapter'];
                       final titleName = result['title'];
                       final scrollIndex =
-                      findIndexForScroll(chapter, titleName);
-                      if (scrollIndex != -1) {
+                          findIndexForScroll(chapter, titleName);
+                      if (scrollIndex != -1 && widgetList.isNotEmpty) {
+                        final offset = (widgetList.length - 1 - scrollIndex) * 380.0;
                         _scrollController.animateTo(
-                          scrollIndex * 380,
+                          offset,
                           duration: Duration(milliseconds: 500),
                           curve: Curves.easeInOut,
                         );
