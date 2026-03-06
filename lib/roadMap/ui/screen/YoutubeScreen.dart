@@ -281,7 +281,7 @@ void initState() {
                       enableScreenshot();
                       Navigator.of(context).pop(true);
                     },
-                  child: Text("Артқа қайfту", style: TextStyles.medium(AppColors.primaryBlue),)),
+                  child: Text("Артқа қайту", style: TextStyles.medium(AppColors.primaryBlue),)),
               )
             ],
           ),
