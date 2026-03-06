@@ -192,14 +192,14 @@ class _RepeatPageState extends State<RepeatPage> {
                   if (dailyReview?.isOpen == true && dailyReview?.isCompleted == false) RepeatCart(
                     subject: "Өзіңді сынап көр!", 
                     subtitle: dailyReview!.subjectName,
-                    title: "Күнделікті қайталау ", 
+                    title: "Күнделікті қайталау", 
                     mascotAsset: "assets/images/ABAI.png", 
                     iconAsset: "assets/icons/repeat.svg",
                     onStart: () async {
                           await Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) => Math1Screen(
+                              builder: (_) => AdaptiveWatermark(phone: "", userId: "", child: Math1Screen(
                                 lesson: Lesson(lessonId: 0, lessonTitle: "lll", lessonNumber: 0, videoUrl: "lll", videoWatched: true, group1Completed: true, group2Completed: true, group3Completed: true, cashbackActive: false, isPublished: true, materials: []),
                                 initialScrollOffset: 0,
                                 lessonId: 0,
@@ -207,7 +207,7 @@ class _RepeatPageState extends State<RepeatPage> {
                                 dailyReview: true,
                                 groupId: 0,
                                 isCash: false,
-                              ),
+                              ),)
                             ),
                           );
                           if (!mounted) return;
