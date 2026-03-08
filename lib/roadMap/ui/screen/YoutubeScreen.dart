@@ -40,6 +40,7 @@ class _YoutubeScreenState extends State<YoutubeScreen> with WidgetsBindingObserv
   double _mobileSliderValue = 0.0;
   bool _isWebSliderDragging = false;
   double _webSliderValue = 0.0;
+  bool _isPlayerExpanded = false;
 
   void _disableScreenshot() async {
     final result = await _noScreenshot.screenshotOff();
@@ -143,12 +144,18 @@ class _YoutubeScreenState extends State<YoutubeScreen> with WidgetsBindingObserv
   // Web: embed YouTube via iframe on the page (no WebView).
   if (kIsWeb && webVideoId != null) {
     final width = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
     final aspectRatio = width > 600 ? 16 / 4 : 16 / 12;
-    final playerHeight = width / aspectRatio;
+    final playerHeight = _isPlayerExpanded
+        ? (screenHeight - 190).clamp(260.0, screenHeight)
+        : width / aspectRatio;
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
         child: SingleChildScrollView(
+          physics: _isPlayerExpanded
+              ? const NeverScrollableScrollPhysics()
+              : const BouncingScrollPhysics(),
           child: Padding(
             padding: const EdgeInsets.only(bottom: 16),
             child: Column(
@@ -175,6 +182,7 @@ class _YoutubeScreenState extends State<YoutubeScreen> with WidgetsBindingObserv
                       child: youtube_embed.YoutubeEmbedWeb(
                         videoId: webVideoId,
                         aspectRatio: aspectRatio,
+                        fillParent: _isPlayerExpanded,
                         controller: _webController,
                       ),
                     ),
@@ -190,6 +198,7 @@ class _YoutubeScreenState extends State<YoutubeScreen> with WidgetsBindingObserv
                 ),
                 const SizedBox(height: 8),
                 if (_webController != null) _buildWebPlayerControls(_webController!),
+                if (!_isPlayerExpanded) ...[
                 const SizedBox(height: 20),
                 if (widget.lesson.materials.isNotEmpty) ...[
                   const Padding(
@@ -310,6 +319,7 @@ class _YoutubeScreenState extends State<YoutubeScreen> with WidgetsBindingObserv
                     ),
                   ),
                 )
+                ],
               ],
             ),
           ),
@@ -371,7 +381,9 @@ class _YoutubeScreenState extends State<YoutubeScreen> with WidgetsBindingObserv
     aspectRatio: aspectRatio,
     builder: (context, player) {
       final screenHeight = MediaQuery.of(context).size.height;
-      final maxPlayerHeight = screenHeight * 0.42;
+      final maxPlayerHeight = _isPlayerExpanded
+          ? (screenHeight - 210).clamp(260.0, screenHeight)
+          : screenHeight * 0.42;
       return Scaffold(
         backgroundColor: Colors.white,
         body: SafeArea(
@@ -416,6 +428,7 @@ class _YoutubeScreenState extends State<YoutubeScreen> with WidgetsBindingObserv
               const SizedBox(height: 8),
               _buildPlayerControls(controller),
               const SizedBox(height: 12),
+            if (!_isPlayerExpanded)
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.only(bottom: 16),
@@ -567,6 +580,7 @@ class _YoutubeScreenState extends State<YoutubeScreen> with WidgetsBindingObserv
                 ),
               ),
             ),
+            if (_isPlayerExpanded) const Spacer(),
           ],
         ),
       ),
@@ -669,18 +683,12 @@ class _YoutubeScreenState extends State<YoutubeScreen> with WidgetsBindingObserv
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     _buildPlaybackSpeedButton(controller),
-                    YoutubeValueBuilder(
-                      controller: controller,
-                      buildWhen: (oldValue, newValue) =>
-                          oldValue.fullScreenOption != newValue.fullScreenOption,
-                      builder: (context, value) {
-                        final isFull = value.fullScreenOption.enabled;
-                        return _buildIconActionButton(
-                          icon: isFull ? Icons.fullscreen_exit : Icons.fullscreen,
-                          onPressed: () {
-                            controller.toggleFullScreen(lock: false);
-                          },
-                        );
+                    _buildIconActionButton(
+                      icon: _isPlayerExpanded ? Icons.fullscreen_exit : Icons.fullscreen,
+                      onPressed: () {
+                        setState(() {
+                          _isPlayerExpanded = !_isPlayerExpanded;
+                        });
                       },
                     ),
                   ],
@@ -780,13 +788,12 @@ class _YoutubeScreenState extends State<YoutubeScreen> with WidgetsBindingObserv
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     _buildWebPlaybackSpeedButton(controller),
-                    ValueListenableBuilder<bool>(
-                      valueListenable: controller.isFullscreenNotifier,
-                      builder: (context, isFull, _) {
-                        return _buildIconActionButton(
-                          icon: isFull ? Icons.fullscreen_exit : Icons.fullscreen,
-                          onPressed: controller.toggleFullscreen,
-                        );
+                    _buildIconActionButton(
+                      icon: _isPlayerExpanded ? Icons.fullscreen_exit : Icons.fullscreen,
+                      onPressed: () {
+                        setState(() {
+                          _isPlayerExpanded = !_isPlayerExpanded;
+                        });
                       },
                     ),
                   ],

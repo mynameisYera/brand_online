@@ -37,12 +37,14 @@ class YoutubeEmbedWebController {
 class YoutubeEmbedWeb extends StatelessWidget {
   final String videoId;
   final double aspectRatio;
+  final bool fillParent;
   final YoutubeEmbedWebController? controller;
 
   const YoutubeEmbedWeb({
     super.key,
     required this.videoId,
     this.aspectRatio = 16 / 9,
+    this.fillParent = false,
     this.controller,
   });
 

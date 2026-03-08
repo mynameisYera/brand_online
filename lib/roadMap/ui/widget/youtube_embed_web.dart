@@ -3,6 +3,7 @@
 import 'dart:convert';
 import 'dart:html' as html;
 import 'dart:async';
+import 'dart:ui_web' as ui_web;
 
 import 'package:flutter/material.dart';
 
@@ -19,6 +20,8 @@ class YoutubeEmbedWebController {
   final ValueNotifier<double> progressNotifier = ValueNotifier<double>(0.0);
   final ValueNotifier<double> durationNotifier = ValueNotifier<double>(0.0);
   final ValueNotifier<bool> isFullscreenNotifier = ValueNotifier<bool>(false);
+  double _lastKnownSeconds = 0.0;
+  bool _restoreScheduled = false;
 
   void attachIframe(html.IFrameElement iframe) {
     _iframe = iframe;
@@ -30,8 +33,11 @@ class YoutubeEmbedWebController {
 
   void onIframeLoaded() {
     _isReady = true;
+    isPlayingNotifier.value = false;
+    _stopProgressPolling();
     _initApiBridge();
     _flushPendingCommands();
+    _restorePlaybackAfterReload();
   }
 
   void play() {
@@ -181,6 +187,7 @@ class YoutubeEmbedWebController {
         playbackRateNotifier.value = rate;
       }
       if (currentTime != null) {
+        _lastKnownSeconds = currentTime;
         final total = durationNotifier.value;
         if (total > 0) {
           progressNotifier.value = (currentTime / total).clamp(0.0, 1.0);
@@ -235,6 +242,23 @@ class YoutubeEmbedWebController {
     }
     _pendingCommands.clear();
   }
+
+  void _restorePlaybackAfterReload() {
+    if (_restoreScheduled) return;
+    _restoreScheduled = true;
+    Future<void>.delayed(const Duration(milliseconds: 350), () {
+      _restoreScheduled = false;
+      if (!_isReady) return;
+      if (_lastKnownSeconds > 1.0) {
+        _postCommand('seekTo', <dynamic>[_lastKnownSeconds, true]);
+      }
+      if (isPlayingNotifier.value) {
+        _postCommand('playVideo');
+      } else {
+        _postCommand('pauseVideo');
+      }
+    });
+  }
 }
 
 /// Embeds a YouTube video on the page using an iframe (Flutter web only).
@@ -242,40 +266,97 @@ class YoutubeEmbedWebController {
 class YoutubeEmbedWeb extends StatelessWidget {
   final String videoId;
   final double aspectRatio;
+  final bool fillParent;
   final YoutubeEmbedWebController? controller;
 
   const YoutubeEmbedWeb({
     super.key,
     required this.videoId,
     this.aspectRatio = 16 / 9,
+    this.fillParent = false,
     this.controller,
   });
 
   @override
+  Widget build(BuildContext context) => _YoutubeEmbedWebStateful(
+        videoId: videoId,
+        aspectRatio: aspectRatio,
+        fillParent: fillParent,
+        controller: controller,
+      );
+}
+
+class _YoutubeEmbedWebStateful extends StatefulWidget {
+  final String videoId;
+  final double aspectRatio;
+  final bool fillParent;
+  final YoutubeEmbedWebController? controller;
+
+  const _YoutubeEmbedWebStateful({
+    required this.videoId,
+    required this.aspectRatio,
+    required this.fillParent,
+    required this.controller,
+  });
+
+  @override
+  State<_YoutubeEmbedWebStateful> createState() => _YoutubeEmbedWebStatefulState();
+}
+
+class _YoutubeEmbedWebStatefulState extends State<_YoutubeEmbedWebStateful> {
+  static int _idCounter = 0;
+  late final String _viewType;
+  late final html.IFrameElement _iframe;
+
+  @override
+  void initState() {
+    super.initState();
+    _viewType = 'youtube-embed-view-${_idCounter++}';
+    _iframe = _createIframe(widget.videoId);
+    ui_web.platformViewRegistry.registerViewFactory(_viewType, (int viewId) => _iframe);
+    widget.controller?.attachIframe(_iframe);
+  }
+
+  @override
+  void didUpdateWidget(covariant _YoutubeEmbedWebStateful oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.videoId != widget.videoId) {
+      _iframe.src = _iframeSrc(widget.videoId);
+      widget.controller?.attachIframe(_iframe);
+    } else if (oldWidget.controller != widget.controller) {
+      widget.controller?.attachIframe(_iframe);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return AspectRatio(
-      aspectRatio: aspectRatio,
-      child: HtmlElementView.fromTagName(
-        tagName: 'iframe',
-        onElementCreated: (Object element) {
-          final iframe = element as html.IFrameElement;
-          iframe.onLoad.listen((_) {
-            controller?.onIframeLoaded();
-          });
-          iframe.src =
-              'https://www.youtube.com/embed/$videoId?autoplay=1&controls=0&rel=0&modestbranding=1&iv_load_policy=3&disablekb=1&fs=0&playsinline=1&enablejsapi=1&widgetid=1&origin=${Uri.base.origin}';
-          iframe.referrerPolicy = 'strict-origin-when-cross-origin';
-          iframe.style.border = 'none';
-          iframe.style.width = '100%';
-          iframe.style.height = '100%';
-          iframe.style.display = 'block';
-          iframe.style.pointerEvents = 'none';
-          iframe.allow =
-              'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
-          iframe.allowFullscreen = true;
-          controller?.attachIframe(iframe);
-        },
+    return SizedBox.expand(
+      child: HtmlElementView(
+        key: ValueKey<String>(_viewType),
+        viewType: _viewType,
       ),
     );
+  }
+
+  html.IFrameElement _createIframe(String videoId) {
+    final iframe = html.IFrameElement();
+    iframe.onLoad.listen((_) {
+      widget.controller?.onIframeLoaded();
+    });
+    iframe.src = _iframeSrc(videoId);
+    iframe.referrerPolicy = 'strict-origin-when-cross-origin';
+    iframe.style.border = 'none';
+    iframe.style.width = '100%';
+    iframe.style.height = '100%';
+    iframe.style.display = 'block';
+    iframe.style.pointerEvents = 'none';
+    iframe.allow =
+        'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+    iframe.allowFullscreen = true;
+    return iframe;
+  }
+
+  String _iframeSrc(String videoId) {
+    return 'https://www.youtube.com/embed/$videoId?autoplay=0&controls=0&rel=0&modestbranding=1&iv_load_policy=3&disablekb=1&fs=0&playsinline=1&enablejsapi=1&widgetid=1&origin=${Uri.base.origin}';
   }
 }
