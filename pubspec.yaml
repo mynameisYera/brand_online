@@ -1,7 +1,7 @@
 name: brand_online
 description: "Study smart online with Brand Online KZ"
 publish_to: 'none' 
-version: 1.0.4+18
+version: 1.0.5+19
 
 environment:
   sdk: ^3.6.0

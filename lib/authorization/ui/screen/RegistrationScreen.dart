@@ -289,7 +289,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
             _firstname.text,
             _lastname.text,
             _password1.text,
-            selectedKey == '1' ? 'parent' : 'student',
+            selectedKey == '1' ? 'teacher' : 'student',
             );
         String? response = '';
         isLoading = true;
@@ -627,7 +627,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
   String selectedKey = '1';
 
   final Map<String, String> dropdownMap = {
-    '1': 'Ата ана',
+    '1': 'Мұғалім',
     '2': 'Оқушы',
   };
 
