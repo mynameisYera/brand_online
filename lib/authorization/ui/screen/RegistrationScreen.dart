@@ -289,8 +289,8 @@ class _RegistrationPageState extends State<RegistrationPage> {
             _firstname.text,
             _lastname.text,
             _password1.text,
-            'student',
-            selectedKey);
+            selectedKey == '1' ? 'parent' : 'student',
+            );
         String? response = '';
         isLoading = true;
         AuthService()
@@ -627,15 +627,8 @@ class _RegistrationPageState extends State<RegistrationPage> {
   String selectedKey = '1';
 
   final Map<String, String> dropdownMap = {
-    '1': '1 сынып',
-    '2': '2 сынып',
-    '3': '3 сынып',
-    '4': '4 сынып',
-    '5': '5 сынып',
-    '6': '6 сынып',
-    '7': '7 сынып',
-    '8': '8 сынып',
-    '9': '9 сынып',
+    '1': 'Ата ана',
+    '2': 'Оқушы',
   };
 
   Widget _buildStep5() {
@@ -648,19 +641,19 @@ class _RegistrationPageState extends State<RegistrationPage> {
           children: [
             SizedBox(height: 30),
             Center(
-              child: Text("Сыныбыңызды Таңдаңыз", 
+              child: Text("Рольіңізді таңдаңыз", 
                 style: TextStyles.bold(AppColors.black, fontSize: 28)),
             ),
             SizedBox(height: 20),
             Center(
-              child: Text("Сіз қай сыныпта оқисыз?", style: TextStyles.bold(AppColors.black, fontSize: 13),),
+              child: Text("Сіз қай рольдесіз?", style: TextStyles.bold(AppColors.black, fontSize: 13),),
             ),
             SizedBox(height: 60,),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 0.0),
               child: AppDropdown<String>(
-                labelText: 'Сынып',
-                hintText: 'Сынып',
+                labelText: 'Роль',
+                hintText: 'Роль',
                 prefixIcon: null,
                 value: selectedKey,
                 onChanged: (String? newKey) {

@@ -8,7 +8,6 @@ class SignEntity {
   final String surname;
   final String password;
   final String role;
-  late final String grade;
 
   SignEntity(this.phone,
       this.code,
@@ -16,7 +15,7 @@ class SignEntity {
       this.surname,
       this.password,
       this.role,
-      this.grade,);
+      );
 
   Map<String, String> toJson() => {
     'phone': phone,
@@ -25,7 +24,6 @@ class SignEntity {
     'surname': surname,
     'password': password,
     'role': role,
-    'grade': grade,
   };
 
 }

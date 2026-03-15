@@ -266,8 +266,8 @@ class AuthService {
         'surname': entity.surname,
         'password': entity.password,
         'role': entity.role,
-        'grade': entity.role == 'parent' ?
-         '' : entity.grade,
+        // 'grade': entity.role == 'parent' ?
+        //  '' : entity.grade,
       };
       response = await _dio.post(
         '/auth/verify-and-create-user/',
