@@ -14,7 +14,6 @@ import 'package:dio/dio.dart';
 import 'package:brand_online/core/notification/firebase_utils.dart';
 import 'package:brand_online/roadMap/ui/screen/subscription_for_android.dart';
 import 'package:brand_online/roadMap/ui/screen/subscription_page.dart';
-
 import '../../../authorization/entity/ProfileResponse.dart';
 import '../../../authorization/entity/RoadMapResponse.dart';
 import '../../../authorization/service/auth_service.dart';

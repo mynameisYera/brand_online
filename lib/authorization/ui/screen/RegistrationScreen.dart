@@ -289,8 +289,8 @@ class _RegistrationPageState extends State<RegistrationPage> {
             _firstname.text,
             _lastname.text,
             _password1.text,
-            selectedKey == '1' ? 'teacher' : 'student',
-            );
+            selectedKey,
+        );
         String? response = '';
         isLoading = true;
         AuthService()
@@ -624,11 +624,11 @@ class _RegistrationPageState extends State<RegistrationPage> {
   }
   
 
-  String selectedKey = '1';
+  String selectedKey = 'teacher';
 
   final Map<String, String> dropdownMap = {
-    '1': 'Мұғалім',
-    '2': 'Оқушы',
+    'teacher': 'Мұғалім',
+    'student': 'Оқушы',
   };
 
   Widget _buildStep5() {
