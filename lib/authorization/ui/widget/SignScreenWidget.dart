@@ -198,7 +198,7 @@ class SignScreenWidget {
       String password, String role, BuildContext context) async {
     // navigateToMainPage(context);
     SignEntity entity =
-        new SignEntity(username, code, name, surname, password, role, "");
+        new SignEntity(username, code, name, surname, password, role);
     AuthService()
         .verifyAndSign(entity)
         .then((res) => {

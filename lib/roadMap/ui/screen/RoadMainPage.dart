@@ -1,10 +1,10 @@
 import 'package:brand_online/core/app_colors.dart';
-import 'package:brand_online/core/platform_check.dart' show isAndroid;
 import 'package:brand_online/core/service/display_chacker.dart';
 import 'package:brand_online/core/text_styles.dart';
 import 'package:brand_online/core/widgets/watermark_layer.dart';
 import 'package:brand_online/profile/service/profile_service.dart';
 import 'package:brand_online/roadMap/ui/screen/Math1Screen.dart';
+import 'package:brand_online/roadMap/ui/screen/NoSubscriptionPage.dart';
 import 'package:brand_online/roadMap/ui/screen/YoutubeScreen.dart';
 import 'package:brand_online/roadMap/ui/widget/letsgo_popup.dart';
 import 'package:flutter/material.dart';
@@ -13,8 +13,6 @@ import 'package:flutter_svg/svg.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:dio/dio.dart';
 import 'package:brand_online/core/notification/firebase_utils.dart';
-import 'package:brand_online/roadMap/ui/screen/subscription_for_android.dart';
-import 'package:brand_online/roadMap/ui/screen/subscription_page.dart';
 
 import '../../../authorization/entity/ProfileResponse.dart';
 import '../../../authorization/entity/RoadMapResponse.dart';
@@ -1437,9 +1435,15 @@ class _RoadMainPageState extends State<RoadMainPage>
         .width * 0.9;
 
     if (hasNoSubscription) {
-      return isAndroid
-          ? SubscriptionForAndroid(whatsappUrl: noSubWhatsAppUrl)
-          : SubscriptionPage();
+      return NoSubscriptionPage(
+        title: noSubTitle,
+        message: noSubMessage,
+        buttonMessage: noSubButtonText,
+        whatsappUrl: noSubWhatsAppUrl,
+      );
+      // return isAndroid
+      //     ? SubscriptionForAndroid(whatsappUrl: noSubWhatsAppUrl)
+          // : SubscriptionPage();
 
       // return NoSubPageIos(whatsappUrl: noSubWhatsAppUrl);
       //       title: noSubTitle,
