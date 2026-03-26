@@ -776,10 +776,10 @@ class _RoadMainPageState extends State<RoadMainPage>
     if (newChapterIndex != selectedIndex) {
       setState(() {
         selectedIndex = newChapterIndex;
-        chapterTitle = title[realIndex];
-        mainTitle = chapters[realIndex];
+        chapterTitle = title[newChapterIndex];
+        mainTitle = chapters[newChapterIndex];
         mainTitleDescription =
-            "Тарау ${tarau[realIndex]}, Сабақ ${takyryp[realIndex]}";
+            "Тарау ${tarau[newChapterIndex]}, Сабақ ${takyryp[newChapterIndex]}";
         currentBoxColor = colors[realIndex % colors.length];
       });
     }
