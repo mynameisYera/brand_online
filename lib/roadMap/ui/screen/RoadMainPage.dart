@@ -323,28 +323,54 @@ class _RoadMainPageState extends State<RoadMainPage>
         }
 
         if (mounted) {
-          int greyIndex = findLastGreyIndex();
-          int cashbackActiveIndex = findCashbackIndex();
-          final cardSpacing = _cardSpacing(context);
-          final scrollOffsetFor = (int originalIndex) =>
-              (widgetList.length - 1 - originalIndex) * cardSpacing;
-          if (cashbackActiveIndex != -1) {
-            Future.delayed(Duration(milliseconds: 300), () {
+          final hasAnyStarted = _hasAnyStartedTask();
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (!mounted) return;
+
+            if (!hasAnyStarted) {
               _scrollController.animateTo(
-                scrollOffsetFor(cashbackActiveIndex),
-                duration: Duration(milliseconds: 600),
+                0,
+                duration: const Duration(milliseconds: 450),
+                curve: Curves.easeOut,
+              );
+              return;
+            }
+
+            final int targetLessonIndex = _getTargetLessonIndex();
+            if (targetLessonIndex < 0) {
+              _scrollController.animateTo(
+                0,
+                duration: const Duration(milliseconds: 450),
+                curve: Curves.easeOut,
+              );
+              return;
+            }
+
+            final int maxLessonIndex = widgetList.isNotEmpty ? widgetList.length - 1 : 0;
+            final int maxKeyIndex = _stepButtonKeys.length - 1;
+            final int safeTargetLessonIndex =
+                targetLessonIndex.clamp(0, maxLessonIndex).clamp(0, maxKeyIndex);
+
+            final targetKey = _stepButtonKeys[safeTargetLessonIndex][0];
+            final targetCtx = targetKey.currentContext;
+            if (targetCtx != null) {
+              Scrollable.ensureVisible(
+                targetCtx,
+                duration: const Duration(milliseconds: 600),
+                curve: Curves.easeInOut,
+                alignment: 1.0,
+              );
+            } else {
+              final cardSpacing = _cardSpacing(context);
+              final scrollOffsetFor = (int originalIndex) =>
+                  (widgetList.length - 1 - originalIndex) * cardSpacing;
+              _scrollController.animateTo(
+                scrollOffsetFor(safeTargetLessonIndex),
+                duration: const Duration(milliseconds: 600),
                 curve: Curves.easeInOut,
               );
-            });
-          } else if (greyIndex != -1) {
-            Future.delayed(Duration(milliseconds: 300), () {
-              _scrollController.animateTo(
-                scrollOffsetFor(greyIndex),
-                duration: Duration(milliseconds: 600),
-                curve: Curves.easeInOut,
-              );
-            });
-          }
+            }
+          });
         }
 
         if (widgetList.isEmpty) responseNull = true;
@@ -1847,6 +1873,55 @@ class _RoadMainPageState extends State<RoadMainPage>
       }
     }
     return -1;
+  }
+
+  bool _hasAnyStartedTask() {
+    for (final chapter in response.chapters) {
+      for (final lesson in chapter.lessons) {
+        final started = lesson.videoWatched == true ||
+            lesson.group1Completed == true ||
+            lesson.group2Completed == true ||
+            lesson.group3Completed == true;
+        if (started) return true;
+      }
+    }
+    return false;
+  }
+
+  /// Правило выбора карточки:
+  /// 1) если есть незавершённая карточка, где пользователь уже что-то сделал — показать её;
+  /// 2) иначе показать следующую незавершённую карточку после завершённых.
+  int _getTargetLessonIndex() {
+    int firstIncompleteIndex = -1;
+    int firstStartedIncompleteIndex = -1;
+
+    int idx = 0;
+    for (final chapter in response.chapters) {
+      for (final lesson in chapter.lessons) {
+        final bool completed = lesson.videoWatched == true &&
+            lesson.group1Completed == true &&
+            lesson.group2Completed == true &&
+            lesson.group3Completed == true;
+        final bool started = lesson.videoWatched == true ||
+            lesson.group1Completed == true ||
+            lesson.group2Completed == true ||
+            lesson.group3Completed == true;
+
+        if (firstIncompleteIndex == -1 && !completed) {
+          firstIncompleteIndex = idx;
+        }
+        if (firstStartedIncompleteIndex == -1 && started && !completed) {
+          firstStartedIncompleteIndex = idx;
+        }
+
+        idx++;
+      }
+    }
+
+    if (firstStartedIncompleteIndex != -1) {
+      return firstStartedIncompleteIndex;
+    }
+    return firstIncompleteIndex; // может быть -1, если всё завершено
   }
 
   int findIndexForScroll(String? chapter, String? titleName) {
