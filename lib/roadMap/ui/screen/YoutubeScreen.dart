@@ -16,7 +16,6 @@ class YoutubeScreen extends StatefulWidget {
   final String? videoUrlOverride;
   final bool? isAction;
 
-
   const YoutubeScreen({super.key, required this.lesson, this.videoUrlOverride, this.isAction = false});
 
   @override
@@ -218,7 +217,7 @@ void initState() {
               SizedBox(height: 20,),
               // widget.lesson.materials.length == 0 ? SizedBox() : Row(children: [ Padding(padding: EdgeInsets.only(left: 15), child: Text("Сабақтың материалдары", style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),),) ],),
               // SizedBox(height: 10,),
-              Padding(
+              widget.isAction == true ? SizedBox() : Padding(
                 padding: EdgeInsets.symmetric(
                   horizontal: 15
                 ),
@@ -277,7 +276,7 @@ void initState() {
               Center(
                 child: TextButton(
                   onPressed: () {
-                      _markVideoAsWatched(shouldPopOnSuccess: false);
+                      _markVideoAsWatched(shouldPopOnSuccess: true);
                       enableScreenshot();
                       Navigator.of(context).pop(true);
                     },

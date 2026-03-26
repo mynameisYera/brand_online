@@ -47,7 +47,6 @@ class _RoadMainPageState extends State<RoadMainPage>
   String noSubMessage = '';
   String noSubButtonText = '';
   String noSubWhatsAppUrl = '';
-  // final _storage = const FlutterSecureStorage();
 
   List<Color> colors = [
     Color.fromRGBO(75, 167, 255, 1.0),
@@ -59,7 +58,6 @@ class _RoadMainPageState extends State<RoadMainPage>
 
   List<SubjectModel> myCourses = [];
   
-  /// Ключи кнопок на карточке: [индекс урока][индекс шага 0..3]. Порядок шагов — из бэкенда (step_order).
   final List<List<GlobalKey>> _stepButtonKeys =
       List.generate(100, (_) => List.generate(4, (_) => GlobalKey()));
 
@@ -287,7 +285,6 @@ class _RoadMainPageState extends State<RoadMainPage>
             chapters.isNotEmpty &&
             tarau.isNotEmpty &&
             takyryp.isNotEmpty) {
-          // Первая видимая карточка после reverse — последний урок
           final lastIdx = widgetList.length - 1;
           chapterTitle = title[lastIdx];
           mainTitle = chapters[lastIdx];
@@ -301,8 +298,7 @@ class _RoadMainPageState extends State<RoadMainPage>
         if (mounted) {
           int greyIndex = findLastGreyIndex();
           int cashbackActiveIndex = findCashbackIndex();
-          final scrollOffsetFor = (int originalIndex) =>
-              (widgetList.length - 1 - originalIndex) * 380.0;
+          final scrollOffsetFor = (int originalIndex) => (widgetList.length - 1 - originalIndex) * 380.0;
           if (cashbackActiveIndex != -1) {
             Future.delayed(Duration(milliseconds: 300), () {
               _scrollController.animateTo(
@@ -740,19 +736,15 @@ class _RoadMainPageState extends State<RoadMainPage>
     if (widgetList.isEmpty || title.isEmpty) return;
 
     double offset = _scrollController.position.pixels;
-    // Индекс видимой карточки в перевёрнутом списке (0 = первая видимая)
     int newChapterIndex = ((offset + 350) / 380).floor();
-    // widgetList перевёрнут — маппим в исходный индекс и ограничиваем диапазон
-    int realIndex = (widgetList.length - 1 - newChapterIndex).clamp(0, widgetList.length - 1);
-
     if (newChapterIndex != selectedIndex) {
       setState(() {
         selectedIndex = newChapterIndex;
-        chapterTitle = title[realIndex];
-        mainTitle = chapters[realIndex];
+        chapterTitle = title[newChapterIndex];
+        mainTitle = chapters[newChapterIndex];
         mainTitleDescription =
-            "Тарау ${tarau[realIndex]}, Сабақ ${takyryp[realIndex]}";
-        currentBoxColor = colors[realIndex % colors.length];
+            "Тарау ${tarau[newChapterIndex]}, Сабақ ${takyryp[newChapterIndex - 1]}";
+        currentBoxColor = colors[newChapterIndex % colors.length];
       });
     }
   }
@@ -1407,10 +1399,6 @@ class _RoadMainPageState extends State<RoadMainPage>
         .width * 0.9;
 
     if (hasNoSubscription) {
-      // android 
-      // return SubscriptionForAndroid(
-      //   whatsappUrl: noSubWhatsAppUrl,
-      // );
       return Platform.isAndroid ?
        SubscriptionForAndroid(
         whatsappUrl: noSubWhatsAppUrl,
@@ -1489,7 +1477,7 @@ class _RoadMainPageState extends State<RoadMainPage>
                           ),
                           const SizedBox(width: 8),
                           Text(
-                            profileResponse.selectedGrade?.subjectName ?? '-',
+                            profileResponse.selectedGrade?.subjectName != null ? profileResponse.selectedGrade!.subjectName.length > 15 ? profileResponse.selectedGrade!.subjectName.substring(0, 15) + '..' : profileResponse.selectedGrade!.subjectName : '-',
                             style: TextStyles.bold(AppColors.white),
                           ),
                         ],
