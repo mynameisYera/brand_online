@@ -137,7 +137,7 @@ class _RoadMainPageState extends State<RoadMainPage>
   }
 
   double _cardSpacing(BuildContext context) {
-    return DisplayChacker.isDisplay(context) ? 320 : 380;
+    return DisplayChacker.isDisplay(context) ? 400 : 580;
   }
 
   double _cardScrollOffsetBase(BuildContext context) {
@@ -312,10 +312,7 @@ class _RoadMainPageState extends State<RoadMainPage>
             chapters.isNotEmpty &&
             tarau.isNotEmpty &&
             takyryp.isNotEmpty) {
-          final lastIdx = widgetList.length - 1;
-          chapterTitle = title[lastIdx];
-          mainTitle = chapters[lastIdx];
-          mainTitleDescription = "Тарау ${tarau[lastIdx]}, Сабақ ${takyryp[lastIdx]}";
+          _syncHeaderWithVisibleCard(0);
         } else {
           chapterTitle = '';
           mainTitle = '';
@@ -363,7 +360,7 @@ class _RoadMainPageState extends State<RoadMainPage>
             } else {
               final cardSpacing = _cardSpacing(context);
               final scrollOffsetFor = (int originalIndex) =>
-                  (widgetList.length - 1 - originalIndex) * cardSpacing;
+                  originalIndex * cardSpacing;
               _scrollController.animateTo(
                 scrollOffsetFor(safeTargetLessonIndex),
                 duration: const Duration(milliseconds: 600),
@@ -397,50 +394,55 @@ class _RoadMainPageState extends State<RoadMainPage>
         ? lesson.actions.every((a) => a.isCompleted)
         : lesson.effectiveStepOrder.every((s) => lesson.isStepCompleted(s));
 
-    return Container(
-      margin: EdgeInsets.only(bottom: 20),
-      width: _cardWidth(context),
-      height: _cardHeight(context),
-      decoration: BoxDecoration(
-        color: colors[index % 5],
-        borderRadius: BorderRadius.circular(20),
-        image: DecorationImage(
-          image: AssetImage(characterImage),
-          fit: BoxFit.cover,
-          alignment: Alignment.topCenter,
-        ),
-      ),
-      child: Stack(
-        children: [
-          if (!allCompleted)
-            Positioned.fill(
-              child: IgnorePointer(
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.5),
-                    borderRadius: BorderRadius.circular(20),
+    return Column(
+      children: [
+        Text(lesson.lessonTitle, style: TextStyles.regular(AppColors.black, fontSize: 12)),
+        SizedBox(height: 10),
+        Container(
+          margin: EdgeInsets.only(bottom: 20),
+          width: _cardWidth(context),
+          height: _cardHeight(context),
+          decoration: BoxDecoration(
+            color: colors[index % 5],
+            borderRadius: BorderRadius.circular(20),
+            image: DecorationImage(
+              image: AssetImage(characterImage),
+              fit: BoxFit.cover,
+              alignment: Alignment.topCenter,
+            ),
+          ),
+          child: Stack(
+            children: [
+              if (!allCompleted)
+                Positioned.fill(
+                  child: IgnorePointer(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.5),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                    ),
                   ),
                 ),
+              Column(
+                children: [
+                  Spacer(),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: lesson.hasActions
+                        ? _buildActionButtons(context, lesson, index)
+                        : _buildStepButtons(context, lesson, index, lesson.effectiveStepOrder),
+                  ),
+                  SizedBox(height: 20),
+                ],
               ),
-            ),
-          Column(
-            children: [
-              Spacer(),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: lesson.hasActions
-                    ? _buildActionButtons(context, lesson, index)
-                    : _buildStepButtons(context, lesson, index, lesson.effectiveStepOrder),
-              ),
-              SizedBox(height: 20),
             ],
           ),
-        ],
-      ),
+        )
+      ],
     );
   }
 
-  /// До 4 кнопок по actions: video → YoutubeScreen, materials → WebViewPage/MaterialsPage, task_group → тест.
   List<Widget> _buildActionButtons(BuildContext context, Lesson lesson, int index) {
     final ordered = List<LessonAction>.from(lesson.actions)
       ..sort((a, b) => a.order.compareTo(b.order));
@@ -793,22 +795,47 @@ class _RoadMainPageState extends State<RoadMainPage>
     if (widgetList.isEmpty || title.isEmpty) return;
 
     double offset = _scrollController.position.pixels;
-    final cardSpacing = _cardSpacing(context);
-    final offsetBase = _cardScrollOffsetBase(context);
-    int newChapterIndex = ((offset + offsetBase) / cardSpacing).floor();
-    // widgetList перевёрнут — маппим в исходный индекс и ограничиваем диапазон
-    int realIndex = (widgetList.length - 1 - newChapterIndex).clamp(0, widgetList.length - 1);
+    final newChapterIndex = _syncHeaderWithVisibleCard(offset);
+    if (newChapterIndex == -1) return;
 
     if (newChapterIndex != selectedIndex) {
       setState(() {
         selectedIndex = newChapterIndex;
-        chapterTitle = title[newChapterIndex];
-        mainTitle = chapters[newChapterIndex];
-        mainTitleDescription =
-            "Тарау ${tarau[newChapterIndex]}, Сабақ ${takyryp[newChapterIndex]}";
-        currentBoxColor = colors[realIndex % colors.length];
       });
     }
+  }
+
+  int _syncHeaderWithVisibleCard(double offset) {
+    if (widgetList.isEmpty ||
+        title.isEmpty ||
+        chapters.isEmpty ||
+        tarau.isEmpty ||
+        takyryp.isEmpty) {
+      return -1;
+    }
+
+    final cardSpacing = _cardSpacing(context);
+    final offsetBase = _cardScrollOffsetBase(context);
+    final int visibleIndexRaw = ((offset + offsetBase) / cardSpacing).floor();
+    final int maxIndex = widgetList.length - 1;
+    final int visibleIndex = visibleIndexRaw.clamp(0, maxIndex);
+    // For reversed scroll + reversed list we should not invert again.
+    final int dataIndex = visibleIndex;
+
+    if (chapterTitle != title[dataIndex] ||
+        mainTitle != chapters[dataIndex] ||
+        mainTitleDescription != "Тарау ${tarau[dataIndex]}, Сабақ ${takyryp[dataIndex]}" ||
+        currentBoxColor != colors[dataIndex % colors.length]) {
+      setState(() {
+        chapterTitle = title[dataIndex];
+        mainTitle = chapters[dataIndex];
+        mainTitleDescription =
+            "Тарау ${tarau[dataIndex]}, Сабақ ${takyryp[dataIndex]}";
+        currentBoxColor = colors[dataIndex % colors.length];
+      });
+    }
+
+    return visibleIndex;
   }
 
   Widget roadFromRight(BuildContext context, Lesson lesson, int index,
@@ -1592,13 +1619,22 @@ class _RoadMainPageState extends State<RoadMainPage>
                         builder: (_) => ChaptersDialog(data: structuredChapters),
                       ),
                     ).then((result) {
-                      if (result != null && result is Map<String, String>) {
-                        final chapter = result['chapter'];
-                        final titleName = result['title'];
-                        final scrollIndex =
-                            findIndexForScroll(chapter, titleName);
+                      if (result != null && result is Map) {
+                        final chapter = result['chapter']?.toString();
+                        final titleName = result['title']?.toString();
+                        final chapterIndexRaw = result['chapterIndex']?.toString();
+                        final lessonIndexRaw = result['lessonIndex']?.toString();
+                        final chapterIndex = chapterIndexRaw != null
+                            ? int.tryParse(chapterIndexRaw)
+                            : null;
+                        final lessonIndex = lessonIndexRaw != null
+                            ? int.tryParse(lessonIndexRaw)
+                            : null;
+                        final scrollIndex = (chapterIndex != null && lessonIndex != null)
+                            ? findIndexForScrollByIds(chapterIndex, lessonIndex)
+                            : findIndexForScroll(chapter, titleName);
                         if (scrollIndex != -1 && widgetList.isNotEmpty) {
-                          final offset = (widgetList.length - 1 - scrollIndex) *
+                          final offset = scrollIndex *
                               _cardSpacing(context);
                           _scrollController.animateTo(
                             offset,
@@ -1628,17 +1664,21 @@ class _RoadMainPageState extends State<RoadMainPage>
                             Text(
                               mainTitleDescription,
                               textAlign: TextAlign.left,
-                              style: TextStyles.medium(AppColors.grey),
+                              style: TextStyles.medium(
+                                AppColors.grey,
+                                fontSize: _headerSubtitleFontSize(context),
+                              ),
                             ),
                             SizedBox(height: 4),
                             Text(
                               textAlign: TextAlign.left,
-                              chapterTitle.length > 30
-                                  ? chapterTitle.substring(0, 30) + '..'
-                                  : chapterTitle,
-                              style: TextStyles.medium(AppColors.black),
+                              chapterTitle,
+                              style: TextStyles.medium(
+                                AppColors.black,
+                                fontSize: _headerTitleFontSize(context),
+                              ),
                               overflow: TextOverflow.ellipsis,
-                              maxLines: 1,
+                              maxLines: _headerTitleMaxLines(context),
                             ),
                           ],
                         ),
@@ -1648,6 +1688,7 @@ class _RoadMainPageState extends State<RoadMainPage>
                       ],
                     ),
                   ),
+                  // child: SizedBox(),
                 ),
                 SizedBox(
                   height: 10,
@@ -1931,6 +1972,27 @@ class _RoadMainPageState extends State<RoadMainPage>
       }
     }
     return -1;
+  }
+
+  int findIndexForScrollByIds(int chapterId, int lessonId) {
+    for (int i = 0; i < title.length; i++) {
+      if (tarau[i] == chapterId && takyryp[i] == lessonId) {
+        return i;
+      }
+    }
+    return -1;
+  }
+
+  double _headerSubtitleFontSize(BuildContext context) {
+    return DisplayChacker.isDisplay(context) ? 14 : 12;
+  }
+
+  double _headerTitleFontSize(BuildContext context) {
+    return DisplayChacker.isDisplay(context) ? 20 : 16;
+  }
+
+  int _headerTitleMaxLines(BuildContext context) {
+    return DisplayChacker.isDisplay(context) ? 2 : 1;
   }
 
 

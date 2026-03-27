@@ -156,6 +156,8 @@ class _ChaptersDialogState extends State<ChaptersDialog> with TickerProviderStat
                                               Navigator.of(context).pop({
                                                 'chapter': chapterTitle.title,
                                                 'title': lessonTitles.first.title,
+                                                'chapterIndex': chapterTitle.index,
+                                                'lessonIndex': lessonTitles.first.index,
                                               });
                                             },
                                             child: Container(
@@ -206,6 +208,8 @@ class _ChaptersDialogState extends State<ChaptersDialog> with TickerProviderStat
                                       Navigator.pop(context, {
                                         'chapter': chapterTitle.title,
                                         'title': lessonTitles[i].title,
+                                        'chapterIndex': chapterTitle.index,
+                                        'lessonIndex': lessonTitles[i].index,
                                       });
                                     },
                                     child: Container(
