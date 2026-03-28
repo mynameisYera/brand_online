@@ -105,6 +105,30 @@ class _RoadMainPageState extends State<RoadMainPage>
   String mainTitle = '';
   String mainTitleDescription = '';
 
+  static const double _cardScrollStep = 415.0;
+  static const double _cardScrollOffsetBase = 350.0;
+
+  /// Название предмета в синей полосе: как в списке курсов по `selectedGrade.id`, чтобы совпадало с дорожной картой.
+  String _headerSubjectName() {
+    final sel = profileResponse.selectedGrade;
+    if (sel == null) return '-';
+    for (final c in myCourses) {
+      if (c.id == sel.id) {
+        final name = c.subjectName;
+        return name.length > 15 ? '${name.substring(0, 15)}..' : name;
+      }
+    }
+    final name = sel.subjectName;
+    return name.length > 15 ? '${name.substring(0, 15)}..' : name;
+  }
+
+  /// При `SingleChildScrollView(reverse: true)` offset `pixels` привязан к нижнему краю; для индекса карточки нужен «логический» offset от верха контента.
+  double _logicalScrollOffset() {
+    final pos = _scrollController.position;
+    if (!pos.hasPixels || !pos.hasContentDimensions) return 0;
+    return pos.maxScrollExtent - pos.pixels;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -244,18 +268,22 @@ class _RoadMainPageState extends State<RoadMainPage>
         double currentOffset = 0.0;
         structuredChapters.clear();
 
-        for (var chapter in response.chapters) {
+        // Порядок «Тарау / Сабақ» в шапке — по позиции в ответе (1..N), а не по
+        // chapter_number / lesson_number с бэкенда (они могут не совпадать с карточкой).
+        for (int chapterIdx = 0; chapterIdx < response.chapters.length; chapterIdx++) {
+          final chapter = response.chapters[chapterIdx];
           List<SimpleTaskIndex> lessonsList = [];
-          int chapterId = chapter.chapterNumber;
+          final int displayChapterOrdinal = chapterIdx + 1;
           String chapterTitle = chapter.chapterName;
 
           chapterWidget.add(chapterTitle);
 
-          for (var lesson in chapter.lessons) {
+          for (int lessonIdx = 0; lessonIdx < chapter.lessons.length; lessonIdx++) {
+            final lesson = chapter.lessons[lessonIdx];
             String lessonTitle = lesson.lessonTitle;
-            int lessonId = lesson.lessonNumber;
-            takyryp.add(lessonId);
-            tarau.add(chapterId);
+            final int displayLessonOrdinal = lessonIdx + 1;
+            takyryp.add(displayLessonOrdinal);
+            tarau.add(displayChapterOrdinal);
             title.add(lessonTitle);
             chapters.add(chapterTitle);
             chapterScrollPositions[widgetList.length] = currentOffset;
@@ -273,10 +301,10 @@ class _RoadMainPageState extends State<RoadMainPage>
             
             currentOffset += 380;
             index++;
-            lessonsList.add(SimpleTaskIndex(title: lessonTitle, index: lessonId, isCompleted: lesson.videoWatched && lesson.group1Completed && lesson.group2Completed && lesson.group3Completed, isCashback: lesson.cashbackActive));
+            lessonsList.add(SimpleTaskIndex(title: lessonTitle, index: displayLessonOrdinal, isCompleted: lesson.videoWatched && lesson.group1Completed && lesson.group2Completed && lesson.group3Completed, isCashback: lesson.cashbackActive));
           }
           structuredChapters.add({
-            SimpleTaskIndex(title: chapterTitle, index: chapterId, isCompleted: lessonsList.every((lesson) => lesson.isCompleted), isCashback: lessonsList.any((lesson) => lesson.isCashback)): lessonsList,
+            SimpleTaskIndex(title: chapterTitle, index: displayChapterOrdinal, isCompleted: lessonsList.every((lesson) => lesson.isCompleted), isCashback: lessonsList.any((lesson) => lesson.isCashback)): lessonsList,
           });
         }
 
@@ -285,10 +313,10 @@ class _RoadMainPageState extends State<RoadMainPage>
             chapters.isNotEmpty &&
             tarau.isNotEmpty &&
             takyryp.isNotEmpty) {
-          final lastIdx = widgetList.length - 1;
-          chapterTitle = title[lastIdx];
-          mainTitle = chapters[lastIdx];
-          mainTitleDescription = "Тарау ${tarau[lastIdx]}, Сабақ ${takyryp[lastIdx]}";
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (!mounted) return;
+            _syncHeaderWithVisibleCard();
+          });
         } else {
           chapterTitle = '';
           mainTitle = '';
@@ -298,22 +326,15 @@ class _RoadMainPageState extends State<RoadMainPage>
         if (mounted) {
           int greyIndex = findLastGreyIndex();
           int cashbackActiveIndex = findCashbackIndex();
-          final scrollOffsetFor = (int originalIndex) => (widgetList.length - 1 - originalIndex) * 380.0;
           if (cashbackActiveIndex != -1) {
             Future.delayed(Duration(milliseconds: 300), () {
-              _scrollController.animateTo(
-                scrollOffsetFor(cashbackActiveIndex),
-                duration: Duration(milliseconds: 600),
-                curve: Curves.easeInOut,
-              );
+              if (!mounted || !_scrollController.hasClients) return;
+              _animateToOriginalLessonIndex(cashbackActiveIndex);
             });
           } else if (greyIndex != -1) {
             Future.delayed(Duration(milliseconds: 300), () {
-              _scrollController.animateTo(
-                scrollOffsetFor(greyIndex),
-                duration: Duration(milliseconds: 600),
-                curve: Curves.easeInOut,
-              );
+              if (!mounted || !_scrollController.hasClients) return;
+              _animateToOriginalLessonIndex(greyIndex);
             });
           }
         }
@@ -342,45 +363,51 @@ class _RoadMainPageState extends State<RoadMainPage>
         ? lesson.actions.every((a) => a.isCompleted)
         : lesson.effectiveStepOrder.every((s) => lesson.isStepCompleted(s));
 
-    return Container(
-      margin: EdgeInsets.only(bottom: 20),
-      width: double.infinity,
-      height: 360,
-      decoration: BoxDecoration(
-        color: colors[index % 5],
-        borderRadius: BorderRadius.circular(20),
-        image: DecorationImage(
-          image: AssetImage(characterImage),
-          fit: BoxFit.cover,
-        ),
-      ),
-      child: Stack(
-        children: [
-          if (!allCompleted)
-            Positioned.fill(
-              child: IgnorePointer(
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.5),
-                    borderRadius: BorderRadius.circular(20),
+    return Column(
+      children: [
+        Text(lesson.lessonTitle, style: TextStyles.regular(AppColors.black, fontSize: 12)),
+        SizedBox(height: 10),
+        Container(
+          margin: EdgeInsets.only(bottom: 20),
+          width: double.infinity,
+          height: 360,
+          decoration: BoxDecoration(
+            color: colors[index % 5],
+            borderRadius: BorderRadius.circular(20),
+            image: DecorationImage(
+              image: AssetImage(characterImage),
+              fit: BoxFit.cover,
+            ),
+          ),
+          child: Stack(
+            children: [
+              if (!allCompleted)
+                Positioned.fill(
+                  child: IgnorePointer(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.5),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                    ),
                   ),
                 ),
+              Column(
+                children: [
+                  Spacer(),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: lesson.hasActions
+                        ? _buildActionButtons(context, lesson, index)
+                        : _buildStepButtons(context, lesson, index, lesson.effectiveStepOrder),
+                  ),
+                  SizedBox(height: 20),
+                ],
               ),
-            ),
-          Column(
-            children: [
-              Spacer(),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: lesson.hasActions
-                    ? _buildActionButtons(context, lesson, index)
-                    : _buildStepButtons(context, lesson, index, lesson.effectiveStepOrder),
-              ),
-              SizedBox(height: 20),
             ],
           ),
-        ],
-      ),
+        )
+      ],
     );
   }
 
@@ -735,18 +762,64 @@ class _RoadMainPageState extends State<RoadMainPage>
   void _onScroll() {
     if (widgetList.isEmpty || title.isEmpty) return;
 
-    double offset = _scrollController.position.pixels;
-    int newChapterIndex = ((offset + 350) / 380).floor();
+    final newChapterIndex = _syncHeaderWithVisibleCard();
+    if (newChapterIndex == -1) return;
+
     if (newChapterIndex != selectedIndex) {
       setState(() {
         selectedIndex = newChapterIndex;
-        chapterTitle = title[newChapterIndex];
-        mainTitle = chapters[newChapterIndex];
-        mainTitleDescription =
-            "Тарау ${tarau[newChapterIndex]}, Сабақ ${takyryp[newChapterIndex - 1]}";
-        currentBoxColor = colors[newChapterIndex % colors.length];
       });
     }
+  }
+
+  /// [originalLessonIndex] — индекс урока в порядке API (как в `title` / findIndexForScroll).
+  void _animateToOriginalLessonIndex(int originalLessonIndex) {
+    final pos = _scrollController.position;
+    if (!pos.hasContentDimensions || widgetList.isEmpty) return;
+    final int w = (widgetList.length - 1 - originalLessonIndex).clamp(0, widgetList.length - 1);
+    final double logical = w * _cardScrollStep;
+    final double targetPixels = (pos.maxScrollExtent - logical).clamp(
+      pos.minScrollExtent,
+      pos.maxScrollExtent,
+    );
+    _scrollController.animateTo(
+      targetPixels,
+      duration: const Duration(milliseconds: 600),
+      curve: Curves.easeInOut,
+    );
+  }
+
+  int _syncHeaderWithVisibleCard() {
+    if (widgetList.isEmpty ||
+        title.isEmpty ||
+        chapters.isEmpty ||
+        tarau.isEmpty ||
+        takyryp.isEmpty) {
+      return -1;
+    }
+    if (!_scrollController.hasClients) return -1;
+
+    final double offset = _logicalScrollOffset();
+
+    final int visibleIndexRaw = ((offset + _cardScrollOffsetBase) / _cardScrollStep).floor();
+    final int maxIndex = widgetList.length - 1;
+    final int visibleIndex = visibleIndexRaw.clamp(0, maxIndex);
+    final int dataIndex = (widgetList.length - 1 - visibleIndex).clamp(0, maxIndex);
+
+    if (chapterTitle != title[dataIndex] ||
+        mainTitle != chapters[dataIndex] ||
+        mainTitleDescription != "Тарау ${tarau[dataIndex]}, Сабақ ${takyryp[dataIndex]}" ||
+        currentBoxColor != colors[dataIndex % colors.length]) {
+      setState(() {
+        chapterTitle = title[dataIndex];
+        mainTitle = chapters[dataIndex];
+        mainTitleDescription =
+            "Тарау ${tarau[dataIndex]}, Сабақ ${takyryp[dataIndex]}";
+        currentBoxColor = colors[dataIndex % colors.length];
+      });
+    }
+
+    return visibleIndex;
   }
 
   Widget roadFromRight(BuildContext context, Lesson lesson, int index,
@@ -1477,7 +1550,7 @@ class _RoadMainPageState extends State<RoadMainPage>
                           ),
                           const SizedBox(width: 8),
                           Text(
-                            profileResponse.selectedGrade?.subjectName != null ? profileResponse.selectedGrade!.subjectName.length > 15 ? profileResponse.selectedGrade!.subjectName.substring(0, 15) + '..' : profileResponse.selectedGrade!.subjectName : '-',
+                            _headerSubjectName(),
                             style: TextStyles.bold(AppColors.white),
                           ),
                         ],
@@ -1504,18 +1577,15 @@ class _RoadMainPageState extends State<RoadMainPage>
                           ChaptersDialog(data: structuredChapters),
                     ),
                   ).then((result) {
-                    if (result != null && result is Map<String, String>) {
-                      final chapter = result['chapter'];
-                      final titleName = result['title'];
-                      final scrollIndex =
-                          findIndexForScroll(chapter, titleName);
+                    if (result != null && result is Map) {
+                      final chapter = result['chapter']?.toString();
+                      final titleName = result['title']?.toString();
+                      final scrollIndex = findIndexForScroll(chapter, titleName);
                       if (scrollIndex != -1 && widgetList.isNotEmpty) {
-                        final offset = (widgetList.length - 1 - scrollIndex) * 380.0;
-                        _scrollController.animateTo(
-                          offset,
-                          duration: Duration(milliseconds: 500),
-                          curve: Curves.easeInOut,
-                        );
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          if (!mounted || !_scrollController.hasClients) return;
+                          _animateToOriginalLessonIndex(scrollIndex);
+                        });
                       }
                     }
                   });
