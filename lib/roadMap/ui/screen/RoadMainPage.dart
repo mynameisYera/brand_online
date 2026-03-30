@@ -268,8 +268,6 @@ class _RoadMainPageState extends State<RoadMainPage>
         double currentOffset = 0.0;
         structuredChapters.clear();
 
-        // Порядок «Тарау / Сабақ» в шапке — по позиции в ответе (1..N), а не по
-        // chapter_number / lesson_number с бэкенда (они могут не совпадать с карточкой).
         for (int chapterIdx = 0; chapterIdx < response.chapters.length; chapterIdx++) {
           final chapter = response.chapters[chapterIdx];
           List<SimpleTaskIndex> lessonsList = [];
@@ -324,17 +322,11 @@ class _RoadMainPageState extends State<RoadMainPage>
         }
 
         if (mounted) {
-          int greyIndex = findLastGreyIndex();
-          int cashbackActiveIndex = findCashbackIndex();
-          if (cashbackActiveIndex != -1) {
-            Future.delayed(Duration(milliseconds: 300), () {
+          final targetIndex = _resolveInitialScrollLessonIndex();
+          if (targetIndex != -1) {
+            Future.delayed(const Duration(milliseconds: 300), () {
               if (!mounted || !_scrollController.hasClients) return;
-              _animateToOriginalLessonIndex(cashbackActiveIndex);
-            });
-          } else if (greyIndex != -1) {
-            Future.delayed(Duration(milliseconds: 300), () {
-              if (!mounted || !_scrollController.hasClients) return;
-              _animateToOriginalLessonIndex(greyIndex);
+              _animateToOriginalLessonIndex(targetIndex);
             });
           }
         }
@@ -1712,15 +1704,18 @@ class _RoadMainPageState extends State<RoadMainPage>
                   ),
                   elevation: 8,
                   child: Container(
-                    height: myCourses.length * 64.0 + 16,
+                    constraints: BoxConstraints(
+                      maxHeight: 80 * myCourses.length.toDouble(),
+                    ),
                     width: double.infinity,
-                    margin: const EdgeInsets.symmetric(horizontal: 8),
-                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    // margin: const EdgeInsets.symmetric(horizontal: 8),
+                    // padding: const EdgeInsets.symmetric(vertical: 8),
                     child: ListView.builder(
                       itemCount: myCourses.length,
                       itemBuilder: (ctx, i) {
                         final course = myCourses[i];
                         final color = colors[i % colors.length];
+                        final progress = (course.percentage.clamp(0, 100)) / 100.0;
                         return GestureDetector(
                           onTap: () async {
                             await setGrade(course.id);
@@ -1734,40 +1729,79 @@ class _RoadMainPageState extends State<RoadMainPage>
                             );
                           },
                           child: Container(
-                            height: 56,
+                            height: 77,
                             margin: const EdgeInsets.symmetric(
                                 vertical: 4, horizontal: 8),
-                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
-                              color: color,
-                              borderRadius: BorderRadius.circular(10),
+                              color: const Color(0xFFF0F4F8),
+                              borderRadius: BorderRadius.circular(16),
                             ),
-                            child: Row(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  '${course.name}',
-                                  style: const TextStyle(
-                                    color: Colors.white70,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                                const SizedBox(width: 16),
-                                Expanded(
-                                  child: Text(
-                                    course.subjectName,
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
+                                Row(
+                                  children: [
+                                    Container(
+                                      width: 42,
+                                      height: 42,
+                                      decoration: BoxDecoration(
+                                        color: color,
+                                        borderRadius: BorderRadius.circular(14),
+                                      ),
+                                      child: const Icon(
+                                        Icons.school_rounded,
+                                        color: Colors.white,
+                                        size: 28,
+                                      ),
                                     ),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            course.subjectName,
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: const TextStyle(
+                                              color: Color(0xFF101828),
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            '${course.percentage}% аяқталды',
+                                            style: const TextStyle(
+                                              color: Color(0xFF1F2937),
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    // Text(
+                                    //   course.name,
+                                    //   style: const TextStyle(
+                                    //     color: Color(0xFF1F2937),
+                                    //     fontSize: 28,
+                                    //     fontWeight: FontWeight.w500,
+                                    //   ),
+                                    // ),
+                                  ],
+                                ),
+                                const SizedBox(height: 3),
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: LinearProgressIndicator(
+                                    minHeight: 8,
+                                    value: progress,
+                                    backgroundColor: const Color(0xFFE6ECF2),
+                                    valueColor: AlwaysStoppedAnimation<Color>(color),
                                   ),
                                 ),
-                                if (course.cashbackPending == true)
-                                  Image.asset(
-                                    'assets/images/dollar.png',
-                                    width: 20,
-                                    height: 20,
-                                  ),
                               ],
                             ),
                           ),
@@ -1809,15 +1843,26 @@ class _RoadMainPageState extends State<RoadMainPage>
     }
   }
 
-  int findLastGreyIndex() {
+  bool _isLessonCompleted(Lesson lesson) {
+    if (lesson.hasActions) {
+      return lesson.actions.every((a) => a.isCompleted);
+    }
+    return lesson.effectiveStepOrder.every((s) => lesson.isStepCompleted(s));
+  }
+
+  bool _isLessonStarted(Lesson lesson) {
+    if (lesson.hasActions) {
+      return lesson.actions.any((a) => a.isCompleted);
+    }
+    return lesson.effectiveStepOrder.any((s) => lesson.isStepCompleted(s));
+  }
+
+  int _firstInProgressLessonIndex() {
     for (int i = 0; i < response.chapters.length; i++) {
       final chapter = response.chapters[i];
       for (int j = 0; j < chapter.lessons.length; j++) {
         final lesson = chapter.lessons[j];
-        if (!lesson.videoWatched ||
-            !lesson.group1Completed ||
-            !lesson.group2Completed ||
-            !lesson.group3Completed) {
+        if (_isLessonStarted(lesson) && !_isLessonCompleted(lesson)) {
           return (response.chapters
               .take(i)
               .fold(0, (prev, element) => prev + element.lessons.length)) +
@@ -1826,6 +1871,33 @@ class _RoadMainPageState extends State<RoadMainPage>
       }
     }
     return -1;
+  }
+
+  int _nextAfterLastCompletedLessonIndex() {
+    int flatIndex = 0;
+    int lastCompleted = -1;
+    int total = 0;
+    for (final chapter in response.chapters) {
+      total += chapter.lessons.length;
+      for (final lesson in chapter.lessons) {
+        if (_isLessonCompleted(lesson)) {
+          lastCompleted = flatIndex;
+        }
+        flatIndex++;
+      }
+    }
+
+    if (lastCompleted == -1) return -1;
+    if (lastCompleted + 1 < total) return lastCompleted + 1;
+    return lastCompleted;
+  }
+
+  int _resolveInitialScrollLessonIndex() {
+    final inProgress = _firstInProgressLessonIndex();
+    if (inProgress != -1) return inProgress;
+
+    // If at least one card is finished, open at the next card.
+    return _nextAfterLastCompletedLessonIndex();
   }
 
   int findCashbackIndex() {
