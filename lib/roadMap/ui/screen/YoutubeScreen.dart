@@ -1,6 +1,7 @@
 import 'package:brand_online/core/app_colors.dart';
 import 'package:brand_online/core/text_styles.dart';
 import 'package:brand_online/core/widgets/app_button_widget.dart';
+import 'package:brand_online/roadMap/ui/screen/RoadMap.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:no_screenshot/no_screenshot.dart';
@@ -14,9 +15,10 @@ import '../../service/youtube_service.dart';
 class YoutubeScreen extends StatefulWidget {
   final Lesson lesson;
   final String? videoUrlOverride;
+  final int actionId;
   final bool? isAction;
 
-  const YoutubeScreen({super.key, required this.lesson, this.videoUrlOverride, this.isAction = false});
+  const YoutubeScreen({super.key, required this.lesson, this.videoUrlOverride, this.isAction = false, required this.actionId});
 
   @override
   State<YoutubeScreen> createState() => _YoutubeScreenState();
@@ -25,6 +27,7 @@ class YoutubeScreen extends StatefulWidget {
 class _YoutubeScreenState extends State<YoutubeScreen> with WidgetsBindingObserver {
   YoutubePlayerController? _controller;
   bool _markedWatched = false;
+  bool _isLoading = false;
   final _noScreenshot = NoScreenshot.instance;
   static const List<double> _playbackRates = [1.0, 1.25, 1.5, 1.75, 2.0];
 
@@ -98,11 +101,24 @@ void initState() {
   void _markVideoAsWatched({bool shouldPopOnSuccess = true}) async {
     if (_markedWatched) return;
     _markedWatched = true;
-    YoutubeService().videoWatched(widget.lesson.lessonId).then((res) {
-      if (res != null && res.message == "Lesson marked as watched.") {
-        widget.lesson.videoWatched = true;
-      }
-    });
+    widget.isAction == true ? YoutubeService().materialsWatched(widget.lesson.lessonId, widget.actionId).then((res) {
+      if (res != null && res.message == "Action marked as watched.") {
+          widget.lesson.videoWatched = true;
+        }
+      }) : YoutubeService().videoWatched(widget.lesson.lessonId).then((res) {
+        if (res != null && res.message == "Lesson marked as watched.") {
+          widget.lesson.videoWatched = true;
+        }
+      });
+  }
+
+  Future<void> _popWithDelay() async {
+    setState(() => _isLoading = true);
+    _markVideoAsWatched(shouldPopOnSuccess: true);
+    enableScreenshot();
+    await Future.delayed(const Duration(seconds: 2));
+    if (!mounted) return;
+    Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => RoadMap(initialScrollOffset: 0, selectedIndx: 0,state: 0,)));
   }
 
   @override
@@ -131,6 +147,8 @@ void initState() {
               ),
             ),
             const SizedBox(height: 24),
+            // AppButton(text: "Түсінікті", onPressed: () { Navigator.of(context).maybePop();}),
+            SizedBox(height: 10),
             ElevatedButton(
               onPressed: () => Navigator.of(context).maybePop(),
               style: ElevatedButton.styleFrom(
@@ -188,100 +206,147 @@ void initState() {
     builder: (context, player) => Scaffold(
         backgroundColor: Colors.white,
         body: SafeArea(
-          child: Column(
+          child: Stack(
             children: [
-              Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                child: Text(
-                  widget.lesson.lessonTitle,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                    color: Colors.black87,
+              Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    child: Text(
+                      widget.lesson.lessonTitle,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        color: Colors.black87,
+                      ),
+                    ),
                   ),
-                ),
-              ),
-              Container(
-                clipBehavior: Clip.hardEdge,
-                margin: EdgeInsets.symmetric(horizontal: 5),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(40),
-                ),
-                child: AspectRatio(
-                  aspectRatio: MediaQuery.of(context).size.width > 600 ? 16 / 4 : 16 / 12,
-                  child: player,
-                ),
-              ),
-              SizedBox(height: 20,),
-              // widget.lesson.materials.length == 0 ? SizedBox() : Row(children: [ Padding(padding: EdgeInsets.only(left: 15), child: Text("Сабақтың материалдары", style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),),) ],),
-              // SizedBox(height: 10,),
-              widget.isAction == true ? SizedBox() : Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: 15
-                ),
-                child: Container(
-                  height: 150,
-                  width: double.infinity,
-                  child: ListView.separated(
-                    separatorBuilder: (context, index) => SizedBox(width: 10,),
-                    scrollDirection: Axis.horizontal,
-                    itemCount: widget.lesson.materials.length,
-                    itemBuilder: (context, index){
-                      return InkWell(
-                        onTap: () async {
-                          String privacyUrl = widget.lesson.materials[index].url;
-                          Navigator.push(context, MaterialPageRoute(builder: (_) => WebViewPage(url: privacyUrl, isAction: false, lessonId: 0, actionId: 0)));
-                        },
-                        child: MaterialsWidget(
-                          title: widget.lesson.materials[index].name,
-                          url:  widget.lesson.materials[index].url,
-                        )
-                      );
-                    }
+                  Container(
+                    clipBehavior: Clip.hardEdge,
+                    margin: const EdgeInsets.symmetric(horizontal: 5),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(40),
+                    ),
+                    child: AspectRatio(
+                      aspectRatio: MediaQuery.of(context).size.width > 600 ? 16 / 4 : 16 / 12,
+                      child: player,
+                    ),
                   ),
-                )
-              ),
-              const Spacer(),
-              const SizedBox(height: 20),
-              if (widget.isAction != true)
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 0),
-                  child: AppButton(
-                    text: "Тестке өту",
-                    onPressed: () {
-                      _markVideoAsWatched(shouldPopOnSuccess: false);
-                      _controller?.removeListener(_onPlayerStateChanged);
-                      _controller?.dispose();
-                      _controller = null;
-                      enableScreenshot();
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => Math1Screen(
-                            initialScrollOffset: 20,
-                            lessonId: widget.lesson.lessonId,
-                            groupId: 1,
-                            cashbackActive: widget.lesson.cashbackActive,
-                            isCash: false,
-                            lesson: widget.lesson,
+                  const SizedBox(height: 20),
+                  // widget.lesson.materials.length == 0 ? SizedBox() : Row(children: [ Padding(padding: EdgeInsets.only(left: 15), child: Text("Сабақтың материалдары", style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),),) ],),
+                  // SizedBox(height: 10,),
+                  widget.isAction == true
+                      ? const SizedBox()
+                      : Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 15),
+                          child: Container(
+                            height: 150,
+                            width: double.infinity,
+                            child: ListView.separated(
+                              separatorBuilder: (context, index) => const SizedBox(width: 10),
+                              scrollDirection: Axis.horizontal,
+                              itemCount: widget.lesson.materials.length,
+                              itemBuilder: (context, index) {
+                                return InkWell(
+                                  onTap: () async {
+                                    final privacyUrl = widget.lesson.materials[index].url;
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => WebViewPage(
+                                          url: privacyUrl,
+                                          isAction: false,
+                                          lessonId: 0,
+                                          actionId: 0,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                  child: MaterialsWidget(
+                                    title: widget.lesson.materials[index].name,
+                                    url: widget.lesson.materials[index].url,
+                                  ),
+                                );
+                              },
+                            ),
                           ),
                         ),
-                      );
-                    },
+                  const Spacer(),
+                  const SizedBox(height: 20),
+                  if (widget.isAction != true)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 0),
+                      child: AppButton(
+                        text: "Тестке өту",
+                        onPressed: () {
+                          _markVideoAsWatched(shouldPopOnSuccess: false);
+                          _controller?.removeListener(_onPlayerStateChanged);
+                          _controller?.dispose();
+                          _controller = null;
+                          enableScreenshot();
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => Math1Screen(
+                                initialScrollOffset: 20,
+                                lessonId: widget.lesson.lessonId,
+                                groupId: 1,
+                                cashbackActive: widget.lesson.cashbackActive,
+                                isCash: false,
+                                lesson: widget.lesson,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  const SizedBox(height: 10),
+                  if (widget.isAction == true) Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 15), 
+                    child: AppButton(text: "Түсінікті", 
+                        onPressed: _isLoading
+                              ? null
+                              : () async {
+                                  if (widget.isAction == true) {
+                                    await _popWithDelay();
+                                  } else {
+                                    _markVideoAsWatched(shouldPopOnSuccess: true);
+                                    enableScreenshot();
+                                    Navigator.of(context).pop(true);
+                                  }
+                                },
+                      ),
+                    ),
+                  const SizedBox(height: 10),
+                  Center(
+                    child: TextButton(
+                      onPressed: _isLoading
+                          ? null
+                          : () async {
+                              if (widget.isAction == true) {
+                                await _popWithDelay();
+                              } else {
+                                // _markVideoAsWatched(shouldPopOnSuccess: true);
+                                enableScreenshot();
+                                Navigator.of(context).pop(true);
+                              }
+                            },
+                      child: Text(
+                        "Артқа қайту",
+                        style: TextStyles.medium(AppColors.primaryBlue),
+                      ),
+                    ),
+                  )
+                ],
+              ),
+              if (_isLoading)
+                Positioned.fill(
+                  child: ColoredBox(
+                    color: Colors.black54,
+                    child: const Center(child: CircularProgressIndicator.adaptive(backgroundColor: AppColors.primaryBlue,)),
                   ),
                 ),
-              const SizedBox(height: 10),
-              Center(
-                child: TextButton(
-                  onPressed: () {
-                      _markVideoAsWatched(shouldPopOnSuccess: true);
-                      enableScreenshot();
-                      Navigator.of(context).pop(true);
-                    },
-                  child: Text("Артқа қайту", style: TextStyles.medium(AppColors.primaryBlue),)),
-              )
             ],
           ),
         ),

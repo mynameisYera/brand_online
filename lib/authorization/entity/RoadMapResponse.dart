@@ -35,14 +35,14 @@ class LessonAction {
   final String key;
   final int actionId;
   final int order;
-  final String actionType; // "video" | "materials" | "task_group"
+  final String actionType; // "video" | "materials" | "task_group" | "embed"
   final String title;
   final bool isRequired;
   final bool isCompleted;
   final String? videoUrl;
   final int? taskGroup;
   final List<Materials> materials;
-
+  final String? externalUrl;
   LessonAction({
     required this.key,
     required this.actionId,
@@ -51,6 +51,7 @@ class LessonAction {
     required this.title,
     required this.isRequired,
     required this.isCompleted,
+    this.externalUrl,
     this.videoUrl,
     this.taskGroup,
     this.materials = const [],
@@ -73,8 +74,25 @@ class LessonAction {
       isCompleted: json['is_completed'] == true,
       videoUrl: (json['video_url'] as String?),
       taskGroup: (json['task_group'] as int?),
+      externalUrl: (json['external_url'] as String?),
       materials: materialsList,
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'key': key,
+      'action_id': actionId,
+      'order': order,
+      'action_type': actionType,
+      'title': title,
+      'is_required': isRequired,
+      'is_completed': isCompleted,
+      'video_url': videoUrl,
+      'task_group': taskGroup,
+      'materials': materials.map((e) => e.toJson()).toList(),
+      'external_url': externalUrl,
+    };
   }
 }
 

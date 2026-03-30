@@ -432,13 +432,19 @@ class _RoadMainPageState extends State<RoadMainPage>
         isActive: isActive,
         iconPath: iconPath,
         showCashback: showCashback,
-        onTap: () => _onActionTap(context, lesson, index, action, previousDone),
+        onTap: () {
+          _onActionTap(context, lesson, index, action, previousDone);
+          if(action.actionType == 'embed' || action.actionType == 'materials') {
+            print("ACTIONTYPE: ${action.toJson()}");
+          }
+        }
       ));
     }
     return list;
   }
 
   String _iconPathForActionType(String actionType) {
+    print("actionType: $actionType");
     switch (actionType) {
       case 'video':
         return 'assets/icons/play.svg';
@@ -446,6 +452,8 @@ class _RoadMainPageState extends State<RoadMainPage>
         return 'assets/icons/materials.svg';
       case 'task_group':
         return 'assets/icons/problems.svg';
+      case 'embed':
+        return 'assets/icons/materials.svg';
       default:
         return 'assets/icons/play.svg';
     }
@@ -474,6 +482,9 @@ class _RoadMainPageState extends State<RoadMainPage>
       case 'materials':
         _openActionMaterials(context, lesson, action);
         break;
+      case 'embed':
+        _openActionEmbed(context, lesson, action);
+        break;
       case 'task_group':
         _openActionTaskGroup(context, lesson, action);
         break;
@@ -495,7 +506,8 @@ class _RoadMainPageState extends State<RoadMainPage>
               builder: (c) => YoutubeScreen(
                 lesson: lesson,
                 videoUrlOverride: action.videoUrl,
-                isAction: lesson.actions.isNotEmpty,
+                isAction: true,
+                actionId: action.actionId,
               ),
             ),
           );
@@ -508,6 +520,14 @@ class _RoadMainPageState extends State<RoadMainPage>
             (route) => false,
           );
         },
+      ),
+    );
+  }
+  void _openActionEmbed(BuildContext context, Lesson lesson, LessonAction action) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => WebViewPage(url: action.externalUrl!, isAction: true, lessonId: lesson.lessonId, actionId: action.actionId),
       ),
     );
   }
@@ -589,7 +609,7 @@ class _RoadMainPageState extends State<RoadMainPage>
           buttonKey: key,
           isActive: isActive,
           iconPath: 'assets/icons/play.svg',
-          onTap: () => _onVideoStepTap(context, lesson),
+          onTap: () => _onVideoStepTap(context, lesson, _getVideoAction(lesson, stepIndex)),
         ));
       } else {
         final groupId = stepType == 'group_1' ? 1 : stepType == 'group_2' ? 2 : 3;
@@ -609,7 +629,22 @@ class _RoadMainPageState extends State<RoadMainPage>
     return list;
   }
 
-  void _onVideoStepTap(BuildContext context, Lesson lesson) {
+  LessonAction? _getVideoAction(Lesson lesson, int stepIndex) {
+    // Backend can return `step_order` while `actions` might be empty or not aligned by index.
+    // For the video step we can always open `lesson.videoUrl`, so `actionId` can be optional.
+    if (lesson.actions.isEmpty) return null;
+
+    // Prefer explicit "video" action if backend provides it.
+    final byType = lesson.actions.where((a) => a.actionType == 'video').toList();
+    if (byType.isNotEmpty) return byType.first;
+
+    // Fallback: keep old behavior if index is safe.
+    if (stepIndex >= 0 && stepIndex < lesson.actions.length) return lesson.actions[stepIndex];
+
+    return lesson.actions.first;
+  }
+
+  void _onVideoStepTap(BuildContext context, Lesson lesson, LessonAction? action) {
     if (lesson.isPublished == false) {
       showModalBottomSheet(
         context: context,
@@ -630,7 +665,7 @@ class _RoadMainPageState extends State<RoadMainPage>
           await Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (c) => YoutubeScreen(lesson: lesson, isAction: lesson.actions.isNotEmpty),
+              builder: (c) => YoutubeScreen(lesson: lesson, isAction: false, actionId: action?.actionId ?? 0),
             ),
           );
           if (!context.mounted) return;
@@ -1092,6 +1127,7 @@ class _RoadMainPageState extends State<RoadMainPage>
                         index,
                         _stepButtonKeys[index][0],
                         lesson,
+                        // lesson.actions[index],
                         scrollOffset: _scrollController.offset,
                       )
                           .then((value) {
@@ -1410,6 +1446,7 @@ class _RoadMainPageState extends State<RoadMainPage>
                       index,
                       _stepButtonKeys[index][0],
                       lesson,
+                      // lesson.actions[index],
                       scrollOffset: _scrollController.offset,
                     )
                         .then((value) {

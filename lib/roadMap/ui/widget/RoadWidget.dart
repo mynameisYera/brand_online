@@ -355,7 +355,7 @@ class RoadWidget {
                             await Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => YoutubeScreen(lesson: lesson),
+                                builder: (context) => YoutubeScreen(lesson: lesson, actionId: lesson.actions[index].actionId),
                               ),
                             );
                             await Navigator.pushAndRemoveUntil(
