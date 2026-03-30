@@ -1893,11 +1893,30 @@ class _RoadMainPageState extends State<RoadMainPage>
   }
 
   int _resolveInitialScrollLessonIndex() {
+    final cashbackPriority = _firstCashbackPendingLessonIndex();
+    if (cashbackPriority != -1) return cashbackPriority;
+
     final inProgress = _firstInProgressLessonIndex();
     if (inProgress != -1) return inProgress;
 
     // If at least one card is finished, open at the next card.
     return _nextAfterLastCompletedLessonIndex();
+  }
+
+  int _firstCashbackPendingLessonIndex() {
+    for (int i = 0; i < response.chapters.length; i++) {
+      final chapter = response.chapters[i];
+      for (int j = 0; j < chapter.lessons.length; j++) {
+        final lesson = chapter.lessons[j];
+        if (lesson.cashbackActive && !_isLessonCompleted(lesson)) {
+          return (response.chapters
+              .take(i)
+              .fold(0, (prev, element) => prev + element.lessons.length)) +
+              j;
+        }
+      }
+    }
+    return -1;
   }
 
   int findCashbackIndex() {
