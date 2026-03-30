@@ -1,4 +1,4 @@
-import 'package:brand_online/core/app_colors.dart';
+
 import 'package:brand_online/roadMap/service/youtube_service.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
@@ -55,18 +55,18 @@ class _WebViewPageState extends State<WebViewPage> {
         appBar: AppBar(
           backgroundColor: Colors.white,
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
-            onPressed: _goBack,
+            icon: widget.isAction ? const Icon(Icons.remove_red_eye) : const Icon(Icons.arrow_back),
+            onPressed: widget.isAction ? _markWatched : _goBack,
           ),
         ),
         body: WebViewWidget(controller: _controller),
-        floatingActionButton: widget.isAction
-            ? FloatingActionButton(
-                backgroundColor: AppColors.primaryBlue,
-                onPressed: _markWatched,
-                child: const Icon(Icons.check, color: Colors.white),
-              )
-            : const SizedBox.shrink(),
+        // floatingActionButton: widget.isAction
+        //     ? FloatingActionButton(
+        //         backgroundColor: AppColors.primaryBlue,
+        //         onPressed: _markWatched,
+        //         child: const Icon(Icons.check, color: Colors.white),
+        //       )
+        //     : const SizedBox.shrink(),
       ),
     );
   }
