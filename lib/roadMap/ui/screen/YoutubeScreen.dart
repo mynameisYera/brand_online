@@ -4,6 +4,7 @@ import 'package:brand_online/core/app_colors.dart';
 import 'package:brand_online/core/text_styles.dart';
 import 'package:brand_online/core/widgets/app_button_widget.dart';
 import 'package:brand_online/core/widgets/watermark_layer.dart';
+import 'package:brand_online/roadMap/ui/screen/RoadMap.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -19,8 +20,10 @@ import '../../service/youtube_service.dart';
 
 class YoutubeScreen extends StatefulWidget {
   final Lesson lesson;
+  final int actionId;
+  final bool isAction;
 
-  const YoutubeScreen({super.key, required this.lesson});
+  const YoutubeScreen({super.key, required this.lesson, required this.actionId, required this.isAction});
 
   @override
   State<YoutubeScreen> createState() => _YoutubeScreenState();
@@ -41,6 +44,7 @@ class _YoutubeScreenState extends State<YoutubeScreen> with WidgetsBindingObserv
   bool _isWebSliderDragging = false;
   double _webSliderValue = 0.0;
   bool _isPlayerExpanded = false;
+  bool _isDelayedCloseLoading = false;
 
   void _disableScreenshot() async {
     final result = await _noScreenshot.screenshotOff();
@@ -136,6 +140,37 @@ class _YoutubeScreenState extends State<YoutubeScreen> with WidgetsBindingObserv
     });
   }
 
+  Future<void> _closeWithDelay() async {
+    if (!mounted) return;
+    setState(() {
+      _isDelayedCloseLoading = true;
+    });
+    await Future.delayed(const Duration(seconds: 1));
+    if (!mounted) return;
+    Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => RoadMap(selectedIndx: 0, state: 0)));
+    _enableScreenshot();
+    _markVideoAsWatched();
+  }
+
+  Widget _withDelayLoader(Widget child) {
+    return Stack(
+      children: [
+        child,
+        if (_isDelayedCloseLoading)
+          Positioned.fill(
+            child: AbsorbPointer(
+              child: Container(
+                color: Colors.black26,
+                child: const Center(
+                  child: CircularProgressIndicator.adaptive(backgroundColor: AppColors.primaryBlue),
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
   final controller = _controller;
@@ -151,7 +186,7 @@ class _YoutubeScreenState extends State<YoutubeScreen> with WidgetsBindingObserv
         : width / aspectRatio;
     return Scaffold(
       backgroundColor: Colors.white,
-      body: SafeArea(
+      body: _withDelayLoader(SafeArea(
         child: SingleChildScrollView(
           physics: _isPlayerExpanded
               ? const NeverScrollableScrollPhysics()
@@ -315,7 +350,7 @@ class _YoutubeScreenState extends State<YoutubeScreen> with WidgetsBindingObserv
                         borderRadius: BorderRadius.circular(15),
                       ),
                       padding: EdgeInsets.all(15),
-                      child: Text("Артқа қайту", style: TextStyles.regular(AppColors.primaryBlue, fontSize: 16),),
+                      child: Text("Артқа қайту!", style: TextStyles.regular(AppColors.primaryBlue, fontSize: 16),),
                     ),
                   ),
                 )
@@ -324,14 +359,14 @@ class _YoutubeScreenState extends State<YoutubeScreen> with WidgetsBindingObserv
             ),
           ),
         ),
-      ),
+      )),
     );
   }
 
   if (controller == null) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: SafeArea(
+      body: _withDelayLoader(SafeArea(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -352,7 +387,15 @@ class _YoutubeScreenState extends State<YoutubeScreen> with WidgetsBindingObserv
             ),
             const SizedBox(height: 24),
             ElevatedButton(
-              onPressed: () => Navigator.of(context).maybePop(),
+              onPressed: () {
+                if (widget.isAction) {
+                  _closeWithDelay();
+                } else {
+                  Navigator.of(context).pop(true);
+                  _enableScreenshot();
+                  _markVideoAsWatched();
+                }
+              },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.blue,
                 shape: RoundedRectangleBorder(
@@ -362,14 +405,14 @@ class _YoutubeScreenState extends State<YoutubeScreen> with WidgetsBindingObserv
               child: const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 child: Text(
-                  'Артқа қайту',
+                  'Артқа қайту!',
                   style: TextStyle(fontSize: 16, color: Colors.white),
                 ),
               ),
             ),
           ],
         ),
-      ),
+      )),
     );
   }
 
@@ -386,7 +429,7 @@ class _YoutubeScreenState extends State<YoutubeScreen> with WidgetsBindingObserv
           : screenHeight * 0.42;
       return Scaffold(
         backgroundColor: Colors.white,
-        body: SafeArea(
+        body: _withDelayLoader(SafeArea(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -429,7 +472,7 @@ class _YoutubeScreenState extends State<YoutubeScreen> with WidgetsBindingObserv
               _buildPlayerControls(controller),
               const SizedBox(height: 12),
             if (!_isPlayerExpanded)
-            Expanded(
+             if (widget.isAction == false) Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.only(bottom: 16),
                 child: Column(
@@ -485,7 +528,7 @@ class _YoutubeScreenState extends State<YoutubeScreen> with WidgetsBindingObserv
                       ),
                       const SizedBox(height: 24),
                     ],
-                    AppButton(
+                    if (widget.isAction == false) AppButton(
                       color: AppButtonColor.blue, 
                       text: "Тестке өту", 
                       onPressed: () {
@@ -562,8 +605,13 @@ class _YoutubeScreenState extends State<YoutubeScreen> with WidgetsBindingObserv
                             ),
                           ),
                           onPressed: () {
-                            _markVideoAsWatched();
-                            Navigator.of(context).pop(true);
+                            if (widget.isAction) {
+                              _closeWithDelay();
+                            } else {
+                              Navigator.of(context).pop(true);
+                              _enableScreenshot();
+                              _markVideoAsWatched();
+                            }
                           },
                           child: const Text(
                             "Түсінікті",
@@ -583,7 +631,7 @@ class _YoutubeScreenState extends State<YoutubeScreen> with WidgetsBindingObserv
             if (_isPlayerExpanded) const Spacer(),
           ],
         ),
-      ),
+        )),
     );
     },
   );

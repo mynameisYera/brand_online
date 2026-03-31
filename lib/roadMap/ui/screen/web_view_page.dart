@@ -1,5 +1,8 @@
 
+import 'package:brand_online/core/app_colors.dart';
+import 'package:brand_online/core/widgets/watermark_layer.dart';
 import 'package:brand_online/roadMap/service/youtube_service.dart';
+import 'package:brand_online/roadMap/ui/screen/RoadMap.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
@@ -17,6 +20,7 @@ class WebViewPage extends StatefulWidget {
 
 class _WebViewPageState extends State<WebViewPage> {
   late final WebViewController _controller;
+  bool _isDelayedCloseLoading = false;
 
   @override
   void initState() {
@@ -30,9 +34,18 @@ class _WebViewPageState extends State<WebViewPage> {
   Future<void> _markWatched() async {
     try {
       await YoutubeService().materialsWatched(widget.lessonId, widget.actionId);
-      // if (!mounted) return;
-      Navigator.of(context).pop(true);
-      print('marked watched');
+      if (widget.isAction) {
+        if (!mounted) return;
+        setState(() {
+          _isDelayedCloseLoading = true;
+        });
+        await Future.delayed(const Duration(seconds: 2));
+        if (mounted) {
+          Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => RoadMap(selectedIndx: 0, state: 0)));
+        }
+      } else {
+        Navigator.of(context).pop(true);
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -59,7 +72,25 @@ class _WebViewPageState extends State<WebViewPage> {
             onPressed: widget.isAction ? _markWatched : _goBack,
           ),
         ),
-        body: WebViewWidget(controller: _controller),
+        body: AdaptiveWatermark(
+          phone: "",
+          userId: "",
+          child: Stack(
+          children: [
+            WebViewWidget(controller: _controller),
+            if (_isDelayedCloseLoading)
+              Positioned.fill(
+                child: AbsorbPointer(
+                  child: Container(
+                    color: Colors.black26,
+                    child: const Center(
+                      child: CircularProgressIndicator.adaptive(backgroundColor: AppColors.primaryBlue),
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ))
         // floatingActionButton: widget.isAction
         //     ? FloatingActionButton(
         //         backgroundColor: AppColors.primaryBlue,

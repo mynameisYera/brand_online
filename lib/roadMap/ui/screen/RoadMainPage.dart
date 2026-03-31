@@ -476,10 +476,12 @@ class _RoadMainPageState extends State<RoadMainPage>
         return 'assets/icons/play.svg';
       case 'materials':
         return 'assets/icons/problems.svg';
+      case 'embed':
+        return 'assets/icons/tasks.svg';
       case 'task_group':
         return 'assets/icons/problems.svg';
       default:
-        return 'assets/icons/play.svg';
+        return 'assets/icons/problems.svg';
     }
   }
 
@@ -506,6 +508,9 @@ class _RoadMainPageState extends State<RoadMainPage>
       case 'materials':
         _openActionMaterials(context, lesson, action);
         break;
+      case 'embed':
+        _openExternalUrl(context, lesson, action);
+        break;
       case 'task_group':
         _openActionTaskGroup(context, lesson, action);
         break;
@@ -526,7 +531,8 @@ class _RoadMainPageState extends State<RoadMainPage>
             MaterialPageRoute(
               builder: (c) => YoutubeScreen(
                 lesson: lesson,
-                // videoUrlOverride: action.videoUrl,
+                actionId: action.actionId,
+                isAction: true,
               ),
             ),
           );
@@ -543,6 +549,16 @@ class _RoadMainPageState extends State<RoadMainPage>
     );
   }
 
+  void _openExternalUrl(BuildContext context, Lesson lesson, LessonAction action) {
+    if (action.externalUrl == null) return;
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => WebViewPage(url: action.externalUrl!, isAction: true, lessonId: lesson.lessonId, actionId: action.actionId),
+      ),
+    );
+  }
+  
   void _openActionMaterials(BuildContext context, Lesson lesson, LessonAction action) {
     if (action.materials.isEmpty) return;
     if (action.materials.length == 1) {
@@ -662,7 +678,11 @@ class _RoadMainPageState extends State<RoadMainPage>
           await Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (c) => YoutubeScreen(lesson: lesson),
+              builder: (c) => YoutubeScreen(
+                lesson: lesson,
+                actionId: 0,
+                isAction: false,
+              ),
             ),
           );
           if (!context.mounted) return;
@@ -1919,34 +1939,49 @@ class _RoadMainPageState extends State<RoadMainPage>
   bool _hasAnyStartedTask() {
     for (final chapter in response.chapters) {
       for (final lesson in chapter.lessons) {
-        final started = lesson.videoWatched == true ||
-            lesson.group1Completed == true ||
-            lesson.group2Completed == true ||
-            lesson.group3Completed == true;
+        final started = _isLessonStarted(lesson);
         if (started) return true;
       }
     }
     return false;
   }
 
-  /// Правило выбора карточки:
-  /// 1) если есть незавершённая карточка, где пользователь уже что-то сделал — показать её;
-  /// 2) иначе показать следующую незавершённую карточку после завершённых.
+  bool _isLessonCompleted(Lesson lesson) {
+    if (lesson.hasActions) {
+      return lesson.actions.every((a) => a.isCompleted);
+    }
+    return lesson.videoWatched == true &&
+        lesson.group1Completed == true &&
+        lesson.group2Completed == true &&
+        lesson.group3Completed == true;
+  }
+
+  bool _isLessonStarted(Lesson lesson) {
+    if (lesson.hasActions) {
+      return lesson.actions.any((a) => a.isCompleted);
+    }
+    return lesson.videoWatched == true ||
+        lesson.group1Completed == true ||
+        lesson.group2Completed == true ||
+        lesson.group3Completed == true;
+  }
+
   int _getTargetLessonIndex() {
+    int firstCashbackIncompleteIndex = -1;
     int firstIncompleteIndex = -1;
     int firstStartedIncompleteIndex = -1;
 
     int idx = 0;
     for (final chapter in response.chapters) {
       for (final lesson in chapter.lessons) {
-        final bool completed = lesson.videoWatched == true &&
-            lesson.group1Completed == true &&
-            lesson.group2Completed == true &&
-            lesson.group3Completed == true;
-        final bool started = lesson.videoWatched == true ||
-            lesson.group1Completed == true ||
-            lesson.group2Completed == true ||
-            lesson.group3Completed == true;
+        final bool completed = _isLessonCompleted(lesson);
+        final bool started = _isLessonStarted(lesson);
+
+        if (firstCashbackIncompleteIndex == -1 &&
+            lesson.cashbackActive == true &&
+            !completed) {
+          firstCashbackIncompleteIndex = idx;
+        }
 
         if (firstIncompleteIndex == -1 && !completed) {
           firstIncompleteIndex = idx;
@@ -1959,10 +1994,13 @@ class _RoadMainPageState extends State<RoadMainPage>
       }
     }
 
+    if (firstCashbackIncompleteIndex != -1) {
+      return firstCashbackIncompleteIndex;
+    }
     if (firstStartedIncompleteIndex != -1) {
       return firstStartedIncompleteIndex;
     }
-    return firstIncompleteIndex; // может быть -1, если всё завершено
+    return firstIncompleteIndex; 
   }
 
   int findIndexForScroll(String? chapter, String? titleName) {

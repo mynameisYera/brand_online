@@ -219,85 +219,62 @@ class RoadWidget {
       builder: (context) => Dialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         backgroundColor: Colors.white,
-        child: Stack(
-          alignment: Alignment.center,
-          clipBehavior: Clip.none,
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 24, 20, 60),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  SizedBox(height: 20,),
-                  const Text(
-                    'Ескерту!',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w500,
-                      fontSize: 24,
-                      height: 1.0, // 100% line height
-                      letterSpacing: 0.0,
-                      color: GeneralUtil.orangeColor,
+        child: Container(height: 450,
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+          child: Column(
+            children: [
+              SizedBox(height: 20,),
+                    const Text(
+                      'Ескерту!',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w500,
+                        fontSize: 24,
+                        height: 1.0, // 100% line height
+                        letterSpacing: 0.0,
+                        color: GeneralUtil.orangeColor,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 12),
-                  const Text(
-                    'Алдыңғы тапсырма орындалмады',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontWeight: FontWeight.w400,
-                      fontSize: 20,
-                      height: 1.0, // 100% line height
-                      letterSpacing: 0.0,
-                      color: GeneralUtil.blackColor,
+                    const SizedBox(height: 12),
+                    const Text(
+                      'Алдыңғы тапсырма орындалмады',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontWeight: FontWeight.w400,
+                        fontSize: 20,
+                        height: 1.0, // 100% line height
+                        letterSpacing: 0.0,
+                        color: GeneralUtil.blackColor,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 50),
+                    const SizedBox(height: 50),
 
-                  /// Картинка
-                  Image.asset(
-                    'assets/images/admbarys.png',
-                    height: 179,
-                    fit: BoxFit.contain,
-                  ),
-                ],
-              ),
-            ),
-
-            Positioned(
-              bottom: 40,
-              child: SizedBox(
-                width: MediaQuery.sizeOf(context).width * 0.6,
-                height: 48,
-                child: ElevatedButton(
-                  onPressed: () => Navigator.pop(context),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
+                    /// Картинка
+                    Image.asset(
+                      'assets/images/admbarys.png',
+                      height: 179,
+                      fit: BoxFit.contain,
                     ),
-                  ),
-                  child: const Text(
-                    'ТҮСІНІКТІ!',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
+                    SizedBox(height: 10,),
+                    ElevatedButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                      ),
+                      child: const Text(
+                        'ТҮСІНІКТІ!',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
                     ),
-                  ),
-                ),
-              ),
-            ),
-
-            Positioned(
-              top: 12,
-              right: 12,
-              child: GestureDetector(
-                onTap: () => Navigator.pop(context),
-                child: const Icon(Icons.close, color: Colors.grey),
-              ),
-            ),
-          ],
-        ),
+            ],
+          ),
+        )
       ),
     );
   }
@@ -355,7 +332,11 @@ class RoadWidget {
                             await Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => YoutubeScreen(lesson: lesson),
+                                builder: (context) => YoutubeScreen(
+                                  lesson: lesson,
+                                  actionId: 0,
+                                  isAction: false,
+                                ),
                               ),
                             );
                             await Navigator.pushAndRemoveUntil(

@@ -86,11 +86,21 @@ class _AdaptiveWatermarkState extends State<AdaptiveWatermark> {
       builder: (context, constraints) {
         final width = constraints.maxWidth;
         final height = constraints.maxHeight;
+        final shortestSide = min(width, height);
+        final isPhone = shortestSide < 700;
 
-        final fontSize = width * 0.016;
+        // Make watermark readable on phones and softer on larger screens.
+        final fontSize = isPhone
+            ? (shortestSide * 0.035).clamp(12.0, 18.0)
+            : (width * 0.016).clamp(13.0, 22.0);
 
-        final columns = (width / 200).ceil();
-        final rows = (height / 100).ceil();
+        final tileWidth = isPhone ? 150.0 : 220.0;
+        final tileHeight = isPhone ? 85.0 : 120.0;
+        final columns = max(1, (width / tileWidth).ceil());
+        final rows = max(1, (height / tileHeight).ceil());
+        final watermarkOpacity = isPhone ? 0.12 : 0.07;
+        final watermarkAngle = isPhone ? -pi / 7 : -pi / 6;
+        final watermarkPadding = isPhone ? 12.0 : 20.0;
 
         final displayPhone = _phone.isNotEmpty ? _phone : widget.phone;
         final text = "$displayPhone\n @brand-online.kz";
@@ -101,16 +111,16 @@ class _AdaptiveWatermarkState extends State<AdaptiveWatermark> {
 
             IgnorePointer(
               child: Opacity(
-                opacity: 0.07,
+                opacity: watermarkOpacity,
                 child: Column(
                   children: List.generate(rows, (row) {
                     return Row(
                       children: List.generate(columns, (col) {
                         return Expanded(
                           child: Transform.rotate(
-                            angle: -pi / 6,
+                            angle: watermarkAngle,
                             child: Padding(
-                              padding: const EdgeInsets.all(20),
+                              padding: EdgeInsets.all(watermarkPadding),
                               child: Text(
                                 text,
                                 textAlign: TextAlign.center,

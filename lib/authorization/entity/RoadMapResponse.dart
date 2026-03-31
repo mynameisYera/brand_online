@@ -42,7 +42,7 @@ class LessonAction {
   final String? videoUrl;
   final int? taskGroup;
   final List<Materials> materials;
-
+  final String? externalUrl;
   LessonAction({
     required this.key,
     required this.actionId,
@@ -54,6 +54,7 @@ class LessonAction {
     this.videoUrl,
     this.taskGroup,
     this.materials = const [],
+    this.externalUrl,
   });
 
   factory LessonAction.fromJson(Map<String, dynamic> json) {
@@ -74,6 +75,7 @@ class LessonAction {
       videoUrl: (json['video_url'] as String?),
       taskGroup: (json['task_group'] as int?),
       materials: materialsList,
+      externalUrl: (json['external_url'] as String?),
     );
   }
 }
