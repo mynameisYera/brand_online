@@ -5,6 +5,7 @@ import 'package:brand_online/core/widgets/layout_widget.dart';
 import 'package:brand_online/roadMap/service/youtube_service.dart';
 import 'package:brand_online/roadMap/ui/screen/RoadMap.dart';
 import 'package:flutter/material.dart';
+import 'package:no_screenshot/no_screenshot.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 class WebViewPage extends StatefulWidget {
@@ -21,10 +22,22 @@ class WebViewPage extends StatefulWidget {
 class _WebViewPageState extends State<WebViewPage> {
   late final WebViewController _controller;
   bool _isLoading = false;
+  final _noScreenshot = NoScreenshot.instance;
+
+  void disableScreenshot() async {
+    bool result = await _noScreenshot.screenshotOff();
+    debugPrint('Screenshot Off: $result');
+  }
+
+  void enableScreenshot() async {
+    bool result = await _noScreenshot.screenshotOn();
+    debugPrint('Screenshot On: $result');
+  }
 
   @override
   void initState() {
     super.initState();
+    disableScreenshot();
     _controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..loadRequest(Uri.parse(widget.url));
@@ -43,6 +56,7 @@ class _WebViewPageState extends State<WebViewPage> {
     _markWatched();
     await Future.delayed(const Duration(seconds: 2));
     if (!mounted) return;
+    enableScreenshot();
     Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => RoadMap(initialScrollOffset: 0, selectedIndx: 0,state: 0,)));
   }
 
@@ -54,6 +68,13 @@ class _WebViewPageState extends State<WebViewPage> {
       child: Scaffold(
         appBar: AppBar(
           backgroundColor: Colors.white,
+          leading: IconButton(
+            onPressed: () {
+              enableScreenshot();
+              Navigator.of(context).pop();
+            },
+            icon: const Icon(Icons.arrow_back),
+          ),
         ),
         body: Stack(
           children: [
